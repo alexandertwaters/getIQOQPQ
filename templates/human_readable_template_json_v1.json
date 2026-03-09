@@ -1,4 +1,4 @@
-﻿{
+{
   "templateVersion": "human_v1",
   "sections": [
     {"id":"header","type":"metadata","fields":["equipment.type","equipment.model","equipment.cohort","siteContext.cleanroomClass","siteContext.utilities","siteContext.productContact","siteContext.productionThroughput","rulesetId","hazcatVersion","fingerprint"]},
