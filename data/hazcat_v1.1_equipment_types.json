@@ -1,0 +1,28 @@
+﻿{
+  "hazcatVersion": "hazcat_v1.1",
+  "generatedAt": "2026-03-09T03:04:00Z",
+  "description": "Seed equipment-type hazard catalog (minimal). Replace with full catalog for production.",
+  "equipmentTypes": [
+    {
+      "equipmentTypeId": "STER_PV_AUT",
+      "equipmentType": "Pre-Vacuum Steam Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_PV_001",
+          "title": "Sterility failure due to load cold spots",
+          "definition": "Insufficient cycle penetration in worst-case load locations causing inadequate microbial inactivation.",
+          "severityOptions": [{"label":"Catastrophic"},{"label":"Major"},{"label":"Moderate"},{"label":"Minor"},{"label":"Negligible"}],
+          "probabilityOptions": [{"label":"Frequent"},{"label":"Occasional"},{"label":"Remote"},{"label":"Extremely remote"}],
+          "exposureOptions": [{"label":"Continuous"},{"label":"Frequent"},{"label":"Intermittent"},{"label":"Rare"}],
+          "detectabilityOptions": [{"label":"High detectability"},{"label":"Moderate detectability"},{"label":"Low detectability"},{"label":"None"}],
+          "controlEffectivenessOptions": [{"label":"Very effective"},{"label":"Effective"},{"label":"Partially effective"},{"label":"Ineffective"}],
+          "contextualTags": ["Load type tray","BI program yes"],
+          "quickDefaults": {"defaultSeverity":"Catastrophic","defaultProbability":"Remote","defaultExposure":"Frequent","defaultDetectability":"Moderate detectability","defaultControlEffectiveness":"Very effective"},
+          "ruleId": "R_STER_PV_001",
+          "standards": ["ISO 17665","ISO 11138"]
+        }
+      ]
+    }
+  ]
+}

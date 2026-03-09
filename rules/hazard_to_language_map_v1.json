@@ -1,0 +1,47 @@
+﻿{
+  "version": "langmap_v1",
+  "generatedAt": "2026-03-09T03:04:00Z",
+  "mappings": [
+    {
+      "match": {"testId":"chamber temperature uniformity mapping"},
+      "human": {
+        "title": "Chamber temperature uniformity mapping",
+        "objective": "Verify temperature uniformity across mapped locations at the target cycle temperature.",
+        "setup": "Install calibrated thermocouples at supplier mapping points; use NIST traceable data logger.",
+        "steps": [
+          "Run a representative sterilization cycle at the target temperature without product load.",
+          "Record temperature versus time at all mapped points.",
+          "Compute plateau temperature and plateau duration for each point."
+        ],
+        "dataToRecord": "Time series for each thermocouple; maximum and minimum plateau temperatures; plateau durations.",
+        "acceptanceCriteria": "All mapped points must be within ±2.0 °C of the setpoint during plateau and plateau duration must meet the dwell time requirement specified by the manufacturer."
+      }
+    },
+    {
+      "match": {"testId":"vacuum and leak test"},
+      "human": {
+        "title": "Vacuum and leak performance test",
+        "objective": "Verify vacuum pump performance, chamber leak rate, and pre-vacuum cycle performance.",
+        "setup": "Instrument vacuum gauge and leak test apparatus per supplier instructions.",
+        "steps": [
+          "Execute a pre-vacuum cycle and measure the vacuum level achieved.",
+          "Hold vacuum for the defined hold period and measure leak rate.",
+          "If applicable, perform helium leak detection per supplier guidance."
+        ],
+        "dataToRecord": "Vacuum level traces, leak rate values, helium leak detector readings if performed.",
+        "acceptanceCriteria": "Vacuum level meets supplier specification and leak rate is below supplier threshold."
+      }
+    },
+    {
+      "match": {"testId":"default"},
+      "human": {
+        "title": "{{testId}}",
+        "objective": "Execute the supplier recommended verification for {{testId}}.",
+        "setup": "Follow supplier documentation and applicable standards.",
+        "steps": ["Execute supplier recommended procedure for {{testId}}."],
+        "dataToRecord": "Supplier report and measured values.",
+        "acceptanceCriteria": "Meet supplier acceptance criteria or applicable standard."
+      }
+    }
+  ]
+}

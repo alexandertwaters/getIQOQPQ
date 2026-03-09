@@ -1,0 +1,25 @@
+﻿{
+  "rulesetId": "ruleset_v1.1",
+  "generatedAt": "2026-03-09T03:04:00Z",
+  "description": "Seed deterministic ruleset mapping hazards to tests and computing ResidualRiskIndex.",
+  "rules": [
+    {
+      "ruleId": "R_SCORE_ISO14971_V1_1",
+      "name": "Compute per-hazard risk and Residual Risk Index",
+      "logic": [
+        {"action":"mapNumericValues","details":"Use canonical numeric mapping."},
+        {"action":"computePerHazard","expressions":{"RawRisk":"Severity * ProbabilityOfOccurrence","AdjustedRisk":"RawRisk * Exposure * (1 - Detectability)","ResidualRisk":"AdjustedRisk * ControlEffectiveness"}},
+        {"action":"policyEscalations","rules":[{"if":"hazard.ruleId startsWith 'R_STER' and Severity == 1.0 and siteContext.productContact == true","then":"Escalate ResidualRiskForMapping = ResidualRisk * 10"}]},
+        {"action":"aggregate","expression":"ResidualRiskIndex = max(EscalatedResidualRiskForMapping) + 0.1 * sum(EscalatedResidualRiskForMapping)"},
+        {"action":"mapQualificationBand","conditions":[{"if":"ResidualRiskIndex <= 0.15","then":"Basic"},{"if":"ResidualRiskIndex > 0.15 && ResidualRiskIndex <= 0.40","then":"Targeted"},{"if":"ResidualRiskIndex > 0.40","then":"Full"}]}
+      ]
+    },
+    {
+      "ruleId": "R_MAP_EQUIPMENT_TYPE_TO_TESTS_V1_1",
+      "name": "Map equipment-type hazards and qualification band to IQ/OQ/PQ templates",
+      "logic": [
+        {"if":"hazard.ruleId startsWith 'R_STER_PV' and qualificationBand in ['Targeted','Full']","then":{"IQ":["verify steam supply and condensate traps"],"OQ":["chamber temperature uniformity mapping","vacuum and leak test","Bowie-Dick or air removal test"],"PQ":["biological indicator placement matrix","3 consecutive worst-case cycles with biological indicators"]}}
+      ]
+    }
+  ]
+}

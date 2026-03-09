@@ -1,0 +1,20 @@
+﻿{
+  "templateVersion": "human_v1",
+  "sections": [
+    {"id":"header","type":"metadata","fields":["equipment.type","equipment.model","equipment.cohort","siteContext.cleanroomClass","siteContext.utilities","siteContext.productContact","siteContext.productionThroughput","rulesetId","hazcatVersion","fingerprint"]},
+    {"id":"executive_summary","type":"text","fields":["qualificationBand","ResidualRiskIndex","recommendation"]},
+    {"id":"impact_assessment","type":"repeat","repeatField":"hazards","fields":["hazardId","title","definition","standards","contextualTags","Severity_label","ProbabilityOfOccurrence_label","Exposure_label","Detectability_label","ControlEffectiveness_label","RawRisk","AdjustedRisk","ResidualRisk","EscalatedResidualRiskForMapping","IQ_list","OQ_list","PQ_list"]},
+    {"id":"IQ","type":"checklist","source":"IQ.checklist"},
+    {"id":"OQ","type":"tests","source":"OQ.tests","testFields":["title","objective","setup","steps","dataToRecord","acceptanceCriteria"]},
+    {"id":"PQ","type":"plan","fields":["PQ.plan","PQ.pqCycles","PQ.worstCaseLoadDefinition","PQ.biologicalIndicatorPlacement","PQ.acceptanceCriteria"]},
+    {"id":"csv_guidance","type":"list","source":"csvGuidance"},
+    {"id":"evidence","type":"list","source":"evidenceList"},
+    {"id":"traceability","type":"table","fields":["rulesetId","hazcatVersion","executedRuleIds","perHazardNumericCSV"]},
+    {"id":"signatures","type":"signatures","fields":["preparedBy","reviewedBy","approvedBy"]}
+  ],
+  "renderHints": {
+    "markdown": {"wrapLines": 80},
+    "pdf": {"pageSize":"A4","margins":"20mm"},
+    "docx": {"styles":"engine/styles/docx_default_styles.json"}
+  }
+}

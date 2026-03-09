@@ -1,0 +1,23 @@
+﻿{
+  "equipment.type": "{{equipment.type}}",
+  "equipment.model": "{{equipment.model}}",
+  "equipment.cohort": "{{equipment.cohort}}",
+  "siteContext.cleanroomClass": "{{siteContext.cleanroomClass}}",
+  "siteContext.utilities_comma": "{{siteContext.utilities sorted, comma}}",
+  "siteContext.productContact_label": "{{siteContext.productContact ? 'Yes' : 'No'}}",
+  "siteContext.productionThroughput": "{{siteContext.productionThroughput}}",
+  "rulesetId": "{{rulesetId}}",
+  "hazcatVersion": "{{hazcatVersion}}",
+  "fingerprint": "{{fingerprint}}",
+  "qualificationBand": "{{qualificationBand}}",
+  "ResidualRiskIndex": "{{ResidualRiskIndex formatted 3dp}}",
+  "recommendation": "{{recommendation}}",
+  "hazards": "{{hazards array}}",
+  "IQ.checklist": "{{IQ.checklist array}}",
+  "OQ.tests": "{{OQ.tests array}}",
+  "PQ.plan": "{{PQ.plan}}",
+  "csvGuidance": "{{csvGuidance array}}",
+  "evidenceList": "{{evidenceList array}}",
+  "executedRuleIds_comma": "{{executedRuleIds sorted, comma}}",
+  "perHazardNumericCSV": "{{generated CSV path}}"
+}

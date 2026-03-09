@@ -1,0 +1,39 @@
+﻿# ci/ci_pipeline.yml
+stages:
+  - validate
+  - unit_test
+  - render
+  - human_test
+
+validate:
+  stage: validate
+  script:
+    - python engine/schema_validator.py data/hazcat_v1.1_equipment_types.json
+    - python engine/schema_validator.py data/ruleset_v1.1_equipment_type_mappings.json
+    - python engine/schema_validator.py data/wizard_mapping_equipment_types.json
+
+unit_test:
+  stage: unit_test
+  script:
+    - python engine/engine_core.py --mode dryrun --vectors data/unit_test_vectors_v1.json --output artifacts/dryrun
+    - python ci/test_vectors_runner.py --actual artifacts/dryrun/run_summary.json --expected data/expected_fingerprints_v1.json
+
+render:
+  stage: render
+  script:
+    - mkdir -p artifacts/dryrun/rendered
+    - |
+      for d in artifacts/dryrun/*; do
+        if [ -d "$d" ]; then
+          for f in "$d"/*.json; do
+            if [ -f "$f" ]; then
+              python engine/render_engine.py "$f" templates/human_readable_template_markdown_v1.md rules/hazard_to_language_map_v1.json artifacts/dryrun/rendered
+            fi
+          done
+        fi
+      done
+
+human_test:
+  stage: human_test
+  script:
+    - python ci/human_draft_tests.py --artifacts artifacts/dryrun/rendered --vectors data/unit_test_vectors_v1.json

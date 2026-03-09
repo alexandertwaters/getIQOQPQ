@@ -1,0 +1,21 @@
+﻿{
+  "vectorsVersion": "unit_test_vectors_v1",
+  "generatedAt": "2026-03-09T03:04:00Z",
+  "vectors": [
+    {
+      "id": "UTV-001-STER-PV-BASIC",
+      "input": {
+        "equipmentId": "E-STER-PV-001",
+        "cohort": "Sterilization",
+        "type": "Pre-Vacuum Steam Sterilizer",
+        "siteContext": {"cleanroomClass": "ISO 7", "utilities": ["Steam","Electricity"], "productContact": true, "productionThroughput": "Medium"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_STER_PV_001","Severity_label":"Catastrophic","ProbabilityOfOccurrence_label":"Remote","Exposure_label":"Frequent","Detectability_label":"Moderate detectability","ControlEffectiveness_label":"Very effective","contextualTags":["Load type tray","BI program yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      }
+    }
+  ]
+}
