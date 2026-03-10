@@ -1,25 +1,136 @@
 {
   "rulesetId": "ruleset_v1.1",
   "generatedAt": "2026-03-09T03:04:00Z",
-  "description": "Seed deterministic ruleset mapping hazards to tests and computing ResidualRiskIndex.",
+  "description": "Deterministic rules that compute per-hazard risk, aggregate Residual Risk Index, apply policy escalations, and map hazards and qualification band to IQ/OQ/PQ templates. Rules reference equipmentType-specific ruleIds.",
   "rules": [
     {
       "ruleId": "R_SCORE_ISO14971_V1_1",
       "name": "Compute per-hazard risk and Residual Risk Index",
+      "trigger": "after hazard attribute selection",
       "logic": [
-        {"action":"mapNumericValues","details":"Use canonical numeric mapping."},
-        {"action":"computePerHazard","expressions":{"RawRisk":"Severity * ProbabilityOfOccurrence","AdjustedRisk":"RawRisk * Exposure * (1 - Detectability)","ResidualRisk":"AdjustedRisk * ControlEffectiveness"}},
-        {"action":"policyEscalations","rules":[{"if":"hazard.ruleId startsWith 'R_STER' and Severity == 1.0 and siteContext.productContact == true","then":"Escalate ResidualRiskForMapping = ResidualRisk * 10"}]},
-        {"action":"aggregate","expression":"ResidualRiskIndex = max(EscalatedResidualRiskForMapping) + 0.1 * sum(EscalatedResidualRiskForMapping)"},
-        {"action":"mapQualificationBand","conditions":[{"if":"ResidualRiskIndex <= 0.15","then":"Basic"},{"if":"ResidualRiskIndex > 0.15 && ResidualRiskIndex <= 0.40","then":"Targeted"},{"if":"ResidualRiskIndex > 0.40","then":"Full"}]}
-      ]
+        {
+          "action": "mapNumericValues",
+          "details": "Map Severity/Probability/Exposure/Detectability/ControlEffectiveness option labels to numeric values using canonical mapping table."
+        },
+        {
+          "action": "computePerHazard",
+          "expressions": {
+            "RawRisk": "Severity * ProbabilityOfOccurrence",
+            "AdjustedRisk": "RawRisk * Exposure * (1 - Detectability)",
+            "ResidualRisk": "AdjustedRisk * ControlEffectiveness"
+          }
+        },
+        {
+          "action": "policyEscalations",
+          "rules": [
+            {
+              "if": "exists hazard where hazard.ruleId startsWith 'R_STER' and Severity == 1.0 and equipment.siteContext.productContact == true",
+              "then": "set hazard.EscalatedResidualRiskForMapping = hazard.ResidualRisk * 10",
+              "rationale": "Conservative escalation for catastrophic sterilization hazards affecting product contact"
+            },
+            {
+              "if": "exists hazard where hazard.ruleId == 'R_ANA_HPLC_002' and controlArchitecture == 'Computerized Data System with electronic records'",
+              "then": "ensure CSV tests included in OQ and PQ",
+              "rationale": "Data integrity hazards with electronic records require CSV guidance"
+            },
+            {
+              "if": "equipmentType == 'HVAC Air Handling Unit serving cleanrooms' and siteContext.cleanroomClass in ['ISO 5','ISO 6','ISO 7']",
+              "then": "increase Exposure by 0.2 for hazards affecting cleanroom performance",
+              "rationale": "Multiple-zone effect increases exposure for HVAC hazards"
+            }
+          ]
+        },
+        {
+          "action": "aggregate",
+          "expression": "ResidualRiskIndex = max(hazard.EscalatedResidualRiskForMapping if present else hazard.ResidualRisk) + 0.1 * sum(hazard.EscalatedResidualRiskForMapping if present else hazard.ResidualRisk)"
+        },
+        {
+          "action": "mapQualificationBand",
+          "conditions": [
+            {"if": "ResidualRiskIndex <= 0.15", "then": {"qualificationBand": "Basic", "qualificationDepth": "Installation Qualification + basic Operational Qualification"}},
+            {"if": "ResidualRiskIndex > 0.15 && ResidualRiskIndex <= 0.40", "then": {"qualificationBand": "Targeted", "qualificationDepth": "Installation Qualification + Operational Qualification + targeted Performance Qualification"}},
+            {"if": "ResidualRiskIndex > 0.40", "then": {"qualificationBand": "Full", "qualificationDepth": "Full Installation Qualification + Operational Qualification + Performance Qualification with microbiological verification where applicable"}}
+          ]
+        }
+      ],
+      "standards": ["ISO 14971", "ISO 17665", "ISO 14644", "GAMP 5", "21 CFR 820"]
     },
     {
       "ruleId": "R_MAP_EQUIPMENT_TYPE_TO_TESTS_V1_1",
       "name": "Map equipment-type hazards and qualification band to IQ/OQ/PQ templates",
+      "trigger": "after R_SCORE_ISO14971_V1_1",
       "logic": [
-        {"if":"hazard.ruleId startsWith 'R_STER_PV' and qualificationBand in ['Targeted','Full']","then":{"IQ":["verify steam supply and condensate traps"],"OQ":["chamber temperature uniformity mapping","vacuum and leak test","Bowie-Dick or air removal test"],"PQ":["biological indicator placement matrix","3 consecutive worst-case cycles with biological indicators"]}}
-      ]
+        {
+          "if": "hazard.ruleId startsWith 'R_STER_PV' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": ["verify steam supply and condensate traps","verify sensor placement and calibration","collect FAT and SAT reports","record software and PLC baseline"],
+            "OQ": ["chamber temperature uniformity mapping","vacuum and leak test","Bowie-Dick or air removal test","steam quality and condensate check","control system and alarm verification"],
+            "PQ": ["biological indicator placement matrix","3 consecutive worst-case cycles with biological indicators","chemical indicator verification","load map validation"],
+            "standards": ["ISO 17665","ISO 11138","ISO 11137"]
+          }
+        },
+        {
+          "if": "hazard.ruleId startsWith 'R_STER_ETO' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": ["verify EtO gas monitoring and aeration equipment","collect EtO process validation and FAT reports","record software baseline"],
+            "OQ": ["EtO concentration and humidity verification","dwell time verification","aeration performance test","control system alarm verification"],
+            "PQ": ["biological indicator runs appropriate for EtO","residual EtO testing per product type","3 consecutive worst-case cycles"],
+            "standards": ["ISO 11135","21 CFR 820"]
+          }
+        },
+        {
+          "if": "hazard.ruleId == 'R_ANA_HPLC_001' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": ["installation verification and instrument calibration certificates","verify detector lamp and flow path integrity"],
+            "OQ": ["pump flow accuracy","wavelength accuracy","system suitability verification","autosampler performance"],
+            "PQ": ["method system suitability per method","repeatability and reproducibility runs","worst-case sample matrix testing"],
+            "standards": ["USP <1058>","21 CFR 820"]
+          }
+        },
+        {
+          "if": "hazard.ruleId == 'R_ANA_HPLC_002' and controlArchitecture == 'Computerized Data System with electronic records'",
+          "then": {
+            "IQ": ["record CDS software version and configuration baseline","verify user accounts and roles"],
+            "OQ": ["audit trail integrity test","user role test","backup and restore test","data export test"],
+            "PQ": ["longitudinal audit trail review during PQ runs","data restore validation"],
+            "standards": ["GAMP 5","21 CFR Part 11"]
+          }
+        },
+        {
+          "if": "hazard.ruleId startsWith 'R_FAC_HVAC' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": ["HEPA installation verification","sensor calibration verification","record AHU configuration and redundancy"],
+            "OQ": ["airflow and pressure differential tests","HEPA leak test","filter integrity verification","control system alarm verification"],
+            "PQ": ["operational particle mapping per ISO 14644-1","pressure cascade verification under load","longitudinal environmental monitoring"],
+            "standards": ["ISO 14644","ISO 13485"]
+          }
+        },
+        {
+          "if": "qualificationBand == 'Basic'",
+          "then": {
+            "IQ": ["installation verification","utilities verification","sensor calibration"],
+            "OQ": ["basic functional tests per supplier specification"],
+            "PQ": ["targeted operational checks as applicable"]
+          }
+        },
+        {
+          "if": "qualificationBand == 'Targeted'",
+          "then": {
+            "IQ": ["installation verification","utilities verification","sensor calibration","supplier FAT collection"],
+            "OQ": ["comprehensive functional tests across operational envelope","profiling tests as applicable"],
+            "PQ": ["targeted PQ runs focusing on worst-case scenarios"]
+          }
+        },
+        {
+          "if": "qualificationBand == 'Full'",
+          "then": {
+            "IQ": ["installation verification","utilities verification","sensor calibration","supplier FAT collection","software baseline and CSV checklist if electronic records present"],
+            "OQ": ["full envelope functional tests","profiling and worst-case verification","CSV tests if electronic records present"],
+            "PQ": ["full PQ with microbiological verification where applicable","statistically justified sampling plans"]
+          }
+        }
+      ],
+      "standards": ["ISO 17665", "ISO 14644", "USP <1058>", "GAMP 5", "21 CFR 820"]
     }
   ]
 }

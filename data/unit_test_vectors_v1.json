@@ -1,6 +1,7 @@
 {
   "vectorsVersion": "unit_test_vectors_v1",
   "generatedAt": "2026-03-09T03:04:00Z",
+  "description": "Representative input JSONs and expected high-level outputs (fingerprint placeholders) for CI. Fingerprints are deterministic hashes of canonical output content (example placeholders provided).",
   "vectors": [
     {
       "id": "UTV-001-STER-PV-BASIC",
@@ -11,10 +12,201 @@
         "siteContext": {"cleanroomClass": "ISO 7", "utilities": ["Steam","Electricity"], "productContact": true, "productionThroughput": "Medium"},
         "controlArchitecture": "PLC or SCADA",
         "hazards": [
-          {"hazardId":"H_STER_PV_001","Severity_label":"Catastrophic","ProbabilityOfOccurrence_label":"Remote","Exposure_label":"Frequent","Detectability_label":"Moderate detectability","ControlEffectiveness_label":"Very effective","contextualTags":["Load type tray","BI program yes"]}
+          {"hazardId":"H_STER_PV_001","Severity":1.0,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.6,"ControlEffectiveness":0.2,"contextualTags":["Load type tray","BI program yes"]},
+          {"hazardId":"H_STER_PV_003","Severity":0.8,"ProbabilityOfOccurrence":0.10,"Exposure":1.0,"Detectability":0.5,"ControlEffectiveness":0.4,"contextualTags":["Sensor type RTD","Calibration frequency monthly"]}
         ],
         "rulesetId": "ruleset_v1.1",
         "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["chamber temperature uniformity mapping","vacuum and leak test","biological indicator placement matrix"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000001"
+      }
+    },
+    {
+      "id": "UTV-002-ANA-HPLC-CSV",
+      "input": {
+        "equipmentId": "E-ANA-HPLC-001",
+        "cohort": "Analytical",
+        "type": "HPLC System",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": false, "productionThroughput": "Low"},
+        "controlArchitecture": "Computerized Data System with electronic records",
+        "hazards": [
+          {"hazardId":"H_ANA_HPLC_001","Severity":0.8,"ProbabilityOfOccurrence":0.02,"Exposure":0.5,"Detectability":0.7,"ControlEffectiveness":0.3,"contextualTags":["Method validated yes","CDS integrated yes"]},
+          {"hazardId":"H_ANA_HPLC_002","Severity":0.8,"ProbabilityOfOccurrence":0.02,"Exposure":0.5,"Detectability":0.4,"ControlEffectiveness":0.4,"contextualTags":["CDS present yes","Backup frequency daily"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["system suitability verification","audit trail integrity test","backup and restore test"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000002"
+      }
+    },
+    {
+      "id": "UTV-003-FAC-HVAC-ISO5",
+      "input": {
+        "equipmentId": "E-FAC-HVAC-001",
+        "cohort": "Facilities & Utilities",
+        "type": "HVAC Air Handling Unit serving cleanrooms",
+        "siteContext": {"cleanroomClass": "ISO 5", "utilities": ["Electricity"], "productContact": false, "productionThroughput": "High"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_FAC_HVAC_001","Severity":0.9,"ProbabilityOfOccurrence":0.03,"Exposure":1.0,"Detectability":0.5,"ControlEffectiveness":0.4,"contextualTags":["Cleanroom class ISO5","Redundant AHU yes","Continuous monitoring yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["airflow and pressure differential tests","operational particle mapping per ISO 14644-1","HEPA leak test"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000003"
+      }
+    },
+    {
+      "id": "UTV-004-COLD-REF-BACKUP",
+      "input": {
+        "equipmentId": "E-COLD-REF-001",
+        "cohort": "Cold Chain & Storage",
+        "type": "Pharmaceutical Refrigerator 2-8°C",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": true, "productionThroughput": "Low"},
+        "controlArchitecture": "Manual",
+        "hazards": [
+          {"hazardId":"H_CC_REF_001","Severity":0.8,"ProbabilityOfOccurrence":0.02,"Exposure":0.6,"Detectability":0.9,"ControlEffectiveness":0.8,"contextualTags":["Backup power yes","Alarm remote notification yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Basic",
+        "expectedKeyTests": ["temperature logging verification","alarm and remote notification test","backup power failover test"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000004"
+      }
+    },
+    {
+      "id": "UTV-005-PKG-SEALER-VISION",
+      "input": {
+        "equipmentId": "E-PKG-SEAL-001",
+        "cohort": "Packaging",
+        "type": "Heat Sealer",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": true, "productionThroughput": "High"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_PKG_SEAL_001","Severity":0.8,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.9,"ControlEffectiveness":0.8,"contextualTags":["Vision inspection yes","Sealer type continuous"]},
+          {"hazardId":"H_PKG_SEAL_002","Severity":0.7,"ProbabilityOfOccurrence":0.02,"Exposure":0.5,"Detectability":0.6,"ControlEffectiveness":0.7,"contextualTags":["Metal detection yes","Tooling maintenance monthly"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["in-line vision inspection verification","seal strength and integrity tests","metal detector verification"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000005"
+      }
+    },
+    {
+      "id": "UTV-006-MET-BALANCE-CAL",
+      "input": {
+        "equipmentId": "E-MET-BAL-001",
+        "cohort": "Metrology",
+        "type": "Analytical Balance",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": false, "productionThroughput": "Low"},
+        "controlArchitecture": "Manual",
+        "hazards": [
+          {"hazardId":"H_MET_BAL_001","Severity":0.8,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.6,"ControlEffectiveness":0.7,"contextualTags":["Calibration frequency monthly","Traceability NIST yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Basic",
+        "expectedKeyTests": ["installation verification","calibration certificate verification","daily verification checks"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000006"
+      }
+    },
+    {
+      "id": "UTV-007-STER-ETO-RESIDUAL",
+      "input": {
+        "equipmentId": "E-STER-ETO-001",
+        "cohort": "Sterilization",
+        "type": "Ethylene Oxide Sterilizer",
+        "siteContext": {"cleanroomClass": "ISO 8", "utilities": ["EtO supply","Electricity"], "productContact": true, "productionThroughput": "Medium"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_STER_ETO_001","Severity":1.0,"ProbabilityOfOccurrence":0.02,"Exposure":1.0,"Detectability":0.3,"ControlEffectiveness":0.4,"contextualTags":["Aeration validated no","Packaging porous"]},
+          {"hazardId":"H_STER_ETO_002","Severity":0.8,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.5,"ControlEffectiveness":0.5,"contextualTags":["EtO concentration monitoring yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["residual EtO testing per product type","aeration performance test","biological indicator runs appropriate for EtO"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000007"
+      }
+    },
+    {
+      "id": "UTV-008-ANA-GCMS-METHOD",
+      "input": {
+        "equipmentId": "E-ANA-GCMS-001",
+        "cohort": "Analytical",
+        "type": "GC / GC-MS System",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": false, "productionThroughput": "Low"},
+        "controlArchitecture": "Computerized Data System with electronic records",
+        "hazards": [
+          {"hazardId":"H_ANA_HPLC_001","Severity":0.8,"ProbabilityOfOccurrence":0.02,"Exposure":0.5,"Detectability":0.7,"ControlEffectiveness":0.3,"contextualTags":["Method validated yes","CDS integrated yes"]},
+          {"hazardId":"H_ANA_HPLC_002","Severity":0.8,"ProbabilityOfOccurrence":0.02,"Exposure":0.5,"Detectability":0.4,"ControlEffectiveness":0.4,"contextualTags":["CDS present yes","Backup frequency daily"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["system suitability verification","audit trail integrity test","backup and restore test"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000008"
+      }
+    },
+    {
+      "id": "UTV-009-DEC-WASHER-COMPLEX",
+      "input": {
+        "equipmentId": "E-DEC-WASH-001",
+        "cohort": "Decontamination",
+        "type": "Washer-Disinfector",
+        "siteContext": {"cleanroomClass": "ISO 7", "utilities": ["Purified water","Electricity"], "productContact": true, "productionThroughput": "Medium"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_DEC_001","Severity":0.8,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.4,"ControlEffectiveness":0.5,"contextualTags":["Cleaning validation yes","Complex geometry yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["cleaning validation verification","residue testing","operational cycle verification"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000009"
+      }
+    },
+    {
+      "id": "UTV-010-MFG-INJ-MOLD-TOOL",
+      "input": {
+        "equipmentId": "E-MFG-INJ-001",
+        "cohort": "Manufacturing",
+        "type": "Injection Molding Press",
+        "siteContext": {"cleanroomClass": "None", "utilities": ["Electricity"], "productContact": true, "productionThroughput": "High"},
+        "controlArchitecture": "PLC or SCADA",
+        "hazards": [
+          {"hazardId":"H_MFG_001","Severity":0.8,"ProbabilityOfOccurrence":0.05,"Exposure":1.0,"Detectability":0.6,"ControlEffectiveness":0.7,"contextualTags":["SPC yes","Preventive maintenance monthly"]},
+          {"hazardId":"H_MFG_002","Severity":0.6,"ProbabilityOfOccurrence":0.10,"Exposure":1.0,"Detectability":0.5,"ControlEffectiveness":0.6,"contextualTags":["Tooling life tracking yes","In-line inspection yes"]}
+        ],
+        "rulesetId": "ruleset_v1.1",
+        "hazcatVersion": "hazcat_v1.1"
+      },
+      "expected": {
+        "qualificationBand": "Targeted",
+        "expectedKeyTests": ["process parameter verification","SPC verification","in-line inspection verification"],
+        "expectedFingerprint": "sha256:EXAMPLEFINGERPRINT000000000000000000000010"
       }
     }
   ]

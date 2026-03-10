@@ -1,0 +1,189 @@
+{
+  "id": "entryScreen",
+  "title": "Equipment and Site Context",
+  "fields": [
+    {
+      "id": "equipmentCohort",
+      "type": "dropdown",
+      "label": "Equipment cohort",
+      "help": "Select the high level equipment category that best matches your asset.",
+      "options": [
+        {
+          "id": "cohort_Sterilization",
+          "label": "Sterilization"
+        },
+        {
+          "id": "cohort_ColdChain",
+          "label": "Cold Chain and Storage"
+        },
+        {
+          "id": "cohort_Packaging",
+          "label": "Packaging"
+        },
+        {
+          "id": "cohort_Metrology",
+          "label": "Metrology"
+        },
+        {
+          "id": "cohort_Analytical",
+          "label": "Analytical"
+        },
+        {
+          "id": "cohort_IVD",
+          "label": "IVD"
+        },
+        {
+          "id": "cohort_Manufacturing",
+          "label": "Manufacturing"
+        },
+        {
+          "id": "cohort_InspectionTest",
+          "label": "Inspection and Test"
+        },
+        {
+          "id": "cohort_Decontamination",
+          "label": "Decontamination"
+        },
+        {
+          "id": "cohort_AssemblyJoining",
+          "label": "Assembly and Joining"
+        },
+        {
+          "id": "cohort_FacilitiesUtilities",
+          "label": "Facilities and Utilities"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "equipmentType",
+      "type": "dropdown",
+      "label": "Equipment type",
+      "help": "Select the specific equipment type. Options are filtered by Equipment cohort.",
+      "optionsSource": "wizard_mapping_equipment_types.json",
+      "required": true
+    },
+    {
+      "id": "cleanroomClass",
+      "type": "dropdown",
+      "label": "Cleanroom class",
+      "help": "Select the ISO cleanroom classification for the area where the equipment operates.",
+      "options": [
+        {
+          "id": "iso5",
+          "label": "ISO 5"
+        },
+        {
+          "id": "iso6",
+          "label": "ISO 6"
+        },
+        {
+          "id": "iso7",
+          "label": "ISO 7"
+        },
+        {
+          "id": "iso8",
+          "label": "ISO 8"
+        },
+        {
+          "id": "none",
+          "label": "None"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "utilities",
+      "type": "multiselect",
+      "label": "Utilities required",
+      "help": "Select all utilities the equipment uses.",
+      "options": [
+        {
+          "id": "util_steam",
+          "label": "Steam"
+        },
+        {
+          "id": "util_compressed_air",
+          "label": "Compressed air"
+        },
+        {
+          "id": "util_purified_water",
+          "label": "Purified water"
+        },
+        {
+          "id": "util_process_water",
+          "label": "Process water"
+        },
+        {
+          "id": "util_electricity",
+          "label": "Electricity"
+        },
+        {
+          "id": "util_nitrogen",
+          "label": "Nitrogen"
+        }
+      ],
+      "required": true,
+      "minSelected": 1
+    },
+    {
+      "id": "productContact",
+      "type": "radio",
+      "label": "Product contact",
+      "help": "Does the equipment contact product that will be released to patients or customers?",
+      "options": [
+        {
+          "id": "pc_yes",
+          "label": "Yes"
+        },
+        {
+          "id": "pc_no",
+          "label": "No"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "productionThroughput",
+      "type": "dropdown",
+      "label": "Production throughput",
+      "help": "Select the expected daily throughput for the equipment.",
+      "options": [
+        {
+          "id": "throughput_low",
+          "label": "Low (<10 cycles/day)"
+        },
+        {
+          "id": "throughput_medium",
+          "label": "Medium (10–100 cycles/day)"
+        },
+        {
+          "id": "throughput_high",
+          "label": "High (>100 cycles/day)"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "controlArchitecture",
+      "type": "radio",
+      "label": "Control architecture",
+      "help": "Select the control architecture used by the equipment.",
+      "options": [
+        {
+          "id": "ctrl_manual",
+          "label": "Manual"
+        },
+        {
+          "id": "ctrl_plc_scada",
+          "label": "PLC or SCADA"
+        },
+        {
+          "id": "ctrl_cds",
+          "label": "Computerized Data System with electronic records"
+        }
+      ],
+      "required": true
+    }
+  ]
+}

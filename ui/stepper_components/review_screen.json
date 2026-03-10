@@ -1,0 +1,33 @@
+{
+  "fmeaTableColumns": [
+    "Hazard Id",
+    "Hazard title",
+    "Severity",
+    "Probability of Occurrence",
+    "Exposure",
+    "Detectability",
+    "Control Effectiveness",
+    "Raw Risk",
+    "Adjusted Risk",
+    "Residual Risk"
+  ],
+  "residualRiskIndex": {
+    "label": "Residual Risk Index",
+    "help": "Aggregated index used to map to qualification band."
+  },
+  "actions": [
+    {
+      "id": "editHazardInputs",
+      "label": "Edit hazard inputs"
+    },
+    {
+      "id": "generatePackage",
+      "label": "Generate advisory IQ OQ PQ",
+      "enabledWhen": "allHazardsComplete"
+    },
+    {
+      "id": "downloadFMEACSV",
+      "label": "Download FMEA CSV"
+    }
+  ]
+}

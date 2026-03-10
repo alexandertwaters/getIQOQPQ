@@ -1,6 +1,7 @@
-﻿# ci/ci_pipeline.yml
+# ci/ci_pipeline.yml
 stages:
   - validate
+  - generate_ui
   - unit_test
   - render
   - human_test
@@ -11,6 +12,12 @@ validate:
     - python engine/schema_validator.py data/hazcat_v1.1_equipment_types.json
     - python engine/schema_validator.py data/ruleset_v1.1_equipment_type_mappings.json
     - python engine/schema_validator.py data/wizard_mapping_equipment_types.json
+    - python engine/schema_validator.py data/ui_wiring_schema_v1.1.json
+
+generate_ui:
+  stage: generate_ui
+  script:
+    - node ui/importer_ui_schema.js
 
 unit_test:
   stage: unit_test

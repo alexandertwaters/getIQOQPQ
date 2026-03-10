@@ -21,15 +21,59 @@
       "match": {"testId":"vacuum and leak test"},
       "human": {
         "title": "Vacuum and leak performance test",
-        "objective": "Verify vacuum pump performance, chamber leak rate, and pre-vacuum cycle performance.",
+        "objective": "Verify vacuum pump performance, chamber leak rate, and pre‑vacuum cycle performance.",
         "setup": "Instrument vacuum gauge and leak test apparatus per supplier instructions.",
         "steps": [
-          "Execute a pre-vacuum cycle and measure the vacuum level achieved.",
+          "Execute a pre‑vacuum cycle and measure the vacuum level achieved.",
           "Hold vacuum for the defined hold period and measure leak rate.",
           "If applicable, perform helium leak detection per supplier guidance."
         ],
         "dataToRecord": "Vacuum level traces, leak rate values, helium leak detector readings if performed.",
         "acceptanceCriteria": "Vacuum level meets supplier specification and leak rate is below supplier threshold."
+      }
+    },
+    {
+      "match": {"testId":"Bowie-Dick or air removal test"},
+      "human": {
+        "title": "Bowie‑Dick air removal test",
+        "objective": "Verify air removal efficiency for pre‑vacuum sterilizers.",
+        "setup": "Standardized Bowie‑Dick test pack per ISO 11140‑4.",
+        "steps": [
+          "Run a Bowie‑Dick cycle using the standardized test pack.",
+          "Inspect the test pack result according to ISO 11140‑4 criteria."
+        ],
+        "dataToRecord": "Test pack result images and pass/fail determination.",
+        "acceptanceCriteria": "Bowie‑Dick test indicates successful air removal per manufacturer and ISO 11140‑4 guidance."
+      }
+    },
+    {
+      "match": {"testId":"biological indicator placement matrix"},
+      "human": {
+        "title": "Biological indicator placement and PQ runs",
+        "objective": "Demonstrate microbial inactivation for worst‑case loads using biological indicators.",
+        "setup": "Place biological indicators at worst‑case locations identified in mapping; include positive and negative controls.",
+        "steps": [
+          "Run PQ cycle with worst‑case load and collect BIs.",
+          "Incubate BIs per manufacturer instructions and record results.",
+          "Repeat for the required number of consecutive PQ cycles."
+        ],
+        "dataToRecord": "BI incubation results, cycle logs, load maps.",
+        "acceptanceCriteria": "All biological indicators show no growth after incubation per BI manufacturer instructions; physical parameters meet OQ acceptance for each PQ run."
+      }
+    },
+    {
+      "match": {"testId":"audit trail integrity test"},
+      "human": {
+        "title": "Audit trail integrity test",
+        "objective": "Verify that the computerized data system records immutable audit trails and that audit trails cannot be altered without detection.",
+        "setup": "Access to CDS with test user accounts and audit trail viewer.",
+        "steps": [
+          "Perform a sequence of controlled actions (create, modify, delete) using test accounts.",
+          "Verify audit trail entries record user, timestamp, and action.",
+          "Attempt an authorized and an unauthorized modification and verify detection mechanisms."
+        ],
+        "dataToRecord": "Audit trail entries, screenshots, user account logs.",
+        "acceptanceCriteria": "Audit trail records all actions with user and timestamp; unauthorized modifications are detected and logged."
       }
     },
     {

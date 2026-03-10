@@ -1,0 +1,96 @@
+{
+  "hazardSelection": {
+    "behavior": {
+      "source": "hazcat_v1.1_equipment_types.json",
+      "filterBy": "equipmentTypeId",
+      "tileFields": [
+        "title",
+        "definition",
+        "standards",
+        "contextualTags"
+      ],
+      "precheckSuggested": true,
+      "allowCustomHazards": false,
+      "minSelected": 1
+    },
+    "actions": [
+      {
+        "id": "selectAllApplicable",
+        "label": "Select all applicable"
+      },
+      {
+        "id": "continue",
+        "label": "Continue",
+        "enabledWhen": "minSelected"
+      }
+    ]
+  },
+  "perHazardStepper": {
+    "fieldsPerHazard": [
+      {
+        "id": "Severity",
+        "type": "radio",
+        "label": "Severity",
+        "help": "Select the severity of the harm that could result if the hazard occurs.",
+        "optionsSource": "hazard.severityOptions",
+        "required": true
+      },
+      {
+        "id": "ProbabilityOfOccurrence",
+        "type": "radio",
+        "label": "Probability of Occurrence",
+        "help": "Select how often the hazardous event is expected to occur under current controls.",
+        "optionsSource": "hazard.probabilityOptions",
+        "required": true
+      },
+      {
+        "id": "Exposure",
+        "type": "radio",
+        "label": "Exposure",
+        "help": "Select how often the product or people are exposed to the hazard.",
+        "optionsSource": "hazard.exposureOptions",
+        "required": true
+      },
+      {
+        "id": "Detectability",
+        "type": "radio",
+        "label": "Detectability",
+        "help": "Select how likely the hazard is to be detected before it causes harm.",
+        "optionsSource": "hazard.detectabilityOptions",
+        "required": true
+      },
+      {
+        "id": "ControlEffectiveness",
+        "type": "radio",
+        "label": "Control Effectiveness",
+        "help": "Select how effective existing controls are at reducing the hazard.",
+        "optionsSource": "hazard.controlEffectivenessOptions",
+        "required": true
+      },
+      {
+        "id": "contextualTags",
+        "type": "multiselect",
+        "label": "Contextual selectors",
+        "help": "Select all contextual tags that apply to refine defaults and traceability.",
+        "optionsSource": "hazard.contextualTags",
+        "required": true,
+        "minSelected": 0
+      },
+      {
+        "id": "applyQuickDefaults",
+        "type": "button",
+        "label": "Quick defaults",
+        "help": "Apply curated default selections for this hazard based on contextual tags.",
+        "action": "applyQuickDefaults"
+      }
+    ],
+    "liveFeedback": {
+      "compute": [
+        "RawRisk",
+        "AdjustedRisk",
+        "ResidualRisk"
+      ],
+      "displayText": "Shows numeric values and a one-line plain English interpretation for the current selections."
+    }
+  }
+}

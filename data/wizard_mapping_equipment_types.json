@@ -1,11 +1,108 @@
 {
   "mappingVersion": "wizard_map_v1.1",
   "generatedAt": "2026-03-09T03:04:00Z",
+  "description": "Maps cohorts to equipment types and equipment types to hazard lists for the UI wizard. Use to populate dropdowns and stepper sequences.",
   "cohorts": [
     {
       "cohortId": "Sterilization",
       "equipmentTypes": [
-        {"equipmentTypeId": "STER_PV_AUT", "equipmentType": "Pre-Vacuum Steam Sterilizer"}
+        {"equipmentTypeId": "STER_PV_AUT", "equipmentType": "Pre-Vacuum Steam Sterilizer"},
+        {"equipmentTypeId": "STER_GRAV_AUT", "equipmentType": "Gravity Displacement Steam Sterilizer"},
+        {"equipmentTypeId": "STER_ETO", "equipmentType": "Ethylene Oxide Sterilizer"},
+        {"equipmentTypeId": "STER_GAMMA", "equipmentType": "Gamma Irradiation Sterilizer"},
+        {"equipmentTypeId": "STER_EBEAM", "equipmentType": "Electron Beam Sterilizer"},
+        {"equipmentTypeId": "STER_H2O2", "equipmentType": "Low Temperature Hydrogen Peroxide Plasma Sterilizer"}
+      ]
+    },
+    {
+      "cohortId": "Cold Chain & Storage",
+      "equipmentTypes": [
+        {"equipmentTypeId": "COLD_PHARMA_REF", "equipmentType": "Pharmaceutical Refrigerator 2-8°C"},
+        {"equipmentTypeId": "COLD_ULTRA_FREEZER", "equipmentType": "Ultra-Low Freezer ≤ -70°C"},
+        {"equipmentTypeId": "COLD_WALKIN", "equipmentType": "Cold Storage Walk-in Chamber"},
+        {"equipmentTypeId": "COLD_CRYO", "equipmentType": "Cryogenic LN2 Storage Cabinet"}
+      ]
+    },
+    {
+      "cohortId": "Packaging",
+      "equipmentTypes": [
+        {"equipmentTypeId": "PKG_HEAT_SEALER", "equipmentType": "Heat Sealer"},
+        {"equipmentTypeId": "PKG_ULTRASONIC_SEALER", "equipmentType": "Ultrasonic Sealer"},
+        {"equipmentTypeId": "PKG_FFS", "equipmentType": "Form-Fill-Seal Machine"},
+        {"equipmentTypeId": "PKG_BLISTER", "equipmentType": "Blister Pack Line"},
+        {"equipmentTypeId": "PKG_LABELER", "equipmentType": "Labeling and Serialization Station"}
+      ]
+    },
+    {
+      "cohortId": "Metrology",
+      "equipmentTypes": [
+        {"equipmentTypeId": "MET_BALANCE", "equipmentType": "Analytical Balance"},
+        {"equipmentTypeId": "MET_CMM", "equipmentType": "Coordinate Measuring Machine"},
+        {"equipmentTypeId": "MET_GAUGE", "equipmentType": "Calibrated Gauge Block Station"},
+        {"equipmentTypeId": "MET_VISION", "equipmentType": "Dimensional Vision System"}
+      ]
+    },
+    {
+      "cohortId": "Analytical",
+      "equipmentTypes": [
+        {"equipmentTypeId": "ANA_HPLC", "equipmentType": "HPLC System"},
+        {"equipmentTypeId": "ANA_GCMS", "equipmentType": "GC / GC-MS System"},
+        {"equipmentTypeId": "ANA_UVVIS", "equipmentType": "UV-Vis Spectrophotometer"},
+        {"equipmentTypeId": "ANA_TOC", "equipmentType": "TOC Analyzer"},
+        {"equipmentTypeId": "ANA_DISS", "equipmentType": "Dissolution Tester"}
+      ]
+    },
+    {
+      "cohortId": "IVD",
+      "equipmentTypes": [
+        {"equipmentTypeId": "IVD_HEM", "equipmentType": "Hematology Analyzer"},
+        {"equipmentTypeId": "IVD_IMMUNO", "equipmentType": "Immunoassay Analyzer"},
+        {"equipmentTypeId": "IVD_POC", "equipmentType": "Point-of-Care Rapid Test Reader"},
+        {"equipmentTypeId": "IVD_PCR", "equipmentType": "Molecular PCR Instrument"}
+      ]
+    },
+    {
+      "cohortId": "Manufacturing",
+      "equipmentTypes": [
+        {"equipmentTypeId": "MFG_INJ_MOLD", "equipmentType": "Injection Molding Press"},
+        {"equipmentTypeId": "MFG_CNC", "equipmentType": "CNC Machining Center"},
+        {"equipmentTypeId": "MFG_ROBOT", "equipmentType": "Assembly Robot Cell"},
+        {"equipmentTypeId": "MFG_TORQUE", "equipmentType": "Torque Application Station"}
+      ]
+    },
+    {
+      "cohortId": "Inspection & Test",
+      "equipmentTypes": [
+        {"equipmentTypeId": "INS_VISION", "equipmentType": "Vision Inspection System"},
+        {"equipmentTypeId": "INS_XRAY", "equipmentType": "X-ray Inspection Machine"},
+        {"equipmentTypeId": "INS_LEAK", "equipmentType": "Leak Tester (Pressure Decay)"},
+        {"equipmentTypeId": "INS_HELIUM", "equipmentType": "Helium Leak Detector"}
+      ]
+    },
+    {
+      "cohortId": "Decontamination",
+      "equipmentTypes": [
+        {"equipmentTypeId": "DEC_WASHER", "equipmentType": "Washer-Disinfector"},
+        {"equipmentTypeId": "DEC_ULTRASONIC", "equipmentType": "Ultrasonic Cleaner"},
+        {"equipmentTypeId": "DEC_MANUAL", "equipmentType": "Manual Cleaning Station"}
+      ]
+    },
+    {
+      "cohortId": "Assembly & Joining",
+      "equipmentTypes": [
+        {"equipmentTypeId": "ASM_ULTRASONIC", "equipmentType": "Ultrasonic Welding Station"},
+        {"equipmentTypeId": "ASM_HEAT_STAKE", "equipmentType": "Heat Staking Machine"},
+        {"equipmentTypeId": "ASM_ADHESIVE", "equipmentType": "Adhesive Dispensing and Cure Oven"},
+        {"equipmentTypeId": "ASM_CRIMP", "equipmentType": "Crimping Station"}
+      ]
+    },
+    {
+      "cohortId": "Facilities & Utilities",
+      "equipmentTypes": [
+        {"equipmentTypeId": "FAC_HVAC_AHU", "equipmentType": "HVAC Air Handling Unit serving cleanrooms"},
+        {"equipmentTypeId": "FAC_HEPA_BANK", "equipmentType": "HEPA Filter Bank and Plenum"},
+        {"equipmentTypeId": "FAC_PW_LOOP", "equipmentType": "Purified Water Loop"},
+        {"equipmentTypeId": "FAC_COMP_AIR", "equipmentType": "Compressed Air System with Dryers"}
       ]
     }
   ]
