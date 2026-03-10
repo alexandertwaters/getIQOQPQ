@@ -2,9 +2,14 @@
 import json
 import os
 import sys
-from calculator import compute_hazard_numeric_from_labels
-from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
-from fingerprint import canonicalize_package_for_fingerprint
+try:
+    from .calculator import compute_hazard_numeric_from_labels
+    from .rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
+    from .fingerprint import canonicalize_package_for_fingerprint
+except ImportError:
+    from calculator import compute_hazard_numeric_from_labels
+    from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
+    from fingerprint import canonicalize_package_for_fingerprint
 
 def run_vector(vector):
     pkg = {}
