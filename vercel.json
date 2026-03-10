@@ -6,7 +6,6 @@
   ],
   "functions": {
     "api/**/*.py": {
-      "runtime": "python3.12",
       "excludeFiles": "ci/**,**/*_test*.py,parse_test.py"
     }
   },
