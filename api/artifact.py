@@ -1,46 +1,60 @@
-# api/artifact.py
-# Vercel Python serverless function to return signed URLs for artifact files stored in Supabase
+# api/artifact.py - Vercel Python serverless: return signed URLs for artifacts
 import os
 import json
+from http.server import BaseHTTPRequestHandler
 from supabase import create_client
-from urllib.parse import unquote
+
+from api._shared import parse_request, send_json
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-ARTIFACT_BUCKET = os.environ.get("ARTIFACT_BUCKET")
+ARTIFACT_BUCKET = os.environ.get("ARTIFACT_BUCKET", "artifacts")
 
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-def handler(request):
-    # Expect path param fingerprint or query param fingerprint
-    fingerprint = request.args.get("fingerprint") if hasattr(request, "args") else None
+def _get_supabase():
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return None
+    return create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+
+def _handle_get(fingerprint):
     if not fingerprint:
-        # Try JSON body
-        try:
-            body = request.json()
-            fingerprint = body.get("fingerprint")
-        except Exception:
-            fingerprint = None
-    if not fingerprint:
-        return {"statusCode":400, "body": json.dumps({"error":"fingerprint required"})}
+        return 400, {"error": "fingerprint required"}
+
+    supabase = _get_supabase()
+    if not supabase:
+        return 503, {"error": "Storage not configured"}
 
     safe_folder = fingerprint.replace(":", "_")
     prefix = f"{safe_folder}/"
 
-    # List objects under prefix
-    res = supabase.storage.from_(ARTIFACT_BUCKET).list(prefix)
-    if res.get("error"):
-        return {"statusCode":500, "body": json.dumps({"error": res["error"]})}
+    try:
+        listing = supabase.storage.from_(ARTIFACT_BUCKET).list(prefix)
+    except Exception as e:
+        return 500, {"error": str(e)}
 
-    files = res.get("data", [])
+    files = listing if isinstance(listing, list) else listing.get("data", [])
     signed_urls = {}
     for entry in files:
-        path = entry.get("name")
-        # generate signed URL valid for 1 hour
-        signed = supabase.storage.from_(ARTIFACT_BUCKET).create_signed_url(path, 3600)
-        if signed.get("error"):
-            signed_urls[path] = {"error": signed["error"]}
-        else:
-            signed_urls[path] = signed.get("signedURL")
+        name = entry.get("name") if isinstance(entry, dict) else entry
+        if not name:
+            continue
+        file_path = f"{prefix}{name}"
+        try:
+            result = supabase.storage.from_(ARTIFACT_BUCKET).create_signed_url(file_path, 3600)
+            if isinstance(result, dict) and result.get("error"):
+                signed_urls[name] = {"error": result["error"]}
+            else:
+                signed_urls[name] = result.get("signedUrl") or result.get("signedURL") or result
+        except Exception as e:
+            signed_urls[name] = {"error": str(e)}
 
-    return {"statusCode":200, "body": json.dumps({"files": signed_urls})}
+    return 200, {"files": signed_urls}
+
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        req = parse_request(self)
+        fp = req["query"].get("fingerprint")
+        status, data = _handle_get(fp)
+        send_json(self, status, data)

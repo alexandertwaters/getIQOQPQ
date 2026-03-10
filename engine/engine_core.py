@@ -1,9 +1,9 @@
-﻿# engine/engine_core.py
+# engine/engine_core.py
 import json
 import os
 import sys
 from calculator import compute_hazard_numeric_from_labels
-from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band
+from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
 from fingerprint import canonicalize_package_for_fingerprint
 
 def run_vector(vector):
@@ -53,9 +53,7 @@ def run_vector(vector):
     fingerprint = canonicalize_package_for_fingerprint(pkg)
     pkg["fingerprint"] = fingerprint
 
-    pkg["IQ"] = {"checklist": ["Installation verification per supplier drawing"]}
-    pkg["OQ"] = {"tests": []}
-    pkg["PQ"] = {"plan": "Default PQ plan", "pqCycles": 3}
+    apply_iqoqpq_mapping(pkg)
     pkg["csvGuidance"] = []
     pkg["evidenceList"] = []
     pkg["traceability"] = {"hazardRules": [h.get("ruleId","") for h in pkg["hazards"]]}

@@ -1,24 +1,36 @@
-﻿# Cursor runbook (exact commands)
-# 1. Create venv and install
+﻿# Cursor instructions to validate, generate, render, and test advisory packages
+
+# 1. Clone the repo and enter workspace
+git clone <your-remote-repo-url> --branch main --single-branch /workspace/project
+cd /workspace/project
+
+# 2. Create virtual environment and install dependencies
 python -m venv .venv
-.\.venv\Scripts\Activate
+source .venv/bin/activate
 pip install --no-cache-dir -r requirements.txt
 
-# 2. Validate canonical data
+# 3. Validate canonical data files (fail on any validation error)
 python engine/schema_validator.py data/hazcat_v1.1_equipment_types.json
 python engine/schema_validator.py data/ruleset_v1.1_equipment_type_mappings.json
 python engine/schema_validator.py data/wizard_mapping_equipment_types.json
 
-# 3. Dry run
+# 4. Run dry-run engine to produce canonical packages and fingerprints
 python engine/engine_core.py --mode dryrun --vectors data/unit_test_vectors_v1.json --output artifacts/dryrun
 
-# 4. Seed expected fingerprints if first run
-# Create data/expected_fingerprints_v1.json mapping id -> fingerprint from artifacts/dryrun/run_summary.json
+# 5. Seed expected fingerprints (first run only)
+# After step 4 open artifacts/dryrun/run_summary.json and create data/expected_fingerprints_v1.json mapping vector ids to fingerprints.
+# Example expected_fingerprints_v1.json format:
+# {
+#   "UTV-001-STER-PV-BASIC": "sha256:abcd1234...",
+#   "UTV-002-ANA-HPLC-CSV": "sha256:efgh5678...",
+#   ...
+# }
+# Commit data/expected_fingerprints_v1.json to the repo before continuing CI.
 
-# 5. CI check
+# 6. CI fingerprint check (fail build if mismatches)
 python ci/test_vectors_runner.py --actual artifacts/dryrun/run_summary.json --expected data/expected_fingerprints_v1.json
 
-# 6. Render human drafts
+# 7. Render human drafts for each generated package
 mkdir -p artifacts/dryrun/rendered
 for d in artifacts/dryrun/*; do
   if [ -d "$d" ]; then
@@ -30,5 +42,30 @@ for d in artifacts/dryrun/*; do
   fi
 done
 
-# 7. Human draft tests
+# 8. Human draft tests (fail build if any test fails)
 python ci/human_draft_tests.py --artifacts artifacts/dryrun/rendered --vectors data/unit_test_vectors_v1.json
+
+# 9. Artifact storage and naming convention
+# For each generated package store artifacts under artifacts/<fingerprint>/ where <fingerprint> is the SHA-256 string prefixed with 'sha256:' but filesystem-safe (replace ':' with '_').
+# Required files per artifact:
+#   artifacts/<fingerprint>/sha256:<fingerprint>.json
+#   artifacts/<fingerprint>/sha256:<fingerprint>.md
+#   artifacts/<fingerprint>/sha256:<fingerprint>.perHazard.csv
+
+# 10. API endpoints to implement (examples)
+# POST /api/v1/generate  -> accepts validated input JSON, returns advisory package JSON and fingerprint
+# GET  /api/v1/hazards?equipmentTypeId=<id> -> returns hazard list for UI
+# GET  /api/v1/catalog/version -> returns hazcatVersion and rulesetId
+# GET  /api/v1/artifact/<fingerprint> -> returns artifact bundle (JSON, MD, CSV)
+
+# 11. Operational rules and gating
+# - Do not accept or introduce free text fields anywhere in the UI or templates.
+# - Any change to numeric mapping, ruleset, or templates must bump rulesetId or hazcatVersion and update expected_fingerprints_v1.json.
+# - CI must fail on schema validation errors, fingerprint mismatches, missing required sections in rendered drafts, or missing per-hazard CSV.
+# - Log generation events with userId, timestamp, equipment.type, hazards (ids and numeric values), ResidualRiskIndex, rulesetId, hazcatVersion, and fingerprint.
+
+# 12. Notes
+# - Use the provided engine modules in /engine for deterministic behavior.
+# - Use the provided templates in /templates and language map in /rules for human draft rendering.
+# - Artifacts are advisory drafts; require user acceptance before download.
+

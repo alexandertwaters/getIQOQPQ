@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/v1/generate", "destination": "/api/generate" },
+    { "source": "/api/v1/artifact", "destination": "/api/artifact" }
+  ],
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "python3.12",
+      "excludeFiles": "ci/**,**/*_test*.py,parse_test.py"
+    }
+  },
+  "env": {
+    "ARTIFACT_BUCKET": "artifacts"
+  }
+}
