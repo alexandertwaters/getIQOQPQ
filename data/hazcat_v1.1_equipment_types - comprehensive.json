@@ -1,0 +1,2464 @@
+{
+  "hazcatVersion": "hazcat_v1.1",
+  "generatedAt": "2026-03-10T19:08:00Z",
+  "description": "Comprehensive equipment-type hazard catalog. Each equipmentType entry contains curated, selectable-only hazard lists with structured options, contextual tags, quick defaults, ruleId, and standards.",
+  "equipmentTypes": [
+    {
+      "equipmentTypeId": "STER_PV_AUT",
+      "equipmentType": "Pre-Vacuum Steam Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_PV_001",
+          "title": "Sterility failure due to load cold spots",
+          "definition": "Insufficient cycle penetration in worst-case load locations causing inadequate microbial inactivation.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Nonsterile product released causing patient harm.","example":"Implantable devices released nonsterile."},
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple lots require reprocessing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized reprocessing required."},
+            {"label":"Minor","help":"Minor delay only.","example":"Single tray reprocessed."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Noncritical packaging issue."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often under current loading practices.","example":"Repeated cold spots observed in mapping."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent loading errors."},
+            {"label":"Remote","help":"Unlikely with validated loading patterns.","example":"Validated load maps used."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated loading with sensors."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"Hazard present for essentially every operation or load.","example":"All production loads are terminally sterilized."},
+            {"label":"Frequent","help":"Hazard present for most loads or cycles.","example":"Majority of batches use dense trays."},
+            {"label":"Intermittent","help":"Hazard present for some loads or product types.","example":"Only porous loads affected."},
+            {"label":"Rare","help":"Hazard present only in exceptional cases.","example":"Special research loads."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Very likely to be detected before harm via real-time monitoring or biological indicators.","example":"Continuous BI monitoring and chamber profiling."},
+            {"label":"Moderate detectability","help":"Likely to be detected by routine checks or periodic mapping.","example":"Quarterly mapping identifies cold spots."},
+            {"label":"Low detectability","help":"Unlikely to be detected before harm without targeted mapping.","example":"No routine mapping at worst-case locations."},
+            {"label":"None","help":"No practical detection mechanism exists before harm.","example":"No biological indicators or mapping performed."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated cycles, load maps, and BI program substantially reduce risk.","example":"Validated worst-case loads with routine BIs."},
+            {"label":"Effective","help":"Controls reduce risk but some residual uncertainty remains.","example":"Periodic mapping and BI sampling."},
+            {"label":"Partially effective","help":"Controls exist but are manual or inconsistently applied.","example":"Operator-dependent loading SOPs."},
+            {"label":"Ineffective","help":"Controls are absent or do not reduce the hazard meaningfully.","example":"No validation or BI program."}
+          ],
+          "contextualTags": [
+            "Load type wrapped",
+            "Load type tray",
+            "Load density high",
+            "Thermocouple mapping yes",
+            "Biological indicator program yes",
+            "FAT available yes"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Catastrophic",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Very effective"
+          },
+          "ruleId": "R_STER_PV_001",
+          "standards": ["ISO 17665", "ISO 11138", "ISO 11137", "21 CFR 820"]
+        },
+        {
+          "hazardId": "H_STER_PV_002",
+          "title": "Air removal failure in pre-vacuum cycle",
+          "definition": "Incomplete air removal causing cold pockets and ineffective sterilization.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Air removal failure leads to nonsterile product release.","example":"Critical implant loads underprocessed."},
+            {"label":"Major","help":"Air removal failure causes lot rejection.","example":"Multiple loads require reprocessing."},
+            {"label":"Moderate","help":"Air removal failure causes rework.","example":"Localized reprocessing required."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single load reprocessed."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Noncritical test load affected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often under current maintenance.","example":"Pre-vacuum pump issues recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent valve sticking."},
+            {"label":"Remote","help":"Unlikely with proper maintenance.","example":"Routine pump maintenance in place."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Dual vacuum pumps and alarms."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads affected until fixed.","example":"Primary vacuum system compromised."},
+            {"label":"Frequent","help":"Most loads affected.","example":"Vacuum performance degraded across shifts."},
+            {"label":"Intermittent","help":"Some loads affected.","example":"High-density loads impacted."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Special research loads."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Air removal failure detected by Bowie-Dick and real-time sensors.","example":"Bowie-Dick failures flagged immediately."},
+            {"label":"Moderate detectability","help":"Detected by periodic tests.","example":"Monthly Bowie-Dick identifies issues."},
+            {"label":"Low detectability","help":"May go unnoticed without targeted tests.","example":"No routine Bowie-Dick testing."},
+            {"label":"None","help":"No detection mechanism.","example":"No air removal testing performed."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated pre-vacuum cycles and monitoring minimize risk.","example":"Automated pre-vacuum sequencing with alarms."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic pump maintenance."},
+            {"label":"Partially effective","help":"Controls inconsistent or manual.","example":"Manual valve operation with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No vacuum testing or maintenance."}
+          ],
+          "contextualTags": [
+            "Bowie-Dick testing yes",
+            "Vacuum pump redundancy yes",
+            "Valve maintenance monthly",
+            "Load type porous"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_PV_002",
+          "standards": ["ISO 11140-4", "ISO 17665", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_GRAV_AUT",
+      "equipmentType": "Gravity Displacement Steam Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_GRAV_001",
+          "title": "Sterility failure due to inadequate steam penetration",
+          "definition": "Steam penetration insufficient for dense or porous loads causing inadequate microbial inactivation.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Nonsterile product released causing patient harm.","example":"Implantable devices released nonsterile."},
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple lots require reprocessing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized reprocessing required."},
+            {"label":"Minor","help":"Minor delay only.","example":"Single tray reprocessed."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Noncritical packaging issue."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often under current loading practices.","example":"Repeated penetration issues observed."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent loading errors."},
+            {"label":"Remote","help":"Unlikely with validated loading patterns.","example":"Validated load maps used."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated loading with sensors."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"Hazard present for essentially every operation or load.","example":"All production loads are terminally sterilized."},
+            {"label":"Frequent","help":"Hazard present for most loads or cycles.","example":"Majority of batches use dense trays."},
+            {"label":"Intermittent","help":"Hazard present for some loads or product types.","example":"Only porous loads affected."},
+            {"label":"Rare","help":"Hazard present only in exceptional cases.","example":"Special research loads."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Very likely to be detected before harm via biological indicators and mapping.","example":"Routine BI placement and mapping."},
+            {"label":"Moderate detectability","help":"Likely to be detected by routine checks or periodic mapping.","example":"Quarterly mapping identifies issues."},
+            {"label":"Low detectability","help":"Unlikely to be detected before harm without targeted mapping.","example":"No routine mapping at worst-case locations."},
+            {"label":"None","help":"No practical detection mechanism exists before harm.","example":"No biological indicators or mapping performed."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated cycles, load maps, and BI program substantially reduce risk.","example":"Validated worst-case loads with routine BIs."},
+            {"label":"Effective","help":"Controls reduce risk but some residual uncertainty remains.","example":"Periodic mapping and BI sampling."},
+            {"label":"Partially effective","help":"Controls exist but are manual or inconsistently applied.","example":"Operator-dependent loading SOPs."},
+            {"label":"Ineffective","help":"Controls are absent or do not reduce the hazard meaningfully.","example":"No validation or BI program."}
+          ],
+          "contextualTags": [
+            "Load type wrapped",
+            "Load density high",
+            "BI program yes",
+            "Thermocouple mapping yes"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Catastrophic",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Very effective"
+          },
+          "ruleId": "R_STER_GRAV_001",
+          "standards": ["ISO 17665", "ISO 11138", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_ETO",
+      "equipmentType": "Ethylene Oxide Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_ETO_001",
+          "title": "Residual EtO toxic residues",
+          "definition": "EtO residuals remain on product above acceptable limits after aeration.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Residuals cause severe patient harm or death.","example":"High EtO residuals on implantable devices."},
+            {"label":"Major","help":"Residuals cause serious adverse effects or recalls.","example":"Elevated residuals requiring lot rejection."},
+            {"label":"Moderate","help":"Residuals cause rework or additional processing.","example":"Extended aeration required."},
+            {"label":"Minor","help":"Minor nonclinical effects or nuisance odors.","example":"Transient odor within limits."},
+            {"label":"Negligible","help":"No meaningful residual risk.","example":"Validated aeration removes residuals reliably."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Residuals occur often under current process.","example":"Inadequate aeration frequently observed."},
+            {"label":"Occasional","help":"Residuals occur several times per year.","example":"Occasional aeration failures for dense loads."},
+            {"label":"Remote","help":"Residuals are unlikely with current controls.","example":"Validated aeration and monitoring in place."},
+            {"label":"Extremely remote","help":"Very unlikely given robust aeration and controls.","example":"Automated aeration with validated cycles."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads are at risk until controlled.","example":"All products processed with EtO."},
+            {"label":"Frequent","help":"Most loads may be exposed to residuals.","example":"Many dense loads requiring long aeration."},
+            {"label":"Intermittent","help":"Some loads or product types are exposed.","example":"Certain porous items."},
+            {"label":"Rare","help":"Residuals occur only in exceptional cases.","example":"Specific packaging traps residuals rarely."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Residuals are routinely tested and detected before release.","example":"Routine residual testing and certificates."},
+            {"label":"Moderate detectability","help":"Periodic testing detects residuals in sampling.","example":"Batch sampling for residuals performed monthly."},
+            {"label":"Low detectability","help":"Residuals are not routinely tested and may go unnoticed.","example":"No routine residual testing for some products."},
+            {"label":"None","help":"No detection mechanism for residuals exists.","example":"No aeration or residual testing performed."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated aeration and monitoring reliably remove residuals.","example":"Validated aeration cycles with residual testing."},
+            {"label":"Effective","help":"Controls reduce residuals but occasional issues occur.","example":"Aeration with periodic verification."},
+            {"label":"Partially effective","help":"Controls exist but are inconsistent or manual.","example":"Manual aeration steps with operator variability."},
+            {"label":"Ineffective","help":"No effective controls to remove residuals.","example":"No aeration or monitoring in place."}
+          ],
+          "contextualTags": [
+            "Sterilant EtO",
+            "Aeration validated yes",
+            "Packaging porous",
+            "Residual testing performed"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_ETO_001",
+          "standards": ["ISO 11135", "ISO 11138", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_GAMMA",
+      "equipmentType": "Gamma Irradiation Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_GAMMA_001",
+          "title": "Dose nonconformance due to shielding or source issues",
+          "definition": "Inadequate or uneven radiation dose delivery causing under-sterilization or overexposure.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Under-sterilized product released causing harm.","example":"Critical implant underdosed."},
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple lots require reprocessing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized dose deviations."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single batch reprocessed."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor dose variance within tolerance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to source instability.","example":"Known source decay issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent conveyor misalignment."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine dosimetry and mapping."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Multiple dosimeters and QA checks."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads affected until fixed.","example":"Primary source malfunction."},
+            {"label":"Frequent","help":"Most loads affected.","example":"Conveyor misalignment across shifts."},
+            {"label":"Intermittent","help":"Some loads affected.","example":"Specific product geometries impacted."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Unusual packaging causing shielding."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Dosimetry and mapping detect deviations.","example":"Routine dosimeter checks flag issues."},
+            {"label":"Moderate detectability","help":"Detected by periodic QA.","example":"Monthly mapping identifies hot/cold spots."},
+            {"label":"Low detectability","help":"May go unnoticed without targeted tests.","example":"No routine mapping at worst-case locations."},
+            {"label":"None","help":"No detection mechanism.","example":"No dosimetry program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Comprehensive dosimetry and QA minimize risk.","example":"Automated mapping and redundant dosimeters."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic mapping and manual checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual dosimetry with sampling."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No QA or dosimetry."}
+          ],
+          "contextualTags": [
+            "Dosimetry program yes",
+            "Conveyor automation yes",
+            "Packaging density high"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_GAMMA_001",
+          "standards": ["ISO 11137", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_EBEAM",
+      "equipmentType": "Electron Beam Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_EBEAM_001",
+          "title": "Dose nonconformance due to beam instability",
+          "definition": "Electron beam instability or shielding causing uneven dose distribution.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Under-sterilized product released causing harm.","example":"Critical implant underdosed."},
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple lots require reprocessing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized dose deviations."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single batch reprocessed."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor dose variance within tolerance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to beam instability.","example":"Known accelerator issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent conveyor misalignment."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine dosimetry and mapping."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Multiple dosimeters and QA checks."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads affected until fixed.","example":"Primary accelerator malfunction."},
+            {"label":"Frequent","help":"Most loads affected.","example":"Conveyor misalignment across shifts."},
+            {"label":"Intermittent","help":"Some loads affected.","example":"Specific product geometries impacted."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Unusual packaging causing shielding."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Dosimetry and mapping detect deviations.","example":"Routine dosimeter checks flag issues."},
+            {"label":"Moderate detectability","help":"Detected by periodic QA.","example":"Monthly mapping identifies hot/cold spots."},
+            {"label":"Low detectability","help":"May go unnoticed without targeted tests.","example":"No routine mapping at worst-case locations."},
+            {"label":"None","help":"No detection mechanism.","example":"No dosimetry program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Comprehensive dosimetry and QA minimize risk.","example":"Automated mapping and redundant dosimeters."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic mapping and manual checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual dosimetry with sampling."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No QA or dosimetry."}
+          ],
+          "contextualTags": [
+            "Accelerator maintenance schedule",
+            "Dosimetry program yes",
+            "Packaging geometry sensitive"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_EBEAM_001",
+          "standards": ["ISO 11137", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_H2O2",
+      "equipmentType": "Low Temperature Hydrogen Peroxide Plasma Sterilizer",
+      "cohort": "Sterilization",
+      "hazards": [
+        {
+          "hazardId": "H_STER_H2O2_001",
+          "title": "Residual oxidant or material compatibility issues",
+          "definition": "Residual hydrogen peroxide or plasma byproducts remain on product or damage materials.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Residuals cause severe patient harm or device failure.","example":"Critical implant corrosion."},
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple lots require reprocessing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized material degradation."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Surface discoloration requiring rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient odor within limits."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often under current process.","example":"Inadequate aeration frequently observed."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Occasional aeration failures."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Validated aeration and monitoring."},
+            {"label":"Extremely remote","help":"Very unlikely given robust controls.","example":"Automated aeration with monitoring."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads are at risk until controlled.","example":"All products processed with H2O2."},
+            {"label":"Frequent","help":"Most loads may be exposed to residuals.","example":"Many dense loads requiring long aeration."},
+            {"label":"Intermittent","help":"Some loads or product types are exposed.","example":"Certain porous items."},
+            {"label":"Rare","help":"Residuals occur only in exceptional cases.","example":"Specific packaging traps residuals rarely."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Residuals are routinely tested and detected before release.","example":"Routine residual testing and certificates."},
+            {"label":"Moderate detectability","help":"Periodic testing detects residuals in sampling.","example":"Batch sampling for residuals performed monthly."},
+            {"label":"Low detectability","help":"Residuals are not routinely tested and may go unnoticed.","example":"No routine residual testing for some products."},
+            {"label":"None","help":"No detection mechanism for residuals exists.","example":"No aeration or residual testing performed."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated aeration and monitoring reliably remove residuals.","example":"Validated aeration cycles with residual testing."},
+            {"label":"Effective","help":"Controls reduce residuals but occasional issues occur.","example":"Aeration with periodic verification."},
+            {"label":"Partially effective","help":"Controls exist but are inconsistent or manual.","example":"Manual aeration steps with operator variability."},
+            {"label":"Ineffective","help":"No effective controls to remove residuals.","example":"No aeration or monitoring in place."}
+          ],
+          "contextualTags": [
+            "Material compatibility check required",
+            "Aeration validated yes",
+            "Packaging porous"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_H2O2_001",
+          "standards": ["ISO 14937", "ISO 11138", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_PHARMA_REF",
+      "equipmentType": "Pharmaceutical Refrigerator 2-8°C",
+      "cohort": "Cold Chain & Storage",
+      "hazards": [
+        {
+          "hazardId": "H_COLD_REF_001",
+          "title": "Temperature excursion causing product degradation",
+          "definition": "Loss of temperature control leading to product potency loss or spoilage.",
+          "severityOptions": [
+            {"label":"Major","help":"Product loss or recall.","example":"Multiple batches spoiled."},
+            {"label":"Moderate","help":"Rework or limited product loss.","example":"Single batch affected."},
+            {"label":"Minor","help":"Minor quality impact.","example":"Short excursion corrected."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient alarm with no effect."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to unreliable equipment.","example":"Known compressor failures."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent door left open events."},
+            {"label":"Remote","help":"Unlikely with monitoring.","example":"Continuous temperature logging in place."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Backup refrigeration available."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All stored product affected until fixed.","example":"Primary refrigeration failure."},
+            {"label":"Frequent","help":"Most stored product affected.","example":"Intermittent compressor cycling issues."},
+            {"label":"Intermittent","help":"Some product affected.","example":"Door open events during loading."},
+            {"label":"Rare","help":"Only exceptional product affected.","example":"Single vial mishandling."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Continuous monitoring and alarms detect excursions.","example":"Temperature alarms trigger immediate action."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily manual logs identify issues."},
+            {"label":"Low detectability","help":"May go unnoticed without monitoring.","example":"No continuous logging."},
+            {"label":"None","help":"No detection mechanism.","example":"No temperature monitoring."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Redundant refrigeration and monitoring minimize risk.","example":"Backup compressors and alarms."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and manual checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual temperature logging with delays."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No monitoring or maintenance."}
+          ],
+          "contextualTags": [
+            "Continuous logging yes",
+            "Backup power yes",
+            "Door alarm present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_COLD_REF_001",
+          "standards": ["USP <1079>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_ULTRA_FREEZER",
+      "equipmentType": "Ultra-Low Freezer ≤ -70°C",
+      "cohort": "Cold Chain & Storage",
+      "hazards": [
+        {
+          "hazardId": "H_COLD_ULTRA_001",
+          "title": "Temperature excursion or thaw causing sample loss",
+          "definition": "Loss of ultra-low temperature control leading to sample degradation or loss.",
+          "severityOptions": [
+            {"label":"Major","help":"Critical sample loss or study impact.","example":"Clinical trial samples lost."},
+            {"label":"Moderate","help":"Significant sample loss.","example":"Multiple vials thawed."},
+            {"label":"Minor","help":"Limited sample impact.","example":"Single box affected."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient alarm with no effect."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to unreliable equipment.","example":"Known compressor failures."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Door left open events."},
+            {"label":"Remote","help":"Unlikely with monitoring.","example":"Continuous temperature logging in place."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Backup refrigeration available."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All stored samples affected until fixed.","example":"Primary refrigeration failure."},
+            {"label":"Frequent","help":"Most stored samples affected.","example":"Intermittent compressor cycling issues."},
+            {"label":"Intermittent","help":"Some samples affected.","example":"Door open events during loading."},
+            {"label":"Rare","help":"Only exceptional samples affected.","example":"Single vial mishandling."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Continuous monitoring and alarms detect excursions.","example":"Temperature alarms trigger immediate action."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily manual logs identify issues."},
+            {"label":"Low detectability","help":"May go unnoticed without monitoring.","example":"No continuous logging."},
+            {"label":"None","help":"No detection mechanism.","example":"No temperature monitoring."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Redundant refrigeration and monitoring minimize risk.","example":"Backup compressors and alarms."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and manual checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual temperature logging with delays."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No monitoring or maintenance."}
+          ],
+          "contextualTags": [
+            "Continuous logging yes",
+            "Backup power yes",
+            "Alarm escalation present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_COLD_ULTRA_001",
+          "standards": ["21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_WALKIN",
+      "equipmentType": "Cold Storage Walk-in Chamber",
+      "cohort": "Cold Chain & Storage",
+      "hazards": [
+        {
+          "hazardId": "H_COLD_WALKIN_001",
+          "title": "Temperature gradient or door management causing product risk",
+          "definition": "Frequent door openings or poor airflow causing temperature gradients and product risk.",
+          "severityOptions": [
+            {"label":"Major","help":"Product loss or recall.","example":"Multiple pallets spoiled."},
+            {"label":"Moderate","help":"Localized product impact.","example":"Single pallet affected."},
+            {"label":"Minor","help":"Minor quality impact.","example":"Short excursion corrected."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient door open event."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to operational practices.","example":"High traffic area with frequent door openings."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent loading events."},
+            {"label":"Remote","help":"Unlikely with monitoring.","example":"Temperature logging in place."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Airlocks and SOPs used."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All stored product affected until fixed.","example":"HVAC failure."},
+            {"label":"Frequent","help":"Most stored product affected.","example":"Operational door use causing gradients."},
+            {"label":"Intermittent","help":"Some product affected.","example":"Loading events."},
+            {"label":"Rare","help":"Only exceptional product affected.","example":"Single pallet mishandling."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Continuous monitoring and alarms detect excursions.","example":"Temperature alarms trigger immediate action."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily manual logs identify issues."},
+            {"label":"Low detectability","help":"May go unnoticed without monitoring.","example":"No continuous logging."},
+            {"label":"None","help":"No detection mechanism.","example":"No temperature monitoring."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Airlocks and SOPs minimize risk.","example":"Controlled access and alarms."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic training and checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual door management with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No SOPs or monitoring."}
+          ],
+          "contextualTags": [
+            "Airlock present",
+            "High traffic area",
+            "Continuous logging yes"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_COLD_WALKIN_001",
+          "standards": ["21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_CRYO",
+      "equipmentType": "Cryogenic LN2 Storage Cabinet",
+      "cohort": "Cold Chain & Storage",
+      "hazards": [
+        {
+          "hazardId": "H_COLD_CRYO_001",
+          "title": "Cryogenic handling and oxygen displacement hazard",
+          "definition": "Liquid nitrogen handling risks including asphyxiation, cold burns, and sample loss.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Fatality or severe injury.","example":"Asphyxiation in confined space."},
+            {"label":"Major","help":"Serious injury or sample loss.","example":"Severe cold burn."},
+            {"label":"Moderate","help":"Injury requiring first aid.","example":"Minor frostbite."},
+            {"label":"Minor","help":"Minor discomfort.","example":"Brief cold exposure."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"No incidents expected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor procedures.","example":"Repeated unsafe handling."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent handling incidents."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"PPE and training in place."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated handling and SOPs."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"Frequent handling exposures.","example":"High throughput cryo work."},
+            {"label":"Frequent","help":"Regular handling exposures.","example":"Daily sample transfers."},
+            {"label":"Intermittent","help":"Occasional handling exposures.","example":"Weekly transfers."},
+            {"label":"Rare","help":"Only exceptional exposures.","example":"Emergency transfers."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Gas monitors and SOPs detect hazards.","example":"Oxygen sensors alarm."},
+            {"label":"Moderate detectability","help":"Detected by supervision or periodic checks.","example":"Supervisor notices unsafe acts."},
+            {"label":"Low detectability","help":"May go unnoticed without monitoring.","example":"No oxygen monitoring."},
+            {"label":"None","help":"No detection mechanism.","example":"No monitoring or SOPs."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Engineering controls and training minimize risk.","example":"Ventilation and oxygen monitoring."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"PPE and training with occasional lapses."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual handling with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No PPE or monitoring."}
+          ],
+          "contextualTags": [
+            "Oxygen monitoring present",
+            "PPE required yes",
+            "Automated filling no"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_COLD_CRYO_001",
+          "standards": ["OSHA 1910", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_HEAT_SEALER",
+      "equipmentType": "Heat Sealer",
+      "cohort": "Packaging",
+      "hazards": [
+        {
+          "hazardId": "H_PKG_HEAT_001",
+          "title": "Seal integrity failure causing sterility breach",
+          "definition": "Inadequate seals or seal defects causing package breach and contamination.",
+          "severityOptions": [
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple packages with seal defects."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized seal defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single package rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor cosmetic defect."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Worn sealing jaws."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent operator error."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine maintenance and checks."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated monitoring and alarms."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All packages affected until fixed.","example":"Sealing head misalignment."},
+            {"label":"Frequent","help":"Most packages affected.","example":"Worn jaws across shifts."},
+            {"label":"Intermittent","help":"Some packages affected.","example":"Operator setup errors."},
+            {"label":"Rare","help":"Only exceptional packages affected.","example":"Specific material incompatibility."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line inspection detects defects.","example":"Vision system flags bad seals."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."},
+            {"label":"Low detectability","help":"May go unnoticed without inspection.","example":"No in-line inspection."},
+            {"label":"None","help":"No detection mechanism.","example":"No inspection or sampling."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Automated inspection and maintenance minimize risk.","example":"Vision inspection and SPC."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic sampling and maintenance."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual inspection with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No inspection or maintenance."}
+          ],
+          "contextualTags": [
+            "Vision inspection yes",
+            "Material compatibility verified",
+            "Operator training required"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_PKG_HEAT_001",
+          "standards": ["ISO 11607", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_ULTRASONIC_SEALER",
+      "equipmentType": "Ultrasonic Sealer",
+      "cohort": "Packaging",
+      "hazards": [
+        {
+          "hazardId": "H_PKG_ULTRA_001",
+          "title": "Seal inconsistency due to material or parameter mismatch",
+          "definition": "Incorrect ultrasonic parameters or incompatible materials causing weak seals.",
+          "severityOptions": [
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple packages fail seal strength."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized seal failures."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single package rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Cosmetic seal variation."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Incorrect amplitude settings."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Material batch variability."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Parameter validation and SOPs."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated parameter checks."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All packages affected until fixed.","example":"Incorrect global parameter."},
+            {"label":"Frequent","help":"Most packages affected.","example":"Parameter drift across shifts."},
+            {"label":"Intermittent","help":"Some packages affected.","example":"Material variability."},
+            {"label":"Rare","help":"Only exceptional packages affected.","example":"Specific material lot issue."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line checks detect seal defects.","example":"Seal strength tester flags failures."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."},
+            {"label":"Low detectability","help":"May go unnoticed without inspection.","example":"No in-line inspection."},
+            {"label":"None","help":"No detection mechanism.","example":"No inspection or sampling."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Parameter control and validation minimize risk.","example":"Automated parameter validation."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual parameter setup with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No validation or inspection."}
+          ],
+          "contextualTags": [
+            "Parameter validation yes",
+            "Material compatibility verified",
+            "In-line testing present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_PKG_ULTRA_001",
+          "standards": ["ISO 11607", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_FFS",
+      "equipmentType": "Form-Fill-Seal Machine",
+      "cohort": "Packaging",
+      "hazards": [
+        {
+          "hazardId": "H_PKG_FFS_001",
+          "title": "Filling or sealing contamination due to equipment failure",
+          "definition": "Filler or sealer malfunction causing contamination or fill weight deviations.",
+          "severityOptions": [
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple packages contaminated."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized contamination."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single package rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor cosmetic issue."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Nozzle clogging recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent dosing errors."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Automated checks and maintenance."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Redundant dosing and alarms."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All packages affected until fixed.","example":"Primary filler failure."},
+            {"label":"Frequent","help":"Most packages affected.","example":"Dosing drift across shifts."},
+            {"label":"Intermittent","help":"Some packages affected.","example":"Intermittent nozzle clogging."},
+            {"label":"Rare","help":"Only exceptional packages affected.","example":"Specific material issue."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line checks detect contamination or weight deviations.","example":"Checkweigher flags underweight."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds issues."},
+            {"label":"Low detectability","help":"May go unnoticed without inspection.","example":"No in-line inspection."},
+            {"label":"None","help":"No detection mechanism.","example":"No inspection or sampling."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Automated controls and inspection minimize risk.","example":"Checkweigher and vision systems."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic sampling and maintenance."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No inspection or maintenance."}
+          ],
+          "contextualTags": [
+            "Checkweigher present",
+            "Vision inspection yes",
+            "Clean-in-place available"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_PKG_FFS_001",
+          "standards": ["ISO 11607", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_BLISTER",
+      "equipmentType": "Blister Pack Line",
+      "cohort": "Packaging",
+      "hazards": [
+        {
+          "hazardId": "H_PKG_BLISTER_001",
+          "title": "Seal or cavity contamination in blister packs",
+          "definition": "Contamination or seal defects in blister cavities causing sterility or quality issues.",
+          "severityOptions": [
+            {"label":"Major","help":"Lot rejection or recall.","example":"Multiple blisters contaminated."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single blister rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Cosmetic issue only."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Tooling wear causing defects."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent sealing issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine maintenance and checks."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated monitoring and alarms."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All packages affected until fixed.","example":"Tooling misalignment."},
+            {"label":"Frequent","help":"Most packages affected.","example":"Worn tooling across shifts."},
+            {"label":"Intermittent","help":"Some packages affected.","example":"Operator setup errors."},
+            {"label":"Rare","help":"Only exceptional packages affected.","example":"Specific material incompatibility."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line inspection detects defects.","example":"Vision system flags bad cavities."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."},
+            {"label":"Low detectability","help":"May go unnoticed without inspection.","example":"No in-line inspection."},
+            {"label":"None","help":"No detection mechanism.","example":"No inspection or sampling."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Automated inspection and maintenance minimize risk.","example":"Vision inspection and SPC."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic sampling and maintenance."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual inspection with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No inspection or maintenance."}
+          ],
+          "contextualTags": [
+            "Vision inspection yes",
+            "Tooling maintenance schedule",
+            "Clean-in-place available"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_PKG_BLISTER_001",
+          "standards": ["ISO 11607", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_LABELER",
+      "equipmentType": "Labeling and Serialization Station",
+      "cohort": "Packaging",
+      "hazards": [
+        {
+          "hazardId": "H_PKG_LABEL_001",
+          "title": "Label misapplication or serialization mismatch",
+          "definition": "Incorrect labeling or serialization causing traceability loss or mislabeling.",
+          "severityOptions": [
+            {"label":"Major","help":"Regulatory noncompliance or recall.","example":"Incorrect labels on multiple batches."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized mislabeling."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single label rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Cosmetic label misalignment."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to software or hardware issues.","example":"Database mismatch recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent printer jams."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Automated checks and reconciliation."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Redundant verification systems."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All labeled product affected until fixed.","example":"Global serialization mismatch."},
+            {"label":"Frequent","help":"Most labeled product affected.","example":"Printer configuration error across shifts."},
+            {"label":"Intermittent","help":"Some labeled product affected.","example":"Intermittent printer jams."},
+            {"label":"Rare","help":"Only exceptional product affected.","example":"Single label roll defect."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Automated verification detects mismatches.","example":"Vision and database checks flag issues."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch reconciliation finds issues."},
+            {"label":"Low detectability","help":"May go unnoticed without verification.","example":"No automated checks."},
+            {"label":"None","help":"No detection mechanism.","example":"No verification or reconciliation."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Automated verification and reconciliation minimize risk.","example":"End-to-end serialization checks."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic reconciliation and manual checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual reconciliation with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No verification or reconciliation."}
+          ],
+          "contextualTags": [
+            "Serialization enabled",
+            "Vision verification present",
+            "Database reconciliation"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_PKG_LABEL_001",
+          "standards": ["21 CFR 820", "GS1 serialization guidance"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_BALANCE",
+      "equipmentType": "Analytical Balance",
+      "cohort": "Metrology",
+      "hazards": [
+        {
+          "hazardId": "H_MET_BAL_001",
+          "title": "Measurement error due to calibration drift or environment",
+          "definition": "Balance drift or environmental factors causing inaccurate measurements.",
+          "severityOptions": [
+            {"label":"Major","help":"Critical measurement error affecting product quality.","example":"Incorrect API dosing."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized batch weight error."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample remeasure."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor rounding differences."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor calibration.","example":"No calibration schedule."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent drift."},
+            {"label":"Remote","help":"Unlikely with calibration program.","example":"Regular calibration in place."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Redundant checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All measurements affected until fixed.","example":"Balance malfunction."},
+            {"label":"Frequent","help":"Most measurements affected.","example":"Environmental vibration across shifts."},
+            {"label":"Intermittent","help":"Some measurements affected.","example":"Drafts during weighing."},
+            {"label":"Rare","help":"Only exceptional measurements affected.","example":"Extreme ambient changes."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration and checks detect drift.","example":"Calibration weights show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No routine calibration."},
+            {"label":"None","help":"No detection mechanism.","example":"No calibration program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and environmental controls minimize risk.","example":"Temperature-controlled weighing room."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and SOPs."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No calibration or environmental control."}
+          ],
+          "contextualTags": [
+            "Calibration schedule monthly",
+            "Draft shield present",
+            "Temperature control yes"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MET_BAL_001",
+          "standards": ["ISO 17025", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_CMM",
+      "equipmentType": "Coordinate Measuring Machine",
+      "cohort": "Metrology",
+      "hazards": [
+        {
+          "hazardId": "H_MET_CMM_001",
+          "title": "Measurement inaccuracy due to fixture or probe error",
+          "definition": "Fixture misalignment or probe calibration errors causing dimensional inaccuracies.",
+          "severityOptions": [
+            {"label":"Major","help":"Critical dimensional nonconformance.","example":"Critical feature out of tolerance."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized dimensional failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor measurement variance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Probe wear recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Fixture misalignment events."},
+            {"label":"Remote","help":"Unlikely with calibration program.","example":"Regular calibration in place."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Redundant checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All measurements affected until fixed.","example":"Probe failure."},
+            {"label":"Frequent","help":"Most measurements affected.","example":"Fixture misalignment across runs."},
+            {"label":"Intermittent","help":"Some measurements affected.","example":"Operator setup errors."},
+            {"label":"Rare","help":"Only exceptional measurements affected.","example":"Extreme ambient changes."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration and checks detect errors.","example":"Calibration artifacts show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No routine calibration."},
+            {"label":"None","help":"No detection mechanism.","example":"No calibration program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and fixture control minimize risk.","example":"Automated calibration routines."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and SOPs."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No calibration or fixture control."}
+          ],
+          "contextualTags": [
+            "Probe calibration monthly",
+            "Fixture verification yes",
+            "Temperature control yes"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MET_CMM_001",
+          "standards": ["ISO 10360", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_GAUGE",
+      "equipmentType": "Calibrated Gauge Block Station",
+      "cohort": "Metrology",
+      "hazards": [
+        {
+          "hazardId": "H_MET_GAUGE_001",
+          "title": "Calibration drift or misuse causing measurement error",
+          "definition": "Gauge block wear or misuse causing inaccurate calibration references.",
+          "severityOptions": [
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized dimensional failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor measurement variance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor handling.","example":"Improper storage causing wear."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent misuse."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Proper storage and handling SOPs."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some measurements affected.","example":"Occasional misuse."},
+            {"label":"Rare","help":"Only exceptional measurements affected.","example":"Extreme mishandling."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration checks detect wear.","example":"Calibration artifacts show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No routine calibration."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Proper handling and calibration minimize risk.","example":"Controlled storage and SOPs."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and training."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Controlled storage yes",
+            "Calibration schedule present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MET_GAUGE_001",
+          "standards": ["ISO 17025", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_VISION",
+      "equipmentType": "Dimensional Vision System",
+      "cohort": "Metrology",
+      "hazards": [
+        {
+          "hazardId": "H_MET_VISION_001",
+          "title": "Vision measurement error due to lighting or calibration",
+          "definition": "Poor lighting, calibration, or fixture issues causing inaccurate vision measurements.",
+          "severityOptions": [
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized dimensional failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor measurement variance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Lighting drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent calibration issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine calibration and SOPs."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some measurements affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional measurements affected.","example":"Extreme ambient changes."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration and checks detect errors.","example":"Calibration artifacts show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and fixture control minimize risk.","example":"Automated calibration routines."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and SOPs."}
+          ],
+          "contextualTags": [
+            "Lighting control yes",
+            "Fixture verification present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MET_VISION_001",
+          "standards": ["ISO 10360", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_HPLC",
+      "equipmentType": "HPLC System",
+      "cohort": "Analytical",
+      "hazards": [
+        {
+          "hazardId": "H_ANA_HPLC_001",
+          "title": "Analytical method failure due to column or detector issues",
+          "definition": "Column degradation, detector drift, or pump issues causing inaccurate assay results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect release decisions or invalid data.","example":"Assay failure for release testing."},
+            {"label":"Moderate","help":"Rework or repeat testing.","example":"Localized batch retest."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient baseline noise."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Known pump issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent detector drift."},
+            {"label":"Remote","help":"Unlikely with maintenance and calibration.","example":"Regular column care and calibration."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Redundant detectors and checks."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All assays affected until fixed.","example":"Detector failure."},
+            {"label":"Frequent","help":"Most assays affected.","example":"Pump instability across runs."},
+            {"label":"Intermittent","help":"Some assays affected.","example":"Column degradation for specific methods."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"System checks and standards detect issues.","example":"System suitability failures flag problems."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Standard checks identify drift."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No system suitability testing."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"System suitability and calibration minimize risk.","example":"Automated checks and standards."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and calibration."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "System suitability enforced",
+            "Column maintenance schedule",
+            "Calibration standards present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ANA_HPLC_001",
+          "standards": ["USP <621>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_GCMS",
+      "equipmentType": "GC / GC-MS System",
+      "cohort": "Analytical",
+      "hazards": [
+        {
+          "hazardId": "H_ANA_GCMS_001",
+          "title": "Instrument contamination or calibration drift causing false results",
+          "definition": "Contamination, column bleed, or detector drift causing inaccurate analytical results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect release decisions or invalid data.","example":"Assay failure for release testing."},
+            {"label":"Moderate","help":"Rework or repeat testing.","example":"Localized batch retest."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Known contamination issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent detector drift."},
+            {"label":"Remote","help":"Unlikely with maintenance and calibration.","example":"Regular maintenance and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assays affected.","example":"Column degradation for specific methods."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"System suitability and standards detect issues.","example":"System suitability failures flag problems."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Standard checks identify drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"System suitability and calibration minimize risk.","example":"Automated checks and standards."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and calibration."}
+          ],
+          "contextualTags": [
+            "System suitability enforced",
+            "Column maintenance schedule",
+            "Calibration standards present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ANA_GCMS_001",
+          "standards": ["USP <621>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_UVVIS",
+      "equipmentType": "UV-Vis Spectrophotometer",
+      "cohort": "Analytical",
+      "hazards": [
+        {
+          "hazardId": "H_ANA_UVVIS_001",
+          "title": "Wavelength calibration or stray light causing inaccurate absorbance",
+          "definition": "Wavelength drift, stray light, or lamp issues causing inaccurate absorbance measurements.",
+          "severityOptions": [
+            {"label":"Moderate","help":"Rework or repeat testing.","example":"Localized assay reanalysis."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Minor baseline noise."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Lamp instability."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent calibration issues."},
+            {"label":"Remote","help":"Unlikely with calibration program.","example":"Regular calibration in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assays affected.","example":"Lamp degradation."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration and checks detect errors.","example":"Calibration standards show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and lamp checks minimize risk.","example":"Automated calibration routines."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and SOPs."}
+          ],
+          "contextualTags": [
+            "Lamp maintenance schedule",
+            "Calibration standards present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ANA_UVVIS_001",
+          "standards": ["USP <857>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_TOC",
+      "equipmentType": "TOC Analyzer",
+      "cohort": "Analytical",
+      "hazards": [
+        {
+          "hazardId": "H_ANA_TOC_001",
+          "title": "Contamination or calibration drift causing false TOC readings",
+          "definition": "Contamination, reagent issues, or calibration drift causing inaccurate TOC results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect release decisions or invalid data.","example":"TOC failure for water release testing."},
+            {"label":"Moderate","help":"Rework or repeat testing.","example":"Localized retest."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Known contamination issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent reagent issues."},
+            {"label":"Remote","help":"Unlikely with maintenance and calibration.","example":"Regular maintenance and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assays affected.","example":"Reagent contamination."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Standards and checks detect issues.","example":"Calibration standards show deviation."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and reagent control minimize risk.","example":"Automated checks and standards."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and calibration."}
+          ],
+          "contextualTags": [
+            "Reagent lot control",
+            "Calibration standards present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ANA_TOC_001",
+          "standards": ["USP <643>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_DISS",
+      "equipmentType": "Dissolution Tester",
+      "cohort": "Analytical",
+      "hazards": [
+        {
+          "hazardId": "H_ANA_DISS_001",
+          "title": "Dissolution variability due to apparatus or method issues",
+          "definition": "Apparatus misalignment, paddle speed variation, or method deviations causing inconsistent dissolution results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect release decisions or invalid data.","example":"Dissolution failure for release testing."},
+            {"label":"Moderate","help":"Rework or repeat testing.","example":"Localized retest."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Apparatus misalignment recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent speed variation."},
+            {"label":"Remote","help":"Unlikely with calibration and SOPs.","example":"Regular checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assays affected.","example":"Apparatus misalignment."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"System suitability and checks detect issues.","example":"Standard checks flag problems."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily checks identify drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and SOPs minimize risk.","example":"Automated checks and standards."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and calibration."}
+          ],
+          "contextualTags": [
+            "Apparatus calibration schedule",
+            "Method suitability enforced"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ANA_DISS_001",
+          "standards": ["USP <711>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "IVD_HEM",
+      "equipmentType": "Hematology Analyzer",
+      "cohort": "IVD",
+      "hazards": [
+        {
+          "hazardId": "H_IVD_HEM_001",
+          "title": "Analytical error due to reagent or calibration issues",
+          "definition": "Reagent degradation, calibration drift, or instrument malfunction causing incorrect patient results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect patient results causing harm.","example":"False negative in critical test."},
+            {"label":"Moderate","help":"Incorrect results requiring retest.","example":"Localized patient impact."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor reagent control.","example":"Known reagent stability issues."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent calibration drift."},
+            {"label":"Remote","help":"Unlikely with QC and calibration.","example":"Regular QC and calibration in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some tests affected.","example":"Reagent lot variability."},
+            {"label":"Rare","help":"Only exceptional tests affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"QC and controls detect issues.","example":"Control chart flags drift."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily QC identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"QC and calibration minimize risk.","example":"Automated QC and calibration."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic QC and maintenance."}
+          ],
+          "contextualTags": [
+            "QC program enforced",
+            "Reagent lot control"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_IVD_HEM_001",
+          "standards": ["ISO 15189", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "IVD_IMMUNO",
+      "equipmentType": "Immunoassay Analyzer",
+      "cohort": "IVD",
+      "hazards": [
+        {
+          "hazardId": "H_IVD_IMM_001",
+          "title": "Assay interference or reagent instability causing false results",
+          "definition": "Interfering substances, reagent instability, or calibration issues causing inaccurate immunoassay results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect patient results causing harm.","example":"False negative in critical assay."},
+            {"label":"Moderate","help":"Incorrect results requiring retest.","example":"Localized patient impact."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to reagent issues.","example":"Known reagent stability problems."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent calibration drift."},
+            {"label":"Remote","help":"Unlikely with QC and calibration.","example":"Regular QC and calibration in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some tests affected.","example":"Reagent lot variability."},
+            {"label":"Rare","help":"Only exceptional tests affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"QC and controls detect issues.","example":"Control chart flags drift."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily QC identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"QC and calibration minimize risk.","example":"Automated QC and calibration."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic QC and maintenance."}
+          ],
+          "contextualTags": [
+            "QC program enforced",
+            "Interference checks present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_IVD_IMM_001",
+          "standards": ["ISO 15189", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "IVD_POC",
+      "equipmentType": "Point-of-Care Rapid Test Reader",
+      "cohort": "IVD",
+      "hazards": [
+        {
+          "hazardId": "H_IVD_POC_001",
+          "title": "User error or environmental factors causing false results",
+          "definition": "Operator technique, temperature, or humidity causing inaccurate point-of-care test results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect patient results causing harm.","example":"False negative in critical POC test."},
+            {"label":"Moderate","help":"Incorrect results requiring retest.","example":"Localized patient impact."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to operator variability.","example":"Inconsistent sample application."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent environmental issues."},
+            {"label":"Remote","help":"Unlikely with training and controls.","example":"Operator training and QC in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some tests affected.","example":"Operator variability."},
+            {"label":"Rare","help":"Only exceptional tests affected.","example":"Extreme environmental conditions."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Moderate detectability","help":"QC and supervision detect issues.","example":"Control line failures noticed."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No QC or supervision."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Effective","help":"Training and QC reduce risk.","example":"Operator training and spot checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Operator training required",
+            "Environmental control recommended"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_IVD_POC_001",
+          "standards": ["ISO 15189", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "IVD_PCR",
+      "equipmentType": "Molecular PCR Instrument",
+      "cohort": "IVD",
+      "hazards": [
+        {
+          "hazardId": "H_IVD_PCR_001",
+          "title": "Contamination or amplification failure causing false positives/negatives",
+          "definition": "Cross-contamination, reagent issues, or thermal cycler failure causing inaccurate PCR results.",
+          "severityOptions": [
+            {"label":"Major","help":"Incorrect patient results causing harm.","example":"False positive in critical PCR assay."},
+            {"label":"Moderate","help":"Incorrect results requiring retest.","example":"Localized patient impact."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single sample reanalysis."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor contamination control.","example":"Known contamination events."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent reagent issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Dedicated pre/post-PCR areas and controls."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assays affected.","example":"Reagent lot variability."},
+            {"label":"Rare","help":"Only exceptional assays affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Controls and negative controls detect contamination.","example":"Negative controls show amplification."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"QC identifies drift."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Contamination controls and QC minimize risk.","example":"Dedicated workflows and controls."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic QC and maintenance."}
+          ],
+          "contextualTags": [
+            "Dedicated pre/post-PCR areas",
+            "Negative controls enforced",
+            "Reagent lot control"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_IVD_PCR_001",
+          "standards": ["ISO 15189", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MFG_INJ_MOLD",
+      "equipmentType": "Injection Molding Press",
+      "cohort": "Manufacturing",
+      "hazards": [
+        {
+          "hazardId": "H_MFG_INJ_001",
+          "title": "Mold or process failure causing dimensional or material defects",
+          "definition": "Mold wear, process drift, or material issues causing out-of-spec parts or contamination.",
+          "severityOptions": [
+            {"label":"Major","help":"Large batch scrap or nonconformance.","example":"Multiple parts out of tolerance."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized part defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Known mold wear."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent process drift."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine maintenance and SPC."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All parts affected until fixed.","example":"Process parameter failure."},
+            {"label":"Frequent","help":"Most parts affected.","example":"Mold wear across shifts."},
+            {"label":"Intermittent","help":"Some parts affected.","example":"Material lot variability."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line inspection and SPC detect issues.","example":"CMM checks flag deviations."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"SPC and maintenance minimize risk.","example":"Automated monitoring and maintenance."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "SPC enforced",
+            "Mold maintenance schedule",
+            "Material lot control"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MFG_INJ_001",
+          "standards": ["ISO 9001", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MFG_CNC",
+      "equipmentType": "CNC Machining Center",
+      "cohort": "Manufacturing",
+      "hazards": [
+        {
+          "hazardId": "H_MFG_CNC_001",
+          "title": "Dimensional nonconformance due to tool wear or program error",
+          "definition": "Tool wear, incorrect program, or fixturing issues causing out-of-tolerance parts.",
+          "severityOptions": [
+            {"label":"Major","help":"Critical dimensional nonconformance.","example":"Critical feature out of tolerance."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized part defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Tool wear recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Program errors."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Tool monitoring and SPC."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some parts affected.","example":"Tool wear on specific features."},
+            {"label":"Rare","help":"Only exceptional parts affected.","example":"Extreme program error."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line checks and SPC detect issues.","example":"CMM checks flag deviations."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Tool monitoring and SPC minimize risk.","example":"Automated tool life tracking."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "Tool monitoring present",
+            "SPC enforced",
+            "Fixture verification"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MFG_CNC_001",
+          "standards": ["ISO 9001", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MFG_ROBOT",
+      "equipmentType": "Assembly Robot Cell",
+      "cohort": "Manufacturing",
+      "hazards": [
+        {
+          "hazardId": "H_MFG_ROBOT_001",
+          "title": "Safety or process failure due to robot control or end-effector issues",
+          "definition": "Robot control faults, end-effector failures, or safety interlock bypass causing injury or product defects.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Severe injury or major product loss.","example":"Operator crushed due to interlock bypass."},
+            {"label":"Major","help":"Serious injury or significant product loss.","example":"End-effector failure causing scrap."},
+            {"label":"Moderate","help":"Minor injury or rework.","example":"Operator pinch requiring first aid."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance or unsafe practices.","example":"Interlock bypass recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent control faults."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Safety PLC and interlocks in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"Operators exposed during normal operation.","example":"Manual loading in cell."},
+            {"label":"Frequent","help":"Regular operator interaction.","example":"Frequent maintenance access."},
+            {"label":"Intermittent","help":"Occasional exposure during setup."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Safety systems and monitoring detect faults.","example":"Safety PLC alarms."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Maintenance logs identify issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Safety PLC and interlocks minimize risk.","example":"Interlocked guards and E-stops."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and training."}
+          ],
+          "contextualTags": [
+            "Safety PLC present",
+            "Interlocks enforced",
+            "Operator training required"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MFG_ROBOT_001",
+          "standards": ["ISO 10218", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MFG_TORQUE",
+      "equipmentType": "Torque Application Station",
+      "cohort": "Manufacturing",
+      "hazards": [
+        {
+          "hazardId": "H_MFG_TORQUE_001",
+          "title": "Incorrect torque application causing assembly failure",
+          "definition": "Incorrect torque settings, tool calibration drift, or operator error causing assembly failures or product defects.",
+          "severityOptions": [
+            {"label":"Major","help":"Assembly failure or product recall.","example":"Critical fastener under-torqued causing failure."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized assembly defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single assembly rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor calibration.","example":"Tool drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent operator error."},
+            {"label":"Remote","help":"Unlikely with calibration and torque monitoring.","example":"Regular calibration and checks."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assemblies affected.","example":"Tool drift on specific features."},
+            {"label":"Rare","help":"Only exceptional assemblies affected.","example":"Extreme tool failure."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Torque monitoring and checks detect issues.","example":"Torque audit flags deviations."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Batch sampling finds defects."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and monitoring minimize risk.","example":"Automated torque monitoring."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and checks."}
+          ],
+          "contextualTags": [
+            "Torque audit present",
+            "Tool calibration schedule"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_MFG_TORQUE_001",
+          "standards": ["ISO 6789", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "INS_VISION",
+      "equipmentType": "Vision Inspection System",
+      "cohort": "Inspection & Test",
+      "hazards": [
+        {
+          "hazardId": "H_INS_VISION_001",
+          "title": "Inspection miss due to lighting or algorithm failure",
+          "definition": "Poor lighting, camera misalignment, or algorithm errors causing missed defects.",
+          "severityOptions": [
+            {"label":"Major","help":"Defective product released causing harm.","example":"Critical defect missed by vision system."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized defect missed."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Lighting drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent algorithm drift."},
+            {"label":"Remote","help":"Unlikely with calibration and maintenance.","example":"Routine checks and retraining."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some inspections affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional inspections affected.","example":"Extreme ambient changes."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Moderate detectability","help":"Periodic audits detect misses.","example":"Audit sampling finds missed defects."},
+            {"label":"Low detectability","help":"May go unnoticed without audits.","example":"No audit program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and algorithm validation minimize risk.","example":"Automated retraining and checks."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic audits and maintenance."}
+          ],
+          "contextualTags": [
+            "Lighting control yes",
+            "Algorithm validation present",
+            "Audit sampling enforced"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_INS_VISION_001",
+          "standards": ["ISO 2859", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "INS_XRAY",
+      "equipmentType": "X-ray Inspection Machine",
+      "cohort": "Inspection & Test",
+      "hazards": [
+        {
+          "hazardId": "H_INS_XRAY_001",
+          "title": "Inspection miss due to imaging or operator error",
+          "definition": "Imaging parameter issues or operator interpretation errors causing missed defects.",
+          "severityOptions": [
+            {"label":"Major","help":"Defective product released causing harm.","example":"Critical defect missed by X-ray."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized defect missed."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single part rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Parameter drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent operator error."},
+            {"label":"Remote","help":"Unlikely with calibration and training.","example":"Routine checks and training."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some inspections affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional inspections affected.","example":"Extreme ambient changes."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Audit and QA detect misses.","example":"Audit sampling finds missed defects."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily QC identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and QA minimize risk.","example":"Automated checks and training."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic audits and maintenance."}
+          ],
+          "contextualTags": [
+            "Operator training required",
+            "Calibration schedule present",
+            "Audit sampling enforced"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_INS_XRAY_001",
+          "standards": ["21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "INS_LEAK",
+      "equipmentType": "Leak Tester (Pressure Decay)",
+      "cohort": "Inspection & Test",
+      "hazards": [
+        {
+          "hazardId": "H_INS_LEAK_001",
+          "title": "Leak detection failure due to fixture or test parameter issues",
+          "definition": "Fixture misalignment, incorrect test parameters, or equipment drift causing missed leaks.",
+          "severityOptions": [
+            {"label":"Major","help":"Product leakage causing harm or recall.","example":"Critical package leak missed."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized leak detected later."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single unit rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor fixture control.","example":"Fixture wear recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent parameter drift."},
+            {"label":"Remote","help":"Unlikely with calibration and SOPs.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some units affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional units affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Test parameters and checks detect leaks.","example":"Test failures flag leaks."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Batch sampling finds leaks."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and fixture control minimize risk.","example":"Automated fixture verification."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "Fixture verification present",
+            "Calibration schedule"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_INS_LEAK_001",
+          "standards": ["ASTM F2338", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "INS_HELIUM",
+      "equipmentType": "Helium Leak Detector",
+      "cohort": "Inspection & Test",
+      "hazards": [
+        {
+          "hazardId": "H_INS_HELIUM_001",
+          "title": "Helium leak detection failure due to sensitivity or setup",
+          "definition": "Detector sensitivity, setup, or fixture issues causing missed leaks or false positives.",
+          "severityOptions": [
+            {"label":"Major","help":"Product leakage causing harm or recall.","example":"Critical package leak missed."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized leak detected later."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single unit rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Detector sensitivity drift."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent fixture issues."},
+            {"label":"Remote","help":"Unlikely with calibration and SOPs.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some units affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional units affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Test parameters and checks detect leaks.","example":"Test failures flag leaks."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Batch sampling finds leaks."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and fixture control minimize risk.","example":"Automated fixture verification."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "Fixture verification present",
+            "Calibration schedule"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_INS_HELIUM_001",
+          "standards": ["ASTM E493", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "DEC_WASHER",
+      "equipmentType": "Washer-Disinfector",
+      "cohort": "Decontamination",
+      "hazards": [
+        {
+          "hazardId": "H_DEC_WASH_001",
+          "title": "Inadequate cleaning or disinfection due to cycle failure",
+          "definition": "Cycle parameter drift, detergent issues, or loading errors causing inadequate cleaning or disinfection.",
+          "severityOptions": [
+            {"label":"Major","help":"Contaminated product or equipment causing harm.","example":"Inadequate cleaning of reusable devices."},
+            {"label":"Moderate","help":"Rework or additional cleaning required.","example":"Localized cleaning failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single load rewash."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Detergent dosing issues recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent cycle failures."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine maintenance and validation."}
+          ],
+          "exposureOptions": [
+            {"label":"Frequent","help":"Most loads affected.","example":"Detergent dosing across shifts."},
+            {"label":"Intermittent","help":"Some loads affected.","example":"Operator loading errors."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Specific contamination events."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Microbiological checks and validation detect failures.","example":"ATP or microbial checks flag issues."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Routine sampling identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated cycles and monitoring minimize risk.","example":"Automated dosing and validation."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "Validated cycles yes",
+            "Detergent dosing control",
+            "Microbial monitoring present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_DEC_WASH_001",
+          "standards": ["ISO 15883", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "DEC_ULTRASONIC",
+      "equipmentType": "Ultrasonic Cleaner",
+      "cohort": "Decontamination",
+      "hazards": [
+        {
+          "hazardId": "H_DEC_ULTRA_001",
+          "title": "Inadequate cleaning due to cavitation or solution issues",
+          "definition": "Incorrect solution, cavitation issues, or loading errors causing inadequate cleaning.",
+          "severityOptions": [
+            {"label":"Moderate","help":"Rework or additional cleaning required.","example":"Localized cleaning failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single load rewash."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Transient cleaning variance."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor solution control.","example":"Incorrect detergent concentration recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent cavitation issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine maintenance and SOPs."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some loads affected.","example":"Operator loading variability."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Specific contamination events."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Moderate detectability","help":"Periodic checks detect issues.","example":"Visual inspection finds residues."},
+            {"label":"Low detectability","help":"May go unnoticed without checks.","example":"No routine microbial checks."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Effective","help":"Validated procedures and checks reduce risk.","example":"SOPs and periodic checks."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Solution concentration control",
+            "Loading SOP present"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_DEC_ULTRA_001",
+          "standards": ["ISO 15883", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "DEC_MANUAL",
+      "equipmentType": "Manual Cleaning Station",
+      "cohort": "Decontamination",
+      "hazards": [
+        {
+          "hazardId": "H_DEC_MANUAL_001",
+          "title": "Human error or inconsistent cleaning causing contamination",
+          "definition": "Operator variability, inadequate procedures, or lack of verification causing inconsistent cleaning.",
+          "severityOptions": [
+            {"label":"Major","help":"Contaminated product or equipment causing harm.","example":"Inadequate cleaning of reusable devices."},
+            {"label":"Moderate","help":"Rework or additional cleaning required.","example":"Localized cleaning failure."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single load rewash."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor training or SOPs.","example":"Inconsistent manual cleaning."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent operator error."},
+            {"label":"Remote","help":"Unlikely with training and verification.","example":"Training and audits in place."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some loads affected.","example":"Operator variability."},
+            {"label":"Rare","help":"Only exceptional loads affected.","example":"Specific contamination events."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Low detectability","help":"May go unnoticed without verification.","example":"No routine microbial checks."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Sampling identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Effective","help":"Training and audits reduce risk.","example":"SOPs and periodic audits."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Operator training required",
+            "Verification sampling recommended"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Frequent",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Low detectability",
+            "defaultControlEffectiveness": "Partially effective"
+          },
+          "ruleId": "R_DEC_MANUAL_001",
+          "standards": ["ISO 15883", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ASM_ULTRASONIC",
+      "equipmentType": "Ultrasonic Welding Station",
+      "cohort": "Assembly & Joining",
+      "hazards": [
+        {
+          "hazardId": "H_ASM_ULTRA_001",
+          "title": "Weld failure due to parameter or fixture issues",
+          "definition": "Incorrect welding parameters, fixture misalignment, or material incompatibility causing weak or inconsistent welds.",
+          "severityOptions": [
+            {"label":"Major","help":"Assembly failure or product recall.","example":"Critical weld failure in assembly."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized weld defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single assembly rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Parameter drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent fixture issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assemblies affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional assemblies affected.","example":"Extreme material incompatibility."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line inspection detects weld defects.","example":"Vision or pull tests flag issues."},
+            {"label":"Moderate detectability","help":"Detected by periodic sampling.","example":"Batch sampling finds defects."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Parameter control and inspection minimize risk.","example":"Automated parameter validation."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic checks and maintenance."}
+          ],
+          "contextualTags": [
+            "Parameter validation yes",
+            "Fixture verification present",
+            "Material compatibility verified"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ASM_ULTRA_001",
+          "standards": ["ISO 14649", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ASM_HEAT_STAKE",
+      "equipmentType": "Heat Staking Machine",
+      "cohort": "Assembly & Joining",
+      "hazards": [
+        {
+          "hazardId": "H_ASM_HEAT_001",
+          "title": "Heat staking parameter drift causing joint failure",
+          "definition": "Incorrect temperature, time, or pressure causing weak or damaged joints.",
+          "severityOptions": [
+            {"label":"Major","help":"Assembly failure or product recall.","example":"Critical joint failure in assembly."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized joint defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single assembly rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Parameter drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent fixture issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assemblies affected.","example":"Fixture misalignment."},
+            {"label":"Rare","help":"Only exceptional assemblies affected.","example":"Extreme material incompatibility."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Moderate detectability","help":"Periodic checks detect defects.","example":"Pull tests identify weak joints."},
+            {"label":"Low detectability","help":"May go unnoticed without inspection.","example":"No in-line testing."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Effective","help":"Parameter control and periodic testing reduce risk.","example":"Periodic pull tests and calibration."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Parameter validation yes",
+            "Pull test sampling"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ASM_HEAT_001",
+          "standards": ["ISO 14649", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ASM_ADHESIVE",
+      "equipmentType": "Adhesive Dispensing and Cure Oven",
+      "cohort": "Assembly & Joining",
+      "hazards": [
+        {
+          "hazardId": "H_ASM_ADH_001",
+          "title": "Adhesive cure or dispensing failure causing bond defects",
+          "definition": "Incorrect dispense volume, cure profile, or contamination causing weak bonds or outgassing.",
+          "severityOptions": [
+            {"label":"Major","help":"Assembly failure or product recall.","example":"Critical bond failure in assembly."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized bond defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single assembly rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor setup.","example":"Dispense pump drift recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent cure oven issues."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assemblies affected.","example":"Dispense variability."},
+            {"label":"Rare","help":"Only exceptional assemblies affected.","example":"Extreme contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"Moderate detectability","help":"Periodic checks detect defects.","example":"Bond strength tests identify issues."},
+            {"label":"Low detectability","help":"May go unnoticed without testing.","example":"No in-line testing."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Effective","help":"Dispense control and testing reduce risk.","example":"Automated dispense and cure profiling."},
+            {"label":"Partially effective","help":"Controls exist but are manual.","example":"Manual checks with variability."}
+          ],
+          "contextualTags": [
+            "Dispense pump monitoring",
+            "Cure profile validation",
+            "Bond strength sampling"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ASM_ADH_001",
+          "standards": ["ISO 9001", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ASM_CRIMP",
+      "equipmentType": "Crimping Station",
+      "cohort": "Assembly & Joining",
+      "hazards": [
+        {
+          "hazardId": "H_ASM_CRIMP_001",
+          "title": "Crimp quality failure due to tool or parameter issues",
+          "definition": "Incorrect crimp force, tool wear, or misalignment causing weak crimps or electrical failures.",
+          "severityOptions": [
+            {"label":"Major","help":"Assembly failure or product recall.","example":"Critical electrical connection failure."},
+            {"label":"Moderate","help":"Rework or scrap.","example":"Localized crimp defects."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Single assembly rework."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Tool wear recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent parameter drift."},
+            {"label":"Remote","help":"Unlikely with controls.","example":"Routine checks and calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Intermittent","help":"Some assemblies affected.","example":"Tool wear on specific features."},
+            {"label":"Rare","help":"Only exceptional assemblies affected.","example":"Extreme tool failure."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"In-line checks and pull tests detect issues.","example":"Pull tests flag weak crimps."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Batch sampling finds defects."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Calibration and monitoring minimize risk.","example":"Automated crimp force monitoring."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic calibration and checks."}
+          ],
+          "contextualTags": [
+            "Crimp force monitoring",
+            "Pull test sampling",
+            "Tool calibration schedule"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_ASM_CRIMP_001",
+          "standards": ["ISO 9001", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "FAC_HVAC_AHU",
+      "equipmentType": "HVAC Air Handling Unit serving cleanrooms",
+      "cohort": "Facilities & Utilities",
+      "hazards": [
+        {
+          "hazardId": "H_FAC_HVAC_001",
+          "title": "HVAC failure causing loss of cleanroom classification",
+          "definition": "AHU failure, filter bypass, or control failure causing loss of cleanroom particle or pressure control.",
+          "severityOptions": [
+            {"label":"Major","help":"Loss of cleanroom classification causing product risk.","example":"Contamination of sterile process area."},
+            {"label":"Moderate","help":"Operational disruption requiring corrective action.","example":"Temporary rework or hold."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Short-term deviation corrected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Filter bypass recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent control faults."},
+            {"label":"Remote","help":"Unlikely with maintenance and redundancy.","example":"Redundant AHUs and alarms."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All processes affected until fixed.","example":"Primary AHU failure."},
+            {"label":"Frequent","help":"Most processes affected.","example":"Filter degradation across shifts."},
+            {"label":"Intermittent","help":"Some processes affected.","example":"Local supply issues."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Monitoring and alarms detect failures.","example":"Particle counters and pressure alarms."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily logs identify issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Redundancy and monitoring minimize risk.","example":"Redundant AHUs and automatic switchover."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and checks."}
+          ],
+          "contextualTags": [
+            "Redundant AHU present",
+            "Particle monitoring yes",
+            "Pressure control enforced"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Continuous",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_FAC_HVAC_001",
+          "standards": ["ISO 14644", "ASHRAE guidelines"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "FAC_HEPA_BANK",
+      "equipmentType": "HEPA Filter Bank and Plenum",
+      "cohort": "Facilities & Utilities",
+      "hazards": [
+        {
+          "hazardId": "H_FAC_HEPA_001",
+          "title": "HEPA filter bypass or failure causing particle ingress",
+          "definition": "Filter failure, bypass, or improper installation causing particle ingress into controlled areas.",
+          "severityOptions": [
+            {"label":"Major","help":"Loss of cleanroom classification causing product risk.","example":"Contamination of sterile process area."},
+            {"label":"Moderate","help":"Operational disruption requiring corrective action.","example":"Temporary rework or hold."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Short-term deviation corrected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Filter bypass recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent installation errors."},
+            {"label":"Remote","help":"Unlikely with maintenance and checks.","example":"Routine filter integrity testing."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All processes affected until fixed.","example":"Primary filter failure."},
+            {"label":"Frequent","help":"Most processes affected.","example":"Filter degradation across shifts."},
+            {"label":"Intermittent","help":"Some processes affected.","example":"Local supply issues."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Filter integrity tests and monitoring detect failures.","example":"DOP/PAO tests flag leaks."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily logs identify issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Integrity testing and redundancy minimize risk.","example":"Regular HEPA testing and replacement."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and checks."}
+          ],
+          "contextualTags": [
+            "HEPA integrity testing",
+            "Redundant filtration",
+            "Plenum monitoring"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Continuous",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_FAC_HEPA_001",
+          "standards": ["ISO 14644", "ASHRAE guidelines"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "FAC_PW_LOOP",
+      "equipmentType": "Purified Water Loop",
+      "cohort": "Facilities & Utilities",
+      "hazards": [
+        {
+          "hazardId": "H_FAC_PW_001",
+          "title": "Microbial or chemical contamination in purified water loop",
+          "definition": "Biofilm formation, system contamination, or chemical ingress causing out-of-spec water quality.",
+          "severityOptions": [
+            {"label":"Major","help":"Product contamination or process failure.","example":"Contaminated water used in critical process."},
+            {"label":"Moderate","help":"Rework or additional testing required.","example":"Localized contamination requiring flushing."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Short-term deviation corrected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Biofilm recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent contamination events."},
+            {"label":"Remote","help":"Unlikely with monitoring and sanitization.","example":"Routine sanitization and monitoring."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All processes using water affected until fixed.","example":"Primary loop contamination."},
+            {"label":"Frequent","help":"Most processes affected.","example":"Widespread contamination across points."},
+            {"label":"Intermittent","help":"Some processes affected.","example":"Local point contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Online monitoring and testing detect contamination.","example":"TOC and microbial alarms."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily sampling identifies issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Sanitization and monitoring minimize risk.","example":"Automated sanitization and monitoring."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic sanitization and checks."}
+          ],
+          "contextualTags": [
+            "TOC monitoring present",
+            "Sanitization schedule",
+            "Point-of-use filters"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Continuous",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_FAC_PW_001",
+          "standards": ["USP <1231>", "21 CFR 820"]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "FAC_COMP_AIR",
+      "equipmentType": "Compressed Air System with Dryers",
+      "cohort": "Facilities & Utilities",
+      "hazards": [
+        {
+          "hazardId": "H_FAC_COMP_001",
+          "title": "Compressed air contamination or dew point failure",
+          "definition": "Oil, particulate, or moisture ingress causing contamination of process air or instrument air.",
+          "severityOptions": [
+            {"label":"Major","help":"Product contamination or instrument damage.","example":"Oil contamination in instrument air."},
+            {"label":"Moderate","help":"Rework or maintenance required.","example":"Localized contamination requiring filter change."},
+            {"label":"Minor","help":"Minor operational impact.","example":"Short-term dew point excursion corrected."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Occurs often due to poor maintenance.","example":"Filter bypass recurring."},
+            {"label":"Occasional","help":"Occurs several times per year.","example":"Intermittent dryer failure."},
+            {"label":"Remote","help":"Unlikely with monitoring and maintenance.","example":"Routine checks and replacement."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All downstream processes affected until fixed.","example":"Primary compressor contamination."},
+            {"label":"Frequent","help":"Most downstream processes affected.","example":"Dryer performance degraded across shifts."},
+            {"label":"Intermittent","help":"Some processes affected.","example":"Local point contamination."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Dew point and particle monitoring detect issues.","example":"Dew point alarms trigger action."},
+            {"label":"Moderate detectability","help":"Detected by periodic checks.","example":"Daily logs identify issues."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Filtration, dryers, and monitoring minimize risk.","example":"Redundant dryers and monitoring."},
+            {"label":"Effective","help":"Controls reduce risk but occasional gaps exist.","example":"Periodic maintenance and checks."}
+          ],
+          "contextualTags": [
+            "Dew point monitoring present",
+            "Oil coalescing filters",
+            "Redundant dryers"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Occasional",
+            "defaultExposure": "Continuous",
+            "defaultDetectability": "High detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_FAC_COMP_001",
+          "standards": ["ISO 8573", "21 CFR 820"]
+        }
+      ]
+    }
+  ]
+}
+

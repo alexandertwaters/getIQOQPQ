@@ -1,7 +1,7 @@
 {
   "hazardSelection": {
     "behavior": {
-      "source": "hazcat_v1.1_equipment_types.json",
+      "source": "hazcat_v1.1_equipment_types - comprehensive.json",
       "filterBy": "equipmentTypeId",
       "tileFields": [
         "title",

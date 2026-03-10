@@ -45,7 +45,7 @@ def _load_ruleset(ruleset_path):
 def _resolve_ruleset_path(ruleset_id):
     """Map rulesetId to data file path."""
     id_to_file = {
-        "ruleset_v1.1": "data/ruleset_v1.1_equipment_type_mappings.json",
+        "ruleset_v1.1": "data/ruleset_v1.1_equipment_type_mappings - comprehensive.json",
     }
     return id_to_file.get(ruleset_id, f"data/{ruleset_id}_equipment_type_mappings.json")
 

@@ -12,8 +12,8 @@ stages:
 validate:
   stage: validate
   script:
-    - python engine/schema_validator.py data/hazcat_v1.1_equipment_types.json
-    - python engine/schema_validator.py data/ruleset_v1.1_equipment_type_mappings.json
+    - python engine/schema_validator.py "data/hazcat_v1.1_equipment_types - comprehensive.json"
+    - python engine/schema_validator.py "data/ruleset_v1.1_equipment_type_mappings - comprehensive.json"
     - python engine/schema_validator.py data/wizard_mapping_equipment_types.json
     - python engine/schema_validator.py data/ui_wiring_schema_v1.1.json
 

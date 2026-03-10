@@ -7,7 +7,7 @@ from api._shared import parse_request, send_json
 
 
 def _load_hazcat():
-    path = Path("data/hazcat_v1.1_equipment_types.json")
+    path = Path("data/hazcat_v1.1_equipment_types - comprehensive.json")
     if not path.exists():
         return {}
     with open(path, "r", encoding="utf-8") as f:

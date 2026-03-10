@@ -8,8 +8,8 @@ from api._shared import send_json
 
 
 def _handle_get():
-    hazcat_path = Path("data/hazcat_v1.1_equipment_types.json")
-    ruleset_path = Path("data/ruleset_v1.1_equipment_type_mappings.json")
+    hazcat_path = Path("data/hazcat_v1.1_equipment_types - comprehensive.json")
+    ruleset_path = Path("data/ruleset_v1.1_equipment_type_mappings - comprehensive.json")
     hazcat_version = "hazcat_v1.1"
     ruleset_id = "ruleset_v1.1"
     if hazcat_path.exists():

@@ -1,0 +1,655 @@
+{
+  "rulesetId": "ruleset_v1.1",
+  "generatedAt": "2026-03-10T20:00:00Z",
+  "description": "Comprehensive deterministic ruleset mapping hazards and qualification bands to structured IQ/OQ/PQ templates. Includes cross-cutting rules for utilities, cleanroom class, product contact, throughput, and control architecture.",
+  "rules": [
+    {
+      "ruleId": "R_SCORE_ISO14971_V1_1",
+      "name": "Compute per-hazard risk and Residual Risk Index",
+      "trigger": "after hazard attribute selection",
+      "logic": [
+        {
+          "action": "mapNumericValues",
+          "details": "Map Severity/Probability/Exposure/Detectability/ControlEffectiveness option labels to numeric values using canonical mapping table."
+        },
+        {
+          "action": "computePerHazard",
+          "expressions": {
+            "RawRisk": "Severity * ProbabilityOfOccurrence",
+            "AdjustedRisk": "RawRisk * Exposure * (1 - Detectability)",
+            "ResidualRisk": "AdjustedRisk * ControlEffectiveness"
+          }
+        },
+        {
+          "action": "policyEscalations",
+          "rules": [
+            {
+              "if": "exists hazard where hazard.ruleId startsWith 'R_STER' and Severity_label == 'Catastrophic' and equipment.siteContext.productContact == true",
+              "then": "set hazard.EscalatedResidualRiskForMapping = hazard.ResidualRisk * 10",
+              "rationale": "Conservative escalation for catastrophic sterilization hazards affecting product contact"
+            },
+            {
+              "if": "exists hazard where hazard.ruleId startsWith 'R_PKG' and equipment.siteContext.productContact == true and Severity_label in ['Catastrophic','Major']",
+              "then": "set hazard.EscalatedResidualRiskForMapping = hazard.ResidualRisk * 3",
+              "rationale": "Elevate packaging hazards that contact product"
+            },
+            {
+              "if": "exists hazard where hazard.ruleId startsWith 'R_ANA' and controlArchitecture contains 'Computerized' and controlArchitecture contains 'electronic records'",
+              "then": "set hazard.EscalatedResidualRiskForMapping = hazard.ResidualRisk * 2",
+              "rationale": "Elevate analytical hazards when computerized systems with electronic records are present"
+            },
+            {
+              "if": "equipmentType == 'HVAC Air Handling Unit serving cleanrooms' and siteContext.cleanroomClass in ['ISO 1','ISO 2','ISO 3','ISO 4','ISO 5','ISO 6','ISO 7']",
+              "then": "increase Exposure by 0.2 for hazards affecting cleanroom performance",
+              "rationale": "Multiple-zone effect increases exposure for HVAC hazards in higher-class cleanrooms"
+            }
+          ]
+        },
+        {
+          "action": "aggregate",
+          "expression": "ResidualRiskIndex = max(hazard.EscalatedResidualRiskForMapping if present else hazard.ResidualRisk) + 0.1 * sum(hazard.EscalatedResidualRiskForMapping if present else hazard.ResidualRisk)"
+        },
+        {
+          "action": "mapQualificationBand",
+          "conditions": [
+            {"if": "ResidualRiskIndex <= 0.15", "then": {"qualificationBand": "Basic", "qualificationDepth": "Installation Qualification + basic Operational Qualification"}},
+            {"if": "ResidualRiskIndex > 0.15 && ResidualRiskIndex <= 0.40", "then": {"qualificationBand": "Targeted", "qualificationDepth": "Installation Qualification + Operational Qualification + targeted Performance Qualification"}},
+            {"if": "ResidualRiskIndex > 0.40", "then": {"qualificationBand": "Full", "qualificationDepth": "Full Installation Qualification + Operational Qualification + Performance Qualification with microbiological verification where applicable"}}
+          ]
+        }
+      ],
+      "standards": ["ISO 14971", "ISO 17665", "ISO 14644", "GAMP 5", "21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_MAP_EQUIPMENT_TYPE_TO_TESTS_V1_1",
+      "name": "Map equipment-type hazards and qualification band to structured IQ/OQ/PQ templates",
+      "trigger": "after R_SCORE_ISO14971_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_STER_PV' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_STER_01","title":"Verify steam supply and condensate traps","params":{}},
+              {"id":"IQ_STER_02","title":"Verify sensor placement and calibration","params":{}},
+              {"id":"IQ_STER_03","title":"Collect FAT and SAT reports","params":{}},
+              {"id":"IQ_STER_04","title":"Record software and PLC baseline","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_STER_01","title":"Chamber temperature uniformity mapping","params":{"method":"thermocouple mapping","acceptance":"within supplier spec"}},
+              {"id":"OQ_STER_02","title":"Vacuum and leak test","params":{}},
+              {"id":"OQ_STER_03","title":"Bowie-Dick or air removal test","params":{}},
+              {"id":"OQ_STER_04","title":"Steam quality and condensate check","params":{}},
+              {"id":"OQ_STER_05","title":"Control system and alarm verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_STER_01","title":"Biological indicator placement matrix","params":{"placements":"per product geometry"}},
+              {"id":"PQ_STER_02","title":"3 consecutive worst-case cycles with biological indicators","params":{"count":3}},
+              {"id":"PQ_STER_03","title":"Chemical indicator verification","params":{}},
+              {"id":"PQ_STER_04","title":"Load map validation","params":{}}
+            ],
+            "standards": ["ISO 17665","ISO 11138","ISO 11137"]
+          }
+        },
+        {
+          "if": "hazard.ruleId startsWith 'R_STER_ETO' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_ETO_01","title":"Verify EtO gas monitoring and aeration equipment","params":{}},
+              {"id":"IQ_ETO_02","title":"Collect EtO process validation and FAT reports","params":{}},
+              {"id":"IQ_ETO_03","title":"Record software baseline","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_ETO_01","title":"EtO concentration and humidity verification","params":{}},
+              {"id":"OQ_ETO_02","title":"Dwell time verification","params":{}},
+              {"id":"OQ_ETO_03","title":"Aeration performance test","params":{}},
+              {"id":"OQ_ETO_04","title":"Control system alarm verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_ETO_01","title":"Biological indicator runs appropriate for EtO","params":{}},
+              {"id":"PQ_ETO_02","title":"Residual EtO testing per product type","params":{}},
+              {"id":"PQ_ETO_03","title":"3 consecutive worst-case cycles","params":{"count":3}}
+            ],
+            "standards": ["ISO 11135","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId == 'R_ANA_HPLC_001' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_HPLC_01","title":"Installation verification and instrument calibration certificates","params":{}},
+              {"id":"IQ_HPLC_02","title":"Verify detector lamp and flow path integrity","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_HPLC_01","title":"Pump flow accuracy","params":{}},
+              {"id":"OQ_HPLC_02","title":"Wavelength accuracy","params":{}},
+              {"id":"OQ_HPLC_03","title":"System suitability verification","params":{}},
+              {"id":"OQ_HPLC_04","title":"Autosampler performance","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_HPLC_01","title":"Method system suitability per method","params":{}},
+              {"id":"PQ_HPLC_02","title":"Repeatability and reproducibility runs","params":{}},
+              {"id":"PQ_HPLC_03","title":"Worst-case sample matrix testing","params":{}}
+            ],
+            "standards": ["USP <1058>","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId == 'R_ANA_HPLC_002' and controlArchitecture contains 'Computerized Data System' and controlArchitecture contains 'electronic records'",
+          "then": {
+            "IQ": [
+              {"id":"IQ_HPLC_CSV_01","title":"Record CDS software version and configuration baseline","params":{}},
+              {"id":"IQ_HPLC_CSV_02","title":"Verify user accounts and roles","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_HPLC_CSV_01","title":"Audit trail integrity test","params":{}},
+              {"id":"OQ_HPLC_CSV_02","title":"User role test","params":{}},
+              {"id":"OQ_HPLC_CSV_03","title":"Backup and restore test","params":{}},
+              {"id":"OQ_HPLC_CSV_04","title":"Data export test","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_HPLC_CSV_01","title":"Longitudinal audit trail review during PQ runs","params":{}},
+              {"id":"PQ_HPLC_CSV_02","title":"Data restore validation","params":{}}
+            ],
+            "standards": ["GAMP 5","21 CFR Part 11"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_FAC_HVAC' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_HVAC_01","title":"HEPA installation verification","params":{}},
+              {"id":"IQ_HVAC_02","title":"Sensor calibration verification","params":{}},
+              {"id":"IQ_HVAC_03","title":"Record AHU configuration and redundancy","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_HVAC_01","title":"Airflow and pressure differential tests","params":{}},
+              {"id":"OQ_HVAC_02","title":"HEPA leak test","params":{}},
+              {"id":"OQ_HVAC_03","title":"Filter integrity verification","params":{}},
+              {"id":"OQ_HVAC_04","title":"Control system alarm verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_HVAC_01","title":"Operational particle mapping per ISO 14644-1","params":{"method":"particle mapping","acceptance":"per ISO 14644-1"}},
+              {"id":"PQ_HVAC_02","title":"Pressure cascade verification under load","params":{}},
+              {"id":"PQ_HVAC_03","title":"Longitudinal environmental monitoring","params":{}}
+            ],
+            "standards": ["ISO 14644","ISO 13485"]
+          }
+        },
+
+        {
+          "if": "qualificationBand == 'Basic'",
+          "then": {
+            "IQ": [
+              {"id":"IQ_BASIC_01","title":"Installation verification","params":{}},
+              {"id":"IQ_BASIC_02","title":"Utilities verification","params":{}},
+              {"id":"IQ_BASIC_03","title":"Sensor calibration","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_BASIC_01","title":"Basic functional tests per supplier specification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_BASIC_01","title":"Targeted operational checks as applicable","params":{}}
+            ]
+          }
+        },
+
+        {
+          "if": "qualificationBand == 'Targeted'",
+          "then": {
+            "IQ": [
+              {"id":"IQ_TGT_01","title":"Installation verification","params":{}},
+              {"id":"IQ_TGT_02","title":"Utilities verification","params":{}},
+              {"id":"IQ_TGT_03","title":"Sensor calibration","params":{}},
+              {"id":"IQ_TGT_04","title":"Supplier FAT collection","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_TGT_01","title":"Comprehensive functional tests across operational envelope","params":{}},
+              {"id":"OQ_TGT_02","title":"Profiling tests as applicable","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_TGT_01","title":"Targeted PQ runs focusing on worst-case scenarios","params":{}}
+            ]
+          }
+        },
+
+        {
+          "if": "qualificationBand == 'Full'",
+          "then": {
+            "IQ": [
+              {"id":"IQ_FULL_01","title":"Installation verification","params":{}},
+              {"id":"IQ_FULL_02","title":"Utilities verification","params":{}},
+              {"id":"IQ_FULL_03","title":"Sensor calibration","params":{}},
+              {"id":"IQ_FULL_04","title":"Supplier FAT collection","params":{}},
+              {"id":"IQ_FULL_05","title":"Software baseline and CSV checklist if electronic records present","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_FULL_01","title":"Full envelope functional tests","params":{}},
+              {"id":"OQ_FULL_02","title":"Profiling and worst-case verification","params":{}},
+              {"id":"OQ_FULL_03","title":"CSV tests if electronic records present","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_FULL_01","title":"Full PQ with microbiological verification where applicable","params":{}},
+              {"id":"PQ_FULL_02","title":"Statistically justified sampling plans","params":{}}
+            ]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_PKG_FFS' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_PKG_FFS_01","title":"Installation verification and supplier FAT collection","params":{}},
+              {"id":"IQ_PKG_FFS_02","title":"Verify product contact surfaces are cleanable","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_PKG_FFS_01","title":"Filler dosing accuracy across operational envelope","params":{}},
+              {"id":"OQ_PKG_FFS_02","title":"Sealer temperature and dwell verification","params":{}},
+              {"id":"OQ_PKG_FFS_03","title":"In-line checkweigher verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_PKG_FFS_01","title":"Worst-case production runs with sampling plan","params":{"sampleCount":"statistically justified; default 30"}},
+              {"id":"PQ_PKG_FFS_02","title":"Microbial checks if product contact","params":{}}
+            ],
+            "standards": ["ISO 11607","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_PKG_HEAT' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_PKG_HEAT_01","title":"Installation verification and sealing head alignment","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_PKG_HEAT_01","title":"Seal strength and temperature profiling","params":{}},
+              {"id":"OQ_PKG_HEAT_02","title":"Vision inspection calibration","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_PKG_HEAT_01","title":"Production runs with seal integrity sampling","params":{"sampleCount":30}}
+            ],
+            "standards": ["ISO 11607","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_PKG_ULTRA' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_PKG_ULTRA_01","title":"Installation verification and parameter validation","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_PKG_ULTRA_01","title":"Ultrasonic parameter validation and in-line testing","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_PKG_ULTRA_01","title":"Production runs with sampling and in-line verification","params":{}}
+            ],
+            "standards": ["ISO 11607","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["ISO 17665", "ISO 14644", "USP <1058>", "GAMP 5", "21 CFR 820"]
+    },
+    {
+      "ruleId": "R_MAP_METROLOGY_AND_ANALYTICAL_V1_1",
+      "name": "Metrology and Analytical equipment mappings",
+      "trigger": "after R_MAP_EQUIPMENT_TYPE_TO_TESTS_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_MET_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_MET_01","title":"Installation verification and environmental control check","params":{}},
+              {"id":"IQ_MET_02","title":"Calibration certificate collection","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_MET_01","title":"Calibration verification across range","params":{}},
+              {"id":"OQ_MET_02","title":"Fixture and mounting verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_MET_01","title":"Repeatability and reproducibility runs","params":{}},
+              {"id":"PQ_MET_02","title":"Worst-case dimensional checks","params":{}}
+            ],
+            "standards": ["ISO 17025","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ANA_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_ANA_01","title":"Installation verification and instrument calibration certificates","params":{}},
+              {"id":"IQ_ANA_02","title":"Verify reagent and consumable storage","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_ANA_01","title":"Method suitability and system suitability tests","params":{}},
+              {"id":"OQ_ANA_02","title":"Detector and pump performance verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_ANA_01","title":"Method validation runs and worst-case matrix testing","params":{}},
+              {"id":"PQ_ANA_02","title":"Longitudinal QC trending during PQ","params":{}}
+            ],
+            "standards": ["USP <621>","USP <643>","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ANA_GCMS' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_GCMS_01","title":"Installation verification and column documentation","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_GCMS_01","title":"Detector and column performance verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_GCMS_01","title":"Method system suitability and matrix testing","params":{}}
+            ],
+            "standards": ["USP <621>","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ANA_UVVIS' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_UVVIS_01","title":"Installation verification and lamp baseline","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_UVVIS_01","title":"Wavelength and stray light verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_UVVIS_01","title":"Method suitability and repeatability runs","params":{}}
+            ],
+            "standards": ["USP <857>","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ANA_TOC' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_TOC_01","title":"Installation verification and reagent checks","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_TOC_01","title":"Calibration and blank checks","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_TOC_01","title":"Method validation and longitudinal QC","params":{}}
+            ],
+            "standards": ["USP <643>","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ANA_DISS' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_DISS_01","title":"Installation verification and apparatus alignment","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_DISS_01","title":"Speed and temperature verification across range","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_DISS_01","title":"Method suitability and repeatability runs","params":{}}
+            ],
+            "standards": ["USP <711>","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["USP <1058>", "ISO 17025", "21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_MAP_IVD_V1_1",
+      "name": "IVD equipment mappings",
+      "trigger": "after R_MAP_METROLOGY_AND_ANALYTICAL_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_IVD_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_IVD_01","title":"Installation verification and QC program review","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_IVD_01","title":"Reagent and control verification","params":{}},
+              {"id":"OQ_IVD_02","title":"Instrument performance across range","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_IVD_01","title":"Clinical sample runs and QC trending","params":{}}
+            ],
+            "standards": ["ISO 15189","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["ISO 15189","21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_MAP_MANUFACTURING_V1_1",
+      "name": "Manufacturing equipment mappings",
+      "trigger": "after R_MAP_IVD_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_MFG_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_MFG_01","title":"Installation verification and safety checks","params":{}},
+              {"id":"IQ_MFG_02","title":"Supplier FAT collection","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_MFG_01","title":"Process capability and SPC verification","params":{}},
+              {"id":"OQ_MFG_02","title":"Tooling and fixture verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_MFG_01","title":"Production runs with SPC and sampling","params":{"sampleCount":"statistically justified"}},
+              {"id":"PQ_MFG_02","title":"Safety interlock verification under load","params":{}}
+            ],
+            "standards": ["ISO 9001","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_MFG_ROBOT' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_ROBOT_01","title":"Safety PLC and interlock verification","params":{}},
+              {"id":"IQ_ROBOT_02","title":"Record robot program baseline","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_ROBOT_01","title":"End-effector performance and repeatability tests","params":{}},
+              {"id":"OQ_ROBOT_02","title":"Collision and safety scenario tests","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_ROBOT_01","title":"Long-run production validation with safety monitoring","params":{}}
+            ],
+            "standards": ["ISO 10218","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["ISO 9001","21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_MAP_INSPECTION_TEST_V1_1",
+      "name": "Inspection and test equipment mappings",
+      "trigger": "after R_MAP_MANUFACTURING_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_INS_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_INS_01","title":"Installation verification and calibration certificates","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_INS_01","title":"Imaging or test parameter verification","params":{}},
+              {"id":"OQ_INS_02","title":"Operator training verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_INS_01","title":"Audit sampling and longitudinal QA","params":{}}
+            ],
+            "standards": ["ISO 2859","ASTM standards","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["21 CFR 820"]
+    }
+    ,
+    {
+      "ruleId": "R_MAP_DECONTAMINATION_ASSEMBLY_V1_1",
+      "name": "Decontamination and Assembly mappings",
+      "trigger": "after R_MAP_INSPECTION_TEST_V1_1",
+      "logic": [
+        {
+          "if": "hazard.ruleId startsWith 'R_DEC_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_DEC_01","title":"Installation verification and validated cycle review","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_DEC_01","title":"Cycle parameter verification and detergent dosing checks","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_DEC_01","title":"Microbial or residual checks post-cycle","params":{}}
+            ],
+            "standards": ["ISO 15883","21 CFR 820"]
+          }
+        },
+
+        {
+          "if": "hazard.ruleId startsWith 'R_ASM_' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_ASM_01","title":"Installation verification and parameter baseline","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_ASM_01","title":"Parameter validation and fixture verification","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_ASM_01","title":"Production runs with sampling and pull tests where applicable","params":{}}
+            ],
+            "standards": ["ISO 14649","21 CFR 820"]
+          }
+        }
+      ],
+      "standards": ["21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_MAP_FACILITIES_UTILITIES_V1_1",
+      "name": "Facilities and utilities cross-cutting mappings",
+      "trigger": "after R_MAP_DECONTAMINATION_ASSEMBLY_V1_1",
+      "logic": [
+        {
+          "if": "siteContext.utilities contains 'WFI'",
+          "then": {
+            "addTests": {
+              "OQ": [
+                {"id":"OQ_WFI_01","title":"WFI loop integrity and conductivity verification","params":{}}
+              ],
+              "PQ": [
+                {"id":"PQ_WFI_01","title":"WFI distribution loop microbial challenge and recovery","params":{}}
+              ]
+            },
+            "rationale": "WFI presence requires WFI loop verification in OQ/PQ"
+          }
+        },
+        {
+          "if": "siteContext.utilities contains 'Vacuum'",
+          "then": {
+            "addTests": {
+              "OQ": [
+                {"id":"OQ_VAC_01","title":"Vacuum pump performance and leak test","params":{}}
+              ],
+              "PQ": [
+                {"id":"PQ_VAC_01","title":"Vacuum performance under load","params":{}}
+              ]
+            },
+            "rationale": "Vacuum-dependent equipment requires vacuum verification"
+          }
+        },
+        {
+          "if": "siteContext.utilities contains 'Instrument Air' or siteContext.utilities contains 'Compressed Air'",
+          "then": {
+            "addTests": {
+              "OQ": [
+                {"id":"OQ_AIR_01","title":"Instrument air dew point and particle verification","params":{}}
+              ],
+              "PQ": [
+                {"id":"PQ_AIR_01","title":"Air quality verification under operational load","params":{}}
+              ]
+            },
+            "rationale": "Compressed/instrument air quality affects many process controls"
+          }
+        },
+        {
+          "if": "siteContext.cleanroomClass in ['ISO 1','ISO 2','ISO 3','ISO 4','ISO 5'] and equipment.siteContext.productContact == true",
+          "then": {
+            "addTests": {
+              "PQ": [
+                {"id":"PQ_CLEAN_01","title":"Operational particle mapping and microbiological sampling","params":{"method":"ISO 14644-1 mapping","sampleCount":"per standard"}}
+              ]
+            },
+            "rationale": "High-class cleanrooms with product contact require particle and microbiological verification"
+          }
+        },
+        {
+          "if": "siteContext.productionThroughput == 'High' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "modifyTests": {
+              "PQ": {"increaseSampleCountByFactor": 2}
+            },
+            "rationale": "High throughput increases PQ sampling requirements"
+          }
+        },
+        {
+          "if": "controlArchitecture contains 'Computerized' and controlArchitecture contains 'electronic records'",
+          "then": {
+            "addTests": {
+              "IQ": [
+                {"id":"IQ_CSV_01","title":"Record software baseline and configuration","params":{}}
+              ],
+              "OQ": [
+                {"id":"OQ_CSV_01","title":"Audit trail and backup/restore verification","params":{}}
+              ],
+              "PQ": [
+                {"id":"PQ_CSV_01","title":"Longitudinal audit trail review during PQ","params":{}}
+              ]
+            },
+            "rationale": "Computerized systems with electronic records require CSV/CSV-like verification"
+          }
+        }
+      ],
+      "standards": ["ISO 14644","ISO 8573","USP <1231>","21 CFR 820"]
+    },
+
+    {
+      "ruleId": "R_FALLBACK_AND_METADATA_V1_1",
+      "name": "Fallbacks, standards propagation, and metadata enrichment",
+      "trigger": "after all mapping rules",
+      "logic": [
+        {
+          "action": "propagateStandards",
+          "details": "If a hazard's mapping block includes 'standards', ensure those standards are attached to the package-level standards list and to the hazard mapping output."
+        },
+        {
+          "action": "ensureStructuredOutputs",
+          "details": "Convert free-text IQ/OQ/PQ lists into structured objects with id/title/params. If only free-text exists, wrap into structured object with generated id."
+        },
+        {
+          "action": "fallbackMapping",
+          "details": "If no explicit mapping exists for a hazard.ruleId, attach the qualificationBand-level IQ/OQ/PQ templates and mark mapping as 'inferred' with rationale 'no explicit equipment-type mapping; used band fallback'."
+        },
+        {
+          "action": "fingerprintPolicy",
+          "details": "Fingerprint includes: hazardId, selected labels, numeric mapped values, ruleId, qualificationBand, IQ/OQ/PQ ids and testParameters. Exclude freeform 'help' and 'example' text from fingerprint to avoid editorial churn."
+        }
+      ],
+      "standards": ["ISO 14971","21 CFR 820"]
+    }
+  ]
+}
+
