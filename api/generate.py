@@ -1,8 +1,15 @@
 # api/generate.py - Vercel Python serverless: generate IQ/OQ/PQ package
 import os
+import sys
 import json
 import tempfile
 from pathlib import Path
+
+# Ensure project root is on path (Vercel may run with different cwd)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 from http.server import BaseHTTPRequestHandler
 from supabase import create_client
 from datetime import datetime
@@ -57,8 +64,8 @@ def _handle_post(payload):
     with open(pkg_path, "w", encoding="utf-8") as f:
         json.dump(pkg, f, indent=2)
 
-    template_md = Path("templates") / "human_readable_template_markdown_v1.md"
-    langmap = Path("rules") / "hazard_to_language_map_v1.json"
+    template_md = _PROJECT_ROOT / "templates" / "human_readable_template_markdown_v1.md"
+    langmap = _PROJECT_ROOT / "rules" / "hazard_to_language_map_v1.json"
     rendered_dir = Path(tmpdir) / "rendered"
     rendered_dir.mkdir(parents=True, exist_ok=True)
     render_markdown(str(pkg_path), str(template_md), str(langmap), str(rendered_dir))
@@ -108,4 +115,6 @@ class handler(BaseHTTPRequestHandler):
             status, data = _handle_post(req["body"] or {})
             send_json(self, status, data)
         except Exception as e:
-            send_json(self, 500, {"error": str(e)})
+            import traceback
+            tb = traceback.format_exc()
+            send_json(self, 500, {"error": str(e), "traceback": tb})
