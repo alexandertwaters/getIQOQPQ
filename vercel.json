@@ -4,11 +4,6 @@
     { "source": "/api/v1/generate", "destination": "/api/generate" },
     { "source": "/api/v1/artifact", "destination": "/api/artifact" }
   ],
-  "functions": {
-    "api/**/*.py": {
-      "excludeFiles": "ci/**,**/*_test*.py,parse_test.py"
-    }
-  },
   "env": {
     "ARTIFACT_BUCKET": "artifacts"
   }
