@@ -1,4 +1,4 @@
-﻿# engine/render_engine.py
+# engine/render_engine.py
 import json
 import os
 import sys
@@ -74,13 +74,23 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     hazards_ctx = []
     for h in pkg.get("hazards", []):
         expanded = expand_tests_for_hazard(h, langmap)
+        tags_catalog = h.get("contextualTags", [])
+        tags_selected = h.get("contextualTags_selected", tags_catalog)
         hazards_ctx.append({
             "hazardId": h.get("hazardId", ""),
             "title": h.get("title", ""),
             "definition": h.get("definition", ""),
             "standards_comma": ", ".join(h.get("standards", [])) if h.get("standards") else "",
-            "contextualTags_comma": ", ".join(sorted(h.get("contextualTags", []))),
+            "contextualTags_catalog_comma": ", ".join(sorted(tags_catalog)),
+            "contextualTags_selected_comma": ", ".join(sorted(tags_selected)),
+            "ruleId": h.get("ruleId", ""),
+            "severityOptions": h.get("severityOptions", []),
+            "probabilityOptions": h.get("probabilityOptions", []),
+            "exposureOptions": h.get("exposureOptions", []),
+            "detectabilityOptions": h.get("detectabilityOptions", []),
+            "controlEffectivenessOptions": h.get("controlEffectivenessOptions", []),
             "Severity_label": h.get("Severity_label", ""),
+            "Severity_value": f"{h.get('Severity', 0.0):.12f}" if h.get("Severity") is not None else "N/A",
             "ProbabilityOfOccurrence_label": h.get("ProbabilityOfOccurrence_label", ""),
             "Exposure_label": h.get("Exposure_label", ""),
             "Detectability_label": h.get("Detectability_label", ""),
@@ -88,7 +98,7 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "RawRisk": f"{h.get('RawRisk',0.0):.3f}",
             "AdjustedRisk": f"{h.get('AdjustedRisk',0.0):.3f}",
             "ResidualRisk": f"{h.get('ResidualRisk',0.0):.3f}",
-            "EscalatedResidualRiskForMapping": f"{h.get('EscalatedResidualRiskForMapping',0.0):.3f}" if h.get("EscalatedResidualRiskForMapping") else None,
+            "EscalatedResidualRiskForMapping": f"{h.get('EscalatedResidualRiskForMapping',0.0):.3f}" if h.get("EscalatedResidualRiskForMapping") is not None else None,
             "IQ_list": [t.get("title", "") for t in expanded["IQ_tests"]],
             "OQ_list": [t.get("title", "") for t in expanded["OQ_tests"]],
             "PQ_list": [t.get("title", "") for t in expanded["PQ_tests"]],
@@ -113,40 +123,54 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
 
     os.makedirs(outdir, exist_ok=True)
     fp = pkg.get("fingerprint", "package")
-    out_md = os.path.join(outdir, f"{fp}.md")
+    safe_fp = fp.replace(":", "_")
+    out_md = os.path.join(outdir, f"{safe_fp}.md")
     with open(out_md, 'w', encoding='utf8') as of:
         of.write(md)
 
-    csv_path = os.path.join(outdir, f"{fp}.perHazard.csv")
-    with open(csv_path, 'w', encoding='utf8') as cf:
+    def _csv_escape(val):
+        s = str(val).replace("\n", " ").replace("\r", " ")
+        if "," in s or '"' in s or "\n" in s:
+            return '"' + s.replace('"', '""') + '"'
+        return s
+
+    csv_path = os.path.join(outdir, f"{safe_fp}.perHazard.csv")
+    with open(csv_path, 'w', encoding='utf8', newline='') as cf:
         headers = [
-            "hazardId","title","Severity_label","Severity_numeric",
-            "Probability_label","Probability_numeric","Exposure_label","Exposure_numeric",
-            "Detectability_label","Detectability_numeric","ControlEffectiveness_label","ControlEffectiveness_numeric",
-            "RawRisk","AdjustedRisk","ResidualRisk","EscalatedResidualRiskForMapping","ruleId"
+            "hazardId", "title", "definition",
+            "Severity_label", "Severity_numeric",
+            "Probability_label", "Probability_numeric", "Exposure_label", "Exposure_numeric",
+            "Detectability_label", "Detectability_numeric", "ControlEffectiveness_label", "ControlEffectiveness_numeric",
+            "RawRisk", "AdjustedRisk", "ResidualRisk", "EscalatedResidualRiskForMapping",
+            "ruleId", "standards", "contextualTags_selected"
         ]
         cf.write(",".join(headers) + "\n")
         for h in sorted(pkg.get("hazards", []), key=lambda x: x["hazardId"]):
+            tags_sel = h.get("contextualTags_selected", [])
+            stds = h.get("standards", [])
             row = [
-                h.get("hazardId",""),
-                h.get("title",""),
-                h.get("Severity_label",""),
+                h.get("hazardId", ""),
+                h.get("title", ""),
+                h.get("definition", ""),
+                h.get("Severity_label", ""),
                 f"{h.get('Severity',0.0):.12f}",
-                h.get("ProbabilityOfOccurrence_label",""),
+                h.get("ProbabilityOfOccurrence_label", ""),
                 f"{h.get('ProbabilityOfOccurrence',0.0):.12f}",
-                h.get("Exposure_label",""),
+                h.get("Exposure_label", ""),
                 f"{h.get('Exposure',0.0):.12f}",
-                h.get("Detectability_label",""),
+                h.get("Detectability_label", ""),
                 f"{h.get('Detectability',0.0):.12f}",
-                h.get("ControlEffectiveness_label",""),
+                h.get("ControlEffectiveness_label", ""),
                 f"{h.get('ControlEffectiveness',0.0):.12f}",
                 f"{h.get('RawRisk',0.0):.12f}",
                 f"{h.get('AdjustedRisk',0.0):.12f}",
                 f"{h.get('ResidualRisk',0.0):.12f}",
                 f"{h.get('EscalatedResidualRiskForMapping',0.0):.12f}",
-                h.get("ruleId","")
+                h.get("ruleId", ""),
+                "; ".join(stds) if stds else "",
+                "; ".join(sorted(tags_sel)) if tags_sel else ""
             ]
-            cf.write(",".join([str(x).replace("\n"," ") for x in row]) + "\n")
+            cf.write(",".join(_csv_escape(x) for x in row) + "\n")
 
     print("Rendered markdown to", out_md)
     print("Per-hazard CSV written to", csv_path)

@@ -22,6 +22,7 @@
       hazards: [],
       loading: true,
       error: null,
+      expandedHelp: null,
       selectedCohort: '',
       selectedEquipment: null,
       equipmentId: '',
@@ -66,6 +67,7 @@
           Exposure_label: q.defaultExposure || '',
           Detectability_label: q.defaultDetectability || '',
           ControlEffectiveness_label: q.defaultControlEffectiveness || '',
+          contextualTags_selected: [],
         };
       });
       render();
@@ -81,6 +83,22 @@
     function setHazardRating(hazardId, field, value) {
       state.hazardRatings[hazardId] = state.hazardRatings[hazardId] || {};
       state.hazardRatings[hazardId][field] = value;
+      render();
+    }
+
+    function toggleHelp(hazardId, field) {
+      const key = hazardId + '.' + field;
+      state.expandedHelp = state.expandedHelp === key ? null : key;
+      render();
+    }
+
+    function toggleContextualTag(hazardId, tag) {
+      const r = state.hazardRatings[hazardId] || {};
+      const sel = r.contextualTags_selected || [];
+      const i = sel.indexOf(tag);
+      if (i >= 0) sel.splice(i, 1);
+      else sel.push(tag);
+      state.hazardRatings[hazardId] = { ...r, contextualTags_selected: sel };
       render();
     }
 
@@ -105,14 +123,17 @@
           type: state.selectedEquipment.name,
           siteContext: state.siteContext,
           controlArchitecture: 'PLC or SCADA',
-          hazards: state.hazards.map(h => ({
-            hazardId: h.hazardId,
-            title: h.title,
-            definition: h.definition,
-            contextualTags: h.contextualTags || [],
-            ruleId: h.ruleId || '',
-            ...state.hazardRatings[h.hazardId],
-          })),
+          hazards: state.hazards.map(h => {
+            const r = state.hazardRatings[h.hazardId] || {};
+            return {
+              hazardId: h.hazardId,
+              title: h.title,
+              definition: h.definition,
+              contextualTags: r.contextualTags_selected || [],
+              ruleId: h.ruleId || '',
+              ...r,
+            };
+          }),
           rulesetId: state.catalog.rulesetId,
           hazcatVersion: state.catalog.hazcatVersion,
         };
@@ -191,19 +212,42 @@
         if (state.hazards.length === 0) html += '<p class="text-slate-500">Loading hazards...</p>';
         state.hazards.forEach(h => {
           const r = state.hazardRatings[h.hazardId] || {};
-          html += '<div class="rounded-lg border border-slate-100 bg-slate-50 p-4"><h3 class="font-medium">'+h.title+'</h3><p class="mt-1 text-sm text-slate-600">'+h.definition+'</p><div class="mt-3 grid gap-3 sm:grid-cols-2">';
-          [
-            {key:'Severity_label',l:'Severity',opts:h.severityOptions?.map(o=>o.label)||[]},
-            {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions?.map(o=>o.label)||[]},
-            {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions?.map(o=>o.label)||[]},
-            {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions?.map(o=>o.label)||[]},
-            {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions?.map(o=>o.label)||[]},
-          ].forEach(({key,l,opts}) => {
-            html += '<div><label class="block text-xs font-medium text-slate-500">'+l+'</label><select onchange="setHazardRating(\''+h.hazardId+'\',\''+key+'\',this.value)" class="mt-0.5 w-full rounded border border-slate-200 px-2 py-1.5 text-sm">';
+          const selTags = r.contextualTags_selected || [];
+          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><h3 class="font-medium">'+h.title+'</h3><p class="mt-1 text-sm text-slate-600">'+h.definition+'</p>';
+          const fields = [
+            {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
+            {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
+            {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
+            {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
+            {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
+          ];
+          fields.forEach(({key,l,opts}) => {
+            const sel = r[key]||'';
+            const selOpt = opts.find(o=>(o.label||o)===sel);
+            html += '<div class="mt-3"><div class="flex items-center gap-2"><label class="block text-xs font-medium text-slate-500">'+l+'</label>';
+            html += '<select onchange="setHazardRating(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+key+'\',this.value)" class="flex-1 rounded border border-slate-200 px-2 py-1.5 text-sm">';
             html += '<option value="">Select...</option>';
-            opts.forEach(o => html += '<option value="'+o+'"'+(r[key]===o?' selected':'')+'>'+o+'</option>');
-            html += '</select></div>';
+            (opts||[]).forEach(o => { const lab = o.label||o; html += '<option value="'+lab.replace(/"/g,'&quot;')+'"'+(sel===lab?' selected':'')+'>'+lab+'</option>'; });
+            html += '</select>';
+            if (selOpt && (selOpt.help||selOpt.example)) {
+              const isExp = state.expandedHelp === h.hazardId+'.'+key;
+              const info = (selOpt.help||'') + (selOpt.example ? ' Example: ' + selOpt.example : '');
+              html += '<button type="button" title="Show help" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full '+(isExp?'bg-slate-500 text-white':'bg-slate-300 text-slate-600 hover:bg-slate-400')+' text-xs font-bold" onclick="toggleHelp(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+key.replace(/'/g,"\\'")+'\')">i</button>';
+              if (isExp) html += '<div class="mt-1 w-full rounded bg-slate-100 px-2 py-1.5 text-xs text-slate-700">'+info.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';
+            }
+            html += '</div></div>';
           });
+          if (h.contextualTags && h.contextualTags.length > 0) {
+            html += '<div class="mt-3"><label class="block text-xs font-medium text-slate-500">Contextual tags (select all that apply)</label>';
+            html += '<div class="mt-1 flex flex-wrap gap-2">';
+            h.contextualTags.forEach(tag => {
+              const checked = selTags.includes(tag);
+              html += '<label class="inline-flex cursor-pointer items-center gap-1.5 rounded border px-2 py-1 text-xs '+(checked?'border-emerald-500 bg-emerald-50':'border-slate-200 hover:bg-slate-100')+'">';
+              html += '<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleContextualTag(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+tag.replace(/'/g,"\\'")+'\')">';
+              html += '<span>'+tag+'</span></label>';
+            });
+            html += '</div></div>';
+          }
           html += '</div></div>';
         });
         html += '<div class="flex gap-2"><button onclick="state.step=2;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
@@ -217,6 +261,17 @@
         html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Equipment</dt><dd>'+state.selectedEquipment.name+'</dd>';
         html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>'+sc.cleanroomClass+', '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+'</dd>';
         html += '<dt class="mt-2 font-medium text-slate-500">Hazards</dt><dd>'+state.hazards.length+' configured</dd></dl>';
+        html += '<div class="space-y-3"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
+        state.hazards.forEach(h => {
+          const r = state.hazardRatings[h.hazardId] || {};
+          html += '<div class="rounded-lg border border-slate-100 bg-slate-50 p-3"><div class="font-medium text-sm">'+h.title+'</div>';
+          html += '<div class="mt-1 text-xs text-slate-600">Severity: '+(r.Severity_label||'—')+', Probability: '+(r.ProbabilityOfOccurrence_label||'—')+', Exposure: '+(r.Exposure_label||'—')+', Detectability: '+(r.Detectability_label||'—')+', Control: '+(r.ControlEffectiveness_label||'—')+'</div>';
+          if (h.ruleId) html += '<div class="mt-1 text-xs text-slate-500"><strong>Rule:</strong> '+h.ruleId+'</div>';
+          if (h.standards && h.standards.length) html += '<div class="mt-0.5 text-xs text-slate-500"><strong>Standards:</strong> '+h.standards.join(', ')+'</div>';
+          if (r.contextualTags_selected && r.contextualTags_selected.length) html += '<div class="mt-0.5 text-xs text-slate-500"><strong>Selected tags:</strong> '+r.contextualTags_selected.join(', ')+'</div>';
+          html += '</div>';
+        });
+        html += '</div>';
         html += '<div class="flex gap-2"><button onclick="state.step=3;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
         html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate package')+'</button></div></div>';
       }

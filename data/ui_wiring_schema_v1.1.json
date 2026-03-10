@@ -113,6 +113,7 @@
     ]
   },
   "perHazardStepper": {
+    "showOptionHelpIcon": true,
     "fieldsPerHazard": [
       {
         "id": "Severity",
@@ -120,6 +121,7 @@
         "label": "Severity",
         "help": "Select the severity of the harm that could result if the hazard occurs.",
         "optionsSource": "hazard.severityOptions",
+        "optionFields": ["label", "help", "example"],
         "required": true
       },
       {
@@ -128,6 +130,7 @@
         "label": "Probability of Occurrence",
         "help": "Select how often the hazardous event is expected to occur under current controls.",
         "optionsSource": "hazard.probabilityOptions",
+        "optionFields": ["label", "help", "example"],
         "required": true
       },
       {
@@ -136,6 +139,7 @@
         "label": "Exposure",
         "help": "Select how often the product or people are exposed to the hazard.",
         "optionsSource": "hazard.exposureOptions",
+        "optionFields": ["label", "help", "example"],
         "required": true
       },
       {
@@ -144,6 +148,7 @@
         "label": "Detectability",
         "help": "Select how likely the hazard is to be detected before it causes harm.",
         "optionsSource": "hazard.detectabilityOptions",
+        "optionFields": ["label", "help", "example"],
         "required": true
       },
       {
@@ -152,15 +157,17 @@
         "label": "Control Effectiveness",
         "help": "Select how effective existing controls are at reducing the hazard.",
         "optionsSource": "hazard.controlEffectivenessOptions",
+        "optionFields": ["label", "help", "example"],
         "required": true
       },
       {
-        "id": "contextualTags",
+        "id": "contextualTags_selected",
         "type": "multiselect",
-        "label": "Contextual selectors",
-        "help": "Select all contextual tags that apply to refine defaults and traceability.",
+        "label": "Contextual tags (select all that apply)",
+        "help": "View catalog contextual tags and select all that apply to refine traceability.",
         "optionsSource": "hazard.contextualTags",
-        "required": true,
+        "storeAs": "contextualTags_selected",
+        "required": false,
         "minSelected": 0
       },
       {
@@ -189,6 +196,8 @@
       "Adjusted Risk",
       "Residual Risk"
     ],
+    "hazardMetadataFields": ["ruleId", "standards"],
+    "showOptionHelpToggle": true,
     "residualRiskIndex": {
       "label": "Residual Risk Index",
       "help": "Aggregated index used to map to qualification band."

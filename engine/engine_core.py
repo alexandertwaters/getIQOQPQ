@@ -11,6 +11,29 @@ except ImportError:
     from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
     from fingerprint import canonicalize_package_for_fingerprint
 
+_HAZCAT_CACHE = {}
+
+def _load_hazcat(hazcat_version):
+    """Load hazcat by version; resolve path and cache."""
+    if hazcat_version in _HAZCAT_CACHE:
+        return _HAZCAT_CACHE[hazcat_version]
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base, "data", f"{hazcat_version}_equipment_types.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    _HAZCAT_CACHE[hazcat_version] = data
+    return data
+
+def _find_hazard_in_catalog(hazcat, hazard_id):
+    """Find hazard metadata by hazardId across all equipment types."""
+    for et in hazcat.get("equipmentTypes", []):
+        for h in et.get("hazards", []):
+            if h.get("hazardId") == hazard_id:
+                return h
+    return {}
+
 def run_vector(vector):
     pkg = {}
     pkg["equipment"] = {"cohort": vector["cohort"], "type": vector["type"], "model": vector.get("model", "")}
@@ -21,7 +44,10 @@ def run_vector(vector):
     pkg["packageTemplateVersion"] = "v1.0"
     pkg["hazards"] = []
 
+    hazcat = _load_hazcat(vector["hazcatVersion"])
+
     for h in vector["hazards"]:
+        catalog = _find_hazard_in_catalog(hazcat, h["hazardId"])
         hazard_labels = {
             "Severity_label": h.get("Severity_label") or h.get("Severity"),
             "ProbabilityOfOccurrence_label": h.get("ProbabilityOfOccurrence_label") or h.get("ProbabilityOfOccurrence"),
@@ -30,11 +56,23 @@ def run_vector(vector):
             "ControlEffectiveness_label": h.get("ControlEffectiveness_label") or h.get("ControlEffectiveness")
         }
         numeric = compute_hazard_numeric_from_labels(hazard_labels)
+        # User-selected contextual tags (from vector); catalog has full list
+        contextual_tags_selected = h.get("contextualTags", [])
+
         hazard_entry = {
             "hazardId": h["hazardId"],
-            "title": h.get("title", ""),
-            "definition": h.get("definition", ""),
-            "contextualTags": h.get("contextualTags", []),
+            "title": catalog.get("title") or h.get("title", ""),
+            "definition": catalog.get("definition") or h.get("definition", ""),
+            "contextualTags": catalog.get("contextualTags", []),
+            "contextualTags_selected": contextual_tags_selected,
+            "severityOptions": catalog.get("severityOptions", []),
+            "probabilityOptions": catalog.get("probabilityOptions", []),
+            "exposureOptions": catalog.get("exposureOptions", []),
+            "detectabilityOptions": catalog.get("detectabilityOptions", []),
+            "controlEffectivenessOptions": catalog.get("controlEffectivenessOptions", []),
+            "quickDefaults": catalog.get("quickDefaults", {}),
+            "ruleId": catalog.get("ruleId") or h.get("ruleId", ""),
+            "standards": catalog.get("standards", []),
             "Severity_label": hazard_labels["Severity_label"],
             "ProbabilityOfOccurrence_label": hazard_labels["ProbabilityOfOccurrence_label"],
             "Exposure_label": hazard_labels["Exposure_label"],
@@ -48,7 +86,6 @@ def run_vector(vector):
             "RawRisk": numeric["RawRisk"],
             "AdjustedRisk": numeric["AdjustedRisk"],
             "ResidualRisk": numeric["ResidualRisk"],
-            "ruleId": h.get("ruleId", "")
         }
         pkg["hazards"].append(hazard_entry)
 
@@ -82,9 +119,10 @@ def main():
     for v in vectors_doc["vectors"]:
         pkg = run_vector(v["input"])
         fp = pkg["fingerprint"]
-        outdir = os.path.join(args.output, fp.replace(":", "_"))
+        safe_fp = fp.replace(":", "_")
+        outdir = os.path.join(args.output, safe_fp)
         os.makedirs(outdir, exist_ok=True)
-        with open(os.path.join(outdir, f"{fp}.json"), 'w', encoding='utf8') as of:
+        with open(os.path.join(outdir, f"{safe_fp}.json"), 'w', encoding='utf8') as of:
             json.dump(pkg, of, indent=2)
         results.append({"id": v["id"], "fingerprint": fp, "qualificationBand": pkg["qualificationBand"]})
 

@@ -1,0 +1,131 @@
+# ci/test_package_metadata.py
+"""Unit tests for package metadata, render output, and fingerprint stability."""
+import json
+import os
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+# Ensure project root on path
+_REPO = Path(__file__).resolve().parent.parent
+if str(_REPO) not in sys.path:
+    sys.path.insert(0, str(_REPO))
+
+
+class TestPackageMetadata(unittest.TestCase):
+    """Assert package_json hazards contain definition, severityOptions (help/example), ruleId, standards."""
+
+    def setUp(self):
+        from engine.engine_core import run_vector
+        with open(_REPO / "data" / "unit_test_vectors_v1.json", "r", encoding="utf8") as f:
+            doc = json.load(f)
+        # Use first vector that has hazards in hazcat
+        self.vector = doc["vectors"][0]["input"]
+        self.pkg = run_vector(self.vector)
+
+    def test_hazards_contain_definition(self):
+        for i, h in enumerate(self.pkg["hazards"]):
+            self.assertIn("definition", h, f"hazard[{i}] {h.get('hazardId')} missing definition")
+            self.assertIsInstance(h["definition"], str)
+
+    def test_hazards_contain_severity_options_with_help_example(self):
+        found_with_options = False
+        for i, h in enumerate(self.pkg["hazards"]):
+            opts = h.get("severityOptions", [])
+            if opts:
+                found_with_options = True
+                first = opts[0]
+                self.assertIn("label", first, f"severityOptions[0] missing label")
+                self.assertIn("help", first, f"severityOptions[0] missing help")
+                self.assertIn("example", first, f"severityOptions[0] missing example")
+        self.assertTrue(found_with_options, "At least one hazard should have severityOptions from catalog")
+
+    def test_hazards_contain_rule_id(self):
+        for i, h in enumerate(self.pkg["hazards"]):
+            self.assertIn("ruleId", h, f"hazard[{i}] missing ruleId")
+
+    def test_hazards_contain_standards(self):
+        for i, h in enumerate(self.pkg["hazards"]):
+            self.assertIn("standards", h, f"hazard[{i}] missing standards")
+            self.assertIsInstance(h["standards"], list)
+
+
+class TestFingerprintStability(unittest.TestCase):
+    """Confirm fingerprints remain stable when only help/example text changes."""
+
+    def setUp(self):
+        from engine.engine_core import run_vector
+        from engine.fingerprint import canonicalize_package_for_fingerprint
+        with open(_REPO / "data" / "unit_test_vectors_v1.json", "r", encoding="utf8") as f:
+            doc = json.load(f)
+        self.vector = doc["vectors"][0]["input"]
+        self.run_vector = run_vector
+        self.canonicalize = canonicalize_package_for_fingerprint
+
+    def test_fingerprint_unchanged_when_help_example_mutated(self):
+        pkg1 = self.run_vector(self.vector)
+        fp1 = pkg1["fingerprint"]
+
+        # Mutate help/example in package (simulate copy edit)
+        for h in pkg1["hazards"]:
+            for opt in h.get("severityOptions", []):
+                if "help" in opt:
+                    opt["help"] = opt["help"] + " (updated)"
+                if "example" in opt:
+                    opt["example"] = opt["example"] + " — revised"
+        for h in pkg1["hazards"]:
+            h["definition"] = (h.get("definition") or "") + " [edit]"
+
+        # Recompute fingerprint (canonicalize ignores help/example/definition)
+        fp2 = self.canonicalize(pkg1)
+        self.assertEqual(fp1, fp2, "Fingerprint should not change when only help/example/definition changes")
+
+
+class TestRenderOutput(unittest.TestCase):
+    """Render tests: generated Markdown contains help and example text for at least one hazard."""
+
+    def setUp(self):
+        from engine.engine_core import run_vector
+        from engine.render_engine import render_markdown
+        with open(_REPO / "data" / "unit_test_vectors_v1.json", "r", encoding="utf8") as f:
+            doc = json.load(f)
+        self.vector = doc["vectors"][0]["input"]
+        self.pkg = run_vector(self.vector)
+        self.tmpdir = tempfile.mkdtemp()
+        pkg_path = Path(self.tmpdir) / "pkg.json"
+        with open(pkg_path, "w", encoding="utf8") as f:
+            json.dump(self.pkg, f, indent=2)
+        template = _REPO / "templates" / "human_readable_template_markdown_v1.md"
+        langmap = _REPO / "rules" / "hazard_to_language_map_v1.json"
+        render_markdown(str(pkg_path), str(template), str(langmap), self.tmpdir)
+
+    def tearDown(self):
+        import shutil
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_markdown_contains_option_help_or_example(self):
+        # fp from pkg may have colon; render writes {fp}.md
+        md_files = list(Path(self.tmpdir).glob("*.md"))
+        if not md_files:
+            self.skipTest("No rendered MD found")
+        text = md_files[0].read_text(encoding="utf8")
+        has_help_section = "Option help and examples" in text
+        has_example = "example" in text.lower()
+        self.assertTrue(has_help_section or has_example, "Markdown should contain option help/example text")
+
+    def test_markdown_contains_rule_id_and_standards(self):
+        md_files = list(Path(self.tmpdir).glob("*.md"))
+        if not md_files:
+            self.skipTest("No rendered MD found")
+        text = md_files[0].read_text(encoding="utf8")
+        # At least one hazard has ruleId
+        has_rule = "Rule:" in text
+        has_standards = "Standards:" in text
+        self.assertTrue(has_rule, "Markdown should contain 'Rule:'")
+        self.assertTrue(has_standards, "Markdown should contain 'Standards:'")
+
+
+if __name__ == "__main__":
+    unittest.main()

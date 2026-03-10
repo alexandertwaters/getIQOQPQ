@@ -1,9 +1,33 @@
-﻿# engine/fingerprint.py
+# engine/fingerprint.py
+"""
+Canonical fingerprint of package for reproducible hashing.
+Excludes freeform text (title, definition, help/example) to avoid churn from copy edits.
+ruleId included: affects IQ/OQ/PQ mapping; changes imply ruleset bump.
+standards excluded: catalog metadata; hazcatVersion covers versioning.
+"""
 import json
 import hashlib
 from collections import OrderedDict
 
 NUMERIC_PRECISION = 12
+
+# Keys included in per-hazard canonical form. Excludes: title, definition,
+# severityOptions, probabilityOptions, exposureOptions, detectabilityOptions,
+# controlEffectivenessOptions, quickDefaults, standards (freeform/help text).
+CANONICAL_HAZARD_KEYS = [
+    "hazardId",
+    "contextualTags",      # populated from contextualTags_selected
+    "Severity",
+    "ProbabilityOfOccurrence",
+    "Exposure",
+    "Detectability",
+    "ControlEffectiveness",
+    "RawRisk",
+    "AdjustedRisk",
+    "ResidualRisk",
+    "EscalatedResidualRiskForMapping",
+    "ruleId",
+]
 
 def format_num(v):
     return f"{v:.{NUMERIC_PRECISION}f}"
@@ -22,10 +46,12 @@ def canonicalize_package_for_fingerprint(pkg):
     hazards = sorted(pkg["hazards"], key=lambda h: h["hazardId"])
     canonical_hazards = []
     for h in hazards:
+        tags = h.get("contextualTags_selected")
+        if tags is None:
+            tags = h.get("contextualTags", [])
         ch = OrderedDict()
         ch["hazardId"] = h["hazardId"]
-        ch["title"] = h.get("title", "")
-        ch["contextualTags"] = sorted(h.get("contextualTags", []))
+        ch["contextualTags"] = sorted(tags)
         ch["Severity"] = format_num(h["Severity"])
         ch["ProbabilityOfOccurrence"] = format_num(h["ProbabilityOfOccurrence"])
         ch["Exposure"] = format_num(h["Exposure"])
@@ -34,8 +60,9 @@ def canonicalize_package_for_fingerprint(pkg):
         ch["RawRisk"] = format_num(h["RawRisk"])
         ch["AdjustedRisk"] = format_num(h["AdjustedRisk"])
         ch["ResidualRisk"] = format_num(h["ResidualRisk"])
-        if "EscalatedResidualRiskForMapping" in h:
-            ch["EscalatedResidualRiskForMapping"] = format_num(h["EscalatedResidualRiskForMapping"])
+        ch["EscalatedResidualRiskForMapping"] = format_num(
+            h.get("EscalatedResidualRiskForMapping", h["ResidualRisk"])
+        )
         ch["ruleId"] = h.get("ruleId", "")
         canonical_hazards.append(ch)
     canonical["hazards"] = canonical_hazards

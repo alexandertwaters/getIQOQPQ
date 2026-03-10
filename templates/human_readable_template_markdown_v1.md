@@ -17,17 +17,53 @@
 
 ## Impact assessment (per hazard)
 {% for h in hazards %}
-### Hazard: {{ h.title }} ({{ h.hazardId }})
-**Definition**: {{ h.definition }}
-**Standards**: {{ h.standards_comma }}
-**Contextual tags**: {{ h.contextualTags_comma }}
+### {{ h.hazardId }} — {{ h.title }}
 
-**Selected inputs**
-- **Severity**: {{ h.Severity_label }}
-- **Probability of Occurrence**: {{ h.ProbabilityOfOccurrence_label }}
-- **Exposure**: {{ h.Exposure_label }}
-- **Detectability**: {{ h.Detectability_label }}
-- **Control Effectiveness**: {{ h.ControlEffectiveness_label }}
+**Definition**: {{ h.definition }}
+
+**Selected labels**
+- Severity: **{{ h.Severity_label }}** (value: {{ h.Severity_value | default('N/A') }})
+- Probability: **{{ h.ProbabilityOfOccurrence_label }}**
+- Exposure: **{{ h.Exposure_label }}**
+- Detectability: **{{ h.Detectability_label }}**
+- Control Effectiveness: **{{ h.ControlEffectiveness_label }}**
+
+**Contextual tags (catalog):** {{ h.contextualTags_catalog_comma }}
+**Contextual tags (selected):** {{ h.contextualTags_selected_comma }}
+
+**Rule:** {{ h.ruleId }}
+**Standards:** {{ h.standards_comma }}
+
+{% if h.severityOptions %}
+**Option help and examples (Severity)**
+{% for opt in h.severityOptions %}
+- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
+{% endfor %}
+{% endif %}
+{% if h.probabilityOptions %}
+**Option help and examples (Probability)**
+{% for opt in h.probabilityOptions %}
+- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
+{% endfor %}
+{% endif %}
+{% if h.exposureOptions %}
+**Option help and examples (Exposure)**
+{% for opt in h.exposureOptions %}
+- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
+{% endfor %}
+{% endif %}
+{% if h.detectabilityOptions %}
+**Option help and examples (Detectability)**
+{% for opt in h.detectabilityOptions %}
+- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
+{% endfor %}
+{% endif %}
+{% if h.controlEffectivenessOptions %}
+**Option help and examples (Control Effectiveness)**
+{% for opt in h.controlEffectivenessOptions %}
+- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
+{% endfor %}
+{% endif %}
 
 **Numeric calculations**
 - Raw Risk = {{ h.RawRisk }}

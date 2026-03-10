@@ -11,6 +11,11 @@
     "Adjusted Risk",
     "Residual Risk"
   ],
+  "hazardMetadataFields": [
+    "ruleId",
+    "standards"
+  ],
+  "showOptionHelpToggle": true,
   "residualRiskIndex": {
     "label": "Residual Risk Index",
     "help": "Aggregated index used to map to qualification band."

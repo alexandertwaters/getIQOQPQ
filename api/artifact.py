@@ -17,6 +17,22 @@ def _get_supabase():
     return create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 
+def _extract_metadata(pkg):
+    """Extract small metadata summary for API clients without downloading full JSON."""
+    if not pkg:
+        return None
+    hazards = pkg.get("hazards", [])
+    rule_ids = list(dict.fromkeys(h.get("ruleId", "") for h in hazards if h.get("ruleId")))
+    standards = sorted(set(s for h in hazards for s in h.get("standards", [])))
+    return {
+        "rulesetId": pkg.get("rulesetId"),
+        "hazcatVersion": pkg.get("hazcatVersion"),
+        "qualificationBand": pkg.get("qualificationBand"),
+        "ruleIds": rule_ids,
+        "standards": standards,
+    }
+
+
 def _handle_get(fingerprint):
     if not fingerprint:
         return 400, {"error": "fingerprint required"}
@@ -27,6 +43,14 @@ def _handle_get(fingerprint):
 
     safe_folder = fingerprint.replace(":", "_")
     prefix = f"{safe_folder}/"
+
+    metadata = None
+    try:
+        row = supabase.table("packages").select("package_json").eq("fingerprint", fingerprint).execute()
+        if row.data and len(row.data) > 0:
+            metadata = _extract_metadata(row.data[0].get("package_json"))
+    except Exception:
+        pass
 
     try:
         listing = supabase.storage.from_(ARTIFACT_BUCKET).list(prefix)
@@ -49,7 +73,10 @@ def _handle_get(fingerprint):
         except Exception as e:
             signed_urls[name] = {"error": str(e)}
 
-    return 200, {"files": signed_urls}
+    resp = {"files": signed_urls}
+    if metadata:
+        resp["metadata"] = metadata
+    return 200, resp
 
 
 class handler(BaseHTTPRequestHandler):

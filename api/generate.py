@@ -115,7 +115,7 @@ def _handle_post(payload):
         try:
             supabase.table("packages").upsert({
                 "fingerprint": fingerprint,
-                "package_json": pkg,
+                "package_json": pkg,  # full enriched package (hazard metadata, option arrays, standards)
                 "artifact_path": f"{base_path}/",
                 "ruleset_id": pkg.get("rulesetId"),
                 "hazcat_version": pkg.get("hazcatVersion"),
@@ -128,6 +128,13 @@ def _handle_post(payload):
         "fingerprint": fingerprint,
         "artifactPath": f"{base_path}/",
         "artifactBucket": ARTIFACT_BUCKET,
+        "metadata": {
+            "rulesetId": pkg.get("rulesetId"),
+            "hazcatVersion": pkg.get("hazcatVersion"),
+            "qualificationBand": pkg.get("qualificationBand"),
+            "ruleIds": list(dict.fromkeys(h.get("ruleId", "") for h in pkg.get("hazards", []) if h.get("ruleId"))),
+            "standards": sorted(set(s for h in pkg.get("hazards", []) for s in h.get("standards", []))),
+        },
     }
 
 

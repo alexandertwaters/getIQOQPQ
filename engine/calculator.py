@@ -1,4 +1,4 @@
-﻿# engine/calculator.py
+# engine/calculator.py
 NUM_MAP = {
     "Severity": {"Catastrophic":1.0,"Major":0.8,"Moderate":0.5,"Minor":0.2,"Negligible":0.0},
     "ProbabilityOfOccurrence": {"Frequent":0.8,"Occasional":0.5,"Remote":0.2,"Extremely remote":0.05},
@@ -7,18 +7,25 @@ NUM_MAP = {
     "ControlEffectiveness": {"Very effective":0.2,"Effective":0.4,"Partially effective":0.7,"Ineffective":1.0}
 }
 
-def compute_hazard_numeric_from_labels(hazard_labels):
-    s_label = hazard_labels["Severity_label"]
-    p_label = hazard_labels["ProbabilityOfOccurrence_label"]
-    e_label = hazard_labels["Exposure_label"]
-    d_label = hazard_labels["Detectability_label"]
-    c_label = hazard_labels["ControlEffectiveness_label"]
+def _lookup(key, val, map_key):
+    """Resolve value: if numeric use as-is, else look up label in NUM_MAP."""
+    if isinstance(val, (int, float)) and not isinstance(val, bool):
+        return float(val)
+    return NUM_MAP[map_key].get(val, 0.0)
 
-    s = NUM_MAP["Severity"][s_label]
-    p = NUM_MAP["ProbabilityOfOccurrence"][p_label]
-    e = NUM_MAP["Exposure"][e_label]
-    d = NUM_MAP["Detectability"][d_label]
-    c = NUM_MAP["ControlEffectiveness"][c_label]
+
+def compute_hazard_numeric_from_labels(hazard_labels):
+    s_label = hazard_labels.get("Severity_label") or hazard_labels.get("Severity")
+    p_label = hazard_labels.get("ProbabilityOfOccurrence_label") or hazard_labels.get("ProbabilityOfOccurrence")
+    e_label = hazard_labels.get("Exposure_label") or hazard_labels.get("Exposure")
+    d_label = hazard_labels.get("Detectability_label") or hazard_labels.get("Detectability")
+    c_label = hazard_labels.get("ControlEffectiveness_label") or hazard_labels.get("ControlEffectiveness")
+
+    s = _lookup("Severity_label", s_label, "Severity")
+    p = _lookup("ProbabilityOfOccurrence_label", p_label, "ProbabilityOfOccurrence")
+    e = _lookup("Exposure_label", e_label, "Exposure")
+    d = _lookup("Detectability_label", d_label, "Detectability")
+    c = _lookup("ControlEffectiveness_label", c_label, "ControlEffectiveness")
 
     raw = s * p
     adjusted = raw * e * (1 - d)

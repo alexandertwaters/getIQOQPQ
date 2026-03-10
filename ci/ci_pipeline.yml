@@ -1,4 +1,7 @@
 # ci/ci_pipeline.yml
+default:
+  image: python:3.12
+
 stages:
   - validate
   - generate_ui
@@ -24,6 +27,7 @@ unit_test:
   script:
     - python engine/engine_core.py --mode dryrun --vectors data/unit_test_vectors_v1.json --output artifacts/dryrun
     - python ci/test_vectors_runner.py --actual artifacts/dryrun/run_summary.json --expected data/expected_fingerprints_v1.json
+    - python -m unittest ci.test_package_metadata -v
 
 render:
   stage: render

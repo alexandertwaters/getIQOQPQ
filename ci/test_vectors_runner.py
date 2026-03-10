@@ -1,4 +1,6 @@
-﻿# ci/test_vectors_runner.py
+# ci/test_vectors_runner.py
+# Compares actual vs expected fingerprints. Fingerprint excludes help/example/definition
+# to avoid churn; metadata validation is in human_draft_tests.
 import json
 import sys
 import argparse
