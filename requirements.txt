@@ -1,4 +1,4 @@
-﻿jinja2
-supabase
-stripe
-requests
+jinja2>=3.0
+supabase>=2.0
+stripe>=7.0
+requests>=2.28
