@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "out",
+  "buildCommand": "echo 'Static site'",
+  "outputDirectory": "public",
   "rewrites": [
     { "source": "/api/v1/generate", "destination": "/api/generate" },
     { "source": "/api/v1/artifact", "destination": "/api/artifact" },
