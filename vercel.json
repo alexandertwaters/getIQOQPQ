@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/api/v1/generate", "destination": "/api/generate" },
-    { "source": "/api/v1/artifact", "destination": "/api/artifact" }
+    { "source": "/api/v1/artifact", "destination": "/api/artifact" },
+    { "source": "/api/v1/equipment-types", "destination": "/api/v1/equipment_types" }
   ],
   "env": {
     "ARTIFACT_BUCKET": "artifacts"
