@@ -15,7 +15,15 @@ Repository for deterministic IQ/OQ/PQ advisory package generation.
 - `GET /api/v1/hazards?equipmentTypeId=...` – returns hazards for equipment type
 - `GET /api/v1/equipment-types` – returns cohorts and equipment types for wizard
 
+## Frontend
+```bash
+npm install
+npm run dev
+```
+Open http://localhost:3000 for the wizard UI.
+
 ## Deployment
-1. Deploy to Vercel; set env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ARTIFACT_BUCKET`
-2. Run Supabase migrations in `supabase/migrations/`
-3. Create storage bucket `artifacts` (private) in Supabase dashboard
+1. Deploy to Vercel; set Framework Preset to **Next.js** (or leave auto-detect)
+2. Set env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ARTIFACT_BUCKET`
+3. Run Supabase migrations in `supabase/migrations/`
+4. Create storage bucket `artifacts` (private) in Supabase dashboard
