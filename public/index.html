@@ -267,6 +267,7 @@
         const sc = state.siteContext;
         const payload = {
           equipmentId: state.equipmentId || 'E-' + state.selectedEquipment.id + '-001',
+          equipmentTypeId: state.selectedEquipment.id,
           cohort: state.selectedCohort,
           type: state.selectedEquipment.name,
           siteContext: {
@@ -535,12 +536,6 @@
         html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
         html += '<h2 class="text-lg font-semibold text-emerald-800 no-print">Draft generated</h2>';
         html += '<div class="flex flex-wrap gap-2 no-print">';
-        if (state.artifactUrls) {
-          Object.entries(state.artifactUrls).forEach(([name, url]) => {
-            if (typeof url === 'string' && !url.includes('error'))
-              html += '<a href="'+url+'" download target="_blank" rel="noopener noreferrer" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download '+(name.endsWith('.md')?'Markdown':name.endsWith('.json')?'JSON':'CSV')+'</a>';
-          });
-        }
         html += '<button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button>';
         html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
         html += '</div>';

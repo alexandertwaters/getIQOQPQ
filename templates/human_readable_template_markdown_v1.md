@@ -1,118 +1,148 @@
+<div align="center">
+
 # Installation Qualification, Operational Qualification, Performance Qualification
-**Equipment**: {{ equipment.type }}
-**Model**: {{ equipment.model }}
+
+</div>
+
 **Cohort**: {{ equipment.cohort }}
-**Site context**: Cleanroom {{ siteContext.cleanroomClass }}; Utilities: {{ siteContext.utilities_comma }}; Product contact: {{ siteContext.productContact_label }}; Throughput: {{ siteContext.productionThroughput }}
-{% if equipmentControls %}
-**Equipment controls (risk adjustment inputs):** {% if equipmentControls %}{% for k, v in equipmentControls.items() | sort %}{{ k }}={{ v }}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}None{% endif %}
+**Equipment**: {{ equipment.type }}
+
+{% if equipmentControlsFormatted and equipmentControlsFormatted | length > 0 %}
+**Equipment controls**
+{% for line in equipmentControlsFormatted %}
+- {{ line }}
+{% endfor %}
 {% endif %}
-**Ruleset**: {{ rulesetId }}  •  **Hazard catalog**: {{ hazcatVersion }}
-**Package fingerprint**: {{ fingerprint }}
 
 ---
 
 ## Executive summary
-**Qualification band**: **{{ qualificationBand }}**
-**Residual Risk Index**: **{{ ResidualRiskIndex }}**
+
+**Qualification band**: {{ qualificationBand }}
+
+**Residual Risk Index**: {{ ResidualRiskIndex }}
+
 **Recommendation**: {{ recommendation }}
 
 ---
 
 ## Impact assessment (per hazard)
+
 {% for h in hazards %}
-### {{ h.hazardId }} — {{ h.title }}
+### {{ h.title }}
 
-**Definition**: {{ h.definition }}
+{{ h.definition }}
 
-**Selected labels**
-- Severity: **{{ h.Severity_label }}** (value: {{ h.Severity_value | default('N/A') }})
-- Probability: **{{ h.ProbabilityOfOccurrence_label }}**
-- Exposure: **{{ h.Exposure_label }}**
-- Detectability: **{{ h.Detectability_label }}**
-- Control Effectiveness: **{{ h.ControlEffectiveness_label }}**
+| Selected labels | Value |
+|-----------------|-------|
+| Severity | {{ h.Severity_label }} ({{ h.Severity_value | default('N/A') }}) |
+| Probability of occurrence | {{ h.ProbabilityOfOccurrence_label }} |
+| Exposure | {{ h.Exposure_label }} |
+| Detectability | {{ h.Detectability_label }} |
+| Control effectiveness | {{ h.ControlEffectiveness_label }} |
 
 {% if h.hazardContext %}
+**Hazard Modifiers**
 {% for k, v in h.hazardContext.items() %}
 {% if v is not none and v != false and v != '' %}
-{% if v is sequence and v is not string %}
-**Hazard context {{ k }}:** {{ v | join(', ') }}
-{% else %}
-**Hazard context {{ k }}:** {{ v }}
-{% endif %}
+- {{ k }}: {% if v is sequence and v is not string %}{{ v | join(', ') }}{% else %}{{ v }}{% endif %}
 {% endif %}
 {% endfor %}
 {% endif %}
+
+**Relevant Standards**: {{ h.standards_comma }}
+
 {% if h.qualificationDepthEscalation %}
-**Qualification depth escalation:** Yes (challenging load/context; extra OQ/PQ items added){% endif %}
-
-**Rule:** {{ h.ruleId }}
-**Standards:** {{ h.standards_comma }}
-
-{% if h.severityOptions %}
-**Option help and examples (Severity)**
-{% for opt in h.severityOptions %}
-- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
-{% endfor %}
-{% endif %}
-{% if h.probabilityOptions %}
-**Option help and examples (Probability)**
-{% for opt in h.probabilityOptions %}
-- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
-{% endfor %}
-{% endif %}
-{% if h.exposureOptions %}
-**Option help and examples (Exposure)**
-{% for opt in h.exposureOptions %}
-- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
-{% endfor %}
-{% endif %}
-{% if h.detectabilityOptions %}
-**Option help and examples (Detectability)**
-{% for opt in h.detectabilityOptions %}
-- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
-{% endfor %}
-{% endif %}
-{% if h.controlEffectivenessOptions %}
-**Option help and examples (Control Effectiveness)**
-{% for opt in h.controlEffectivenessOptions %}
-- **{{ opt.label }}** — {{ opt.help | default('') }}; example: {{ opt.example | default('') }}
-{% endfor %}
+*Qualification depth escalation: Yes (challenging load/context; extra OQ/PQ items added)*
 {% endif %}
 
-**Numeric calculations**
+#### Option annotations (help and examples)
+{% for opt in (h.severityOptions or []) %}
+{% if opt.label == h.Severity_label %}
+- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{% for opt in (h.probabilityOptions or []) %}
+{% if opt.label == h.ProbabilityOfOccurrence_label %}
+- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{% for opt in (h.exposureOptions or []) %}
+{% if opt.label == h.Exposure_label %}
+- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{% for opt in (h.detectabilityOptions or []) %}
+{% if opt.label == h.Detectability_label %}
+- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{% for opt in (h.controlEffectivenessOptions or []) %}
+{% if opt.label == h.ControlEffectiveness_label %}
+- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
+
+{% endif %}
+{% endfor %}
+
+#### Numeric values and formula
+
+- Severity = {{ h.Severity_value | default('N/A') }}
+- Probability = {{ h.ProbabilityOfOccurrence_value | default('N/A') }}
+- Exposure = {{ h.Exposure_value | default('N/A') }}
+- Detectability = {{ h.Detectability_value | default('N/A') }}
+- Control effectiveness = {{ h.ControlEffectiveness_value | default('N/A') }}
+
+*Raw Risk = Severity × Probability of Occurrence*
+
+*Adjusted Risk = Raw Risk × Exposure × (1 − Detectability)*
+
+*Residual Risk = Adjusted Risk × Control Effectiveness*
+
 - Raw Risk = {{ h.RawRisk }}
 - Adjusted Risk = {{ h.AdjustedRisk }}
 - Residual Risk = {{ h.ResidualRisk }}
-{% if h.EscalatedResidualRiskForMapping %}- Escalated Residual Risk (for mapping) = {{ h.EscalatedResidualRiskForMapping }}{% endif %}
+{% if h.EscalatedResidualRiskForMapping %}- Escalated (for mapping) = {{ h.EscalatedResidualRiskForMapping }}{% endif %}
 
-**Advisory mapping**
-- **Mapped IQ items**: {% if h.IQ_list %}{{ h.IQ_list | join(', ') }}{% else %}None applicable{% endif %}
-- **Mapped OQ tests**: {% if h.OQ_list %}{{ h.OQ_list | join(', ') }}{% else %}None applicable{% endif %}
-- **Mapped PQ plan items**: {% if h.PQ_list %}{{ h.PQ_list | join(', ') }}{% else %}None applicable{% endif %}
+#### Advisory Qualification
+
+- **IQ items**: {% if h.IQ_list %}{{ h.IQ_list | join('; ') }}{% else %}None applicable{% endif %}
+- **OQ tests**: {% if h.OQ_list %}{{ h.OQ_list | join('; ') }}{% else %}None applicable{% endif %}
+- **PQ items**: {% if h.PQ_list %}{{ h.PQ_list | join('; ') }}{% else %}None applicable{% endif %}
 
 ---
 {% endfor %}
 
 ## Installation Qualification (IQ) — Checklist
+
 {% if IQ.checklist %}
 {% for item in IQ.checklist %}
-- [ ] **{{ item }}**
+- [ ] {{ item }}
 {% endfor %}
 {% else %}
-- None applicable
+- Installation verification per supplier drawing
 {% endif %}
 
 ## Operational Qualification (OQ) — Test scripts
+
 {% if OQ.tests %}
 {% for t in OQ.tests %}
-### Test: {{ t.title }}
+### {{ t.title }}
+
 **Objective**: {{ t.objective }}
+
 **Setup**: {{ t.setup }}
+
 **Steps**:
 {% for step in t.steps %}
 1. {{ step }}
 {% endfor %}
+
 **Data to record**: {{ t.dataToRecord }}
+
 **Acceptance criteria**: {{ t.acceptanceCriteria }}
 
 {% endfor %}
@@ -121,15 +151,21 @@ No OQ tests generated.
 {% endif %}
 
 ## Performance Qualification (PQ) — Plan
+
 **PQ plan summary**: {{ PQ.plan }}
+
 **Number of PQ cycles**: {{ PQ.pqCycles }}
+
 **Worst‑case load definition**: {{ PQ.worstCaseLoadDefinition }}
+
 **Biological indicator placement**: {{ PQ.biologicalIndicatorPlacement }}
+
 **Acceptance criteria**: {{ PQ.acceptanceCriteria }}
 
 ---
 
 ## Computerized system verification guidance
+
 {% if csvGuidance %}
 {% for item in csvGuidance %}
 - {{ item }}
@@ -141,6 +177,7 @@ None applicable
 ---
 
 ## Evidence list
+
 {% if evidenceList %}
 {% for item in evidenceList %}
 - {{ item }}
@@ -151,19 +188,14 @@ None listed
 
 ---
 
-## Traceability appendix
-- **Ruleset executed**: {{ rulesetId }}
-- **Hazard catalog**: {{ hazcatVersion }}
-- **Executed ruleIds**: {{ executedRuleIds_comma }}
-- **Per‑hazard numeric table**: attached CSV in artifact bundle
-
----
-
 ## Signatures
+
 **Prepared by**: ____________________  **Date**: __________
+
 **Reviewed by**: ____________________  **Date**: __________
+
 **Approved by**: ____________________  **Date**: __________
 
 ---
 
-**Advisory note**: This draft is advisory. Final protocols, acceptance criteria, and approvals must be completed in your QMS.
+*Advisory note: This draft is advisory. Final protocols, acceptance criteria, and approvals must be completed in your QMS.*

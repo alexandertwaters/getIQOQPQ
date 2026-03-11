@@ -47,7 +47,12 @@ def _find_hazard_in_catalog(hazcat, hazard_id):
 
 def run_vector(vector):
     pkg = {}
-    pkg["equipment"] = {"cohort": vector["cohort"], "type": vector["type"], "model": vector.get("model", "")}
+    pkg["equipment"] = {
+        "cohort": vector["cohort"],
+        "type": vector["type"],
+        "model": vector.get("model", ""),
+        "equipmentTypeId": vector.get("equipmentTypeId", ""),
+    }
     pkg["siteContext"] = vector["siteContext"]
     pkg["controlArchitecture"] = vector["controlArchitecture"]
     if vector.get("equipmentControls"):
@@ -119,7 +124,16 @@ def run_vector(vector):
     pkg["csvGuidance"] = []
     pkg["evidenceList"] = []
     pkg["traceability"] = {"hazardRules": [h.get("ruleId","") for h in pkg["hazards"]]}
-    pkg["recommendation"] = "See qualification band mapping."
+
+    band = pkg.get("qualificationBand", "Basic")
+    if band == "Basic":
+        pkg["recommendation"] = "Conduct IQ and OQ."
+    elif band == "Targeted":
+        pkg["recommendation"] = "Conduct IQ, OQ, and targeted PQ."
+    elif band == "Full":
+        pkg["recommendation"] = "Conduct IQ, OQ, and PQ."
+    else:
+        pkg["recommendation"] = "Conduct IQ and OQ."
 
     return pkg
 

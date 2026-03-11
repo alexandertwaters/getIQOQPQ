@@ -73,6 +73,7 @@ def _handle_post(payload):
     vector = {
         "cohort": payload["cohort"],
         "type": payload["type"],
+        "equipmentTypeId": payload.get("equipmentTypeId", ""),
         "model": payload.get("equipmentId", ""),
         "siteContext": payload["siteContext"],
         "controlArchitecture": payload["controlArchitecture"],

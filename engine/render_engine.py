@@ -2,7 +2,56 @@
 import json
 import os
 import sys
+from pathlib import Path
 from jinja2 import Template
+
+
+def _load_equipment_controls_catalog(base_path=None):
+    base = Path(base_path or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    path = base / "data" / "equipment_controls_catalog.json"
+    if not path.exists():
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("equipmentTypes", [])
+
+
+def _format_equipment_controls_human(pkg):
+    """Build human-readable equipment controls lines: 'Control label: Response'."""
+    ec = pkg.get("equipmentControls") or {}
+    if not ec:
+        return []
+    et_id = pkg.get("equipment", {}).get("equipmentTypeId")
+    if not et_id:
+        return [f"{k}: {v}" for k, v in sorted(ec.items())]
+
+    catalog = _load_equipment_controls_catalog()
+    ctrl_map = {}
+    for et in catalog:
+        if et.get("equipmentTypeId") != et_id:
+            continue
+        for cat in et.get("controlCategories", []):
+            for ctrl in cat.get("controls", []):
+                cid = ctrl.get("controlId")
+                if cid:
+                    ctrl_map[cid] = {"label": ctrl.get("label", cid), "valueType": ctrl.get("valueType", "boolean"), "options": ctrl.get("options", [])}
+
+    lines = []
+    for cid, val in sorted(ec.items()):
+        if val == "" or val is False:
+            continue
+        info = ctrl_map.get(cid, {})
+        label = info.get("label", cid)
+        if info.get("valueType") == "boolean":
+            resp = "Yes" if val else "No"
+        elif info.get("valueType") == "choice" and info.get("options"):
+            opt = next((o for o in info["options"] if (o.get("value") or o.get("label")) == val), None)
+            resp = (opt.get("label") or opt.get("value") or val) if opt else val
+        else:
+            resp = str(val)
+        lines.append(f"{label}: {resp}")
+    return lines
+
 
 def load_template(path):
     with open(path, 'r', encoding='utf8') as f:
@@ -23,22 +72,36 @@ def build_langmap(langmap_doc):
         m["default"] = default
     return m
 
+def _substitute_test_id(obj, tid):
+    """Replace {{testId}} in strings/lists with actual test id."""
+    tid_str = tid if isinstance(tid, str) else str(tid)
+    if isinstance(obj, str):
+        return obj.replace("{{testId}}", tid_str)
+    if isinstance(obj, list):
+        return [_substitute_test_id(x, tid_str) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _substitute_test_id(v, tid_str) for k, v in obj.items()}
+    return obj
+
+
 def expand_tests_for_hazard(hazard, langmap):
     def expand_list(lst):
         out = []
         for tid in lst:
-            key = tid.lower()
+            raw_tid = tid if isinstance(tid, str) else str(tid)
+            key = raw_tid.lower()
             entry = langmap.get(key)
             if not entry:
                 entry = langmap.get("default", {
-                    "title": tid,
-                    "objective": f"Execute the supplier recommended verification for {tid}.",
-                    "setup": "Follow supplier documentation.",
-                    "steps": [f"Execute supplier recommended procedure for {tid}."],
+                    "title": "{{testId}}",
+                    "objective": "Execute the supplier recommended verification for {{testId}}.",
+                    "setup": "Follow supplier documentation and applicable standards.",
+                    "steps": ["Execute supplier recommended procedure for {{testId}}."],
                     "dataToRecord": "Supplier report and measured values.",
                     "acceptanceCriteria": "Meet supplier acceptance criteria or applicable standard."
                 })
-            out.append(entry)
+            substituted = _substitute_test_id(dict(entry), raw_tid)
+            out.append(substituted)
         return out
 
     return {
@@ -64,12 +127,10 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
         "productContact_label": "Yes" if sc.get("productContact", False) else "No",
         "productionThroughput": sc.get("productionThroughput", "")
     }
-    ctx["rulesetId"] = pkg.get("rulesetId", "")
-    ctx["hazcatVersion"] = pkg.get("hazcatVersion", "")
-    ctx["fingerprint"] = pkg.get("fingerprint", "")
     ctx["qualificationBand"] = pkg.get("qualificationBand", "")
     ctx["ResidualRiskIndex"] = f"{pkg.get('ResidualRiskIndex', 0.0):.3f}"
-    ctx["equipmentControls"] = pkg.get("equipmentControls", {})
+    ctx["recommendation"] = pkg.get("recommendation", "")
+    ctx["equipmentControlsFormatted"] = _format_equipment_controls_human(pkg)
     ctx["recommendation"] = pkg.get("recommendation", "")
 
     hazards_ctx = []
@@ -88,9 +149,13 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "controlEffectivenessOptions": h.get("controlEffectivenessOptions", []),
             "Severity_label": h.get("Severity_label", ""),
             "Severity_value": f"{h.get('Severity', 0.0):.12f}" if h.get("Severity") is not None else "N/A",
+            "ProbabilityOfOccurrence_value": f"{h.get('ProbabilityOfOccurrence', 0.0):.12f}" if h.get("ProbabilityOfOccurrence") is not None else "N/A",
             "ProbabilityOfOccurrence_label": h.get("ProbabilityOfOccurrence_label", ""),
+            "Exposure_value": f"{h.get('Exposure', 0.0):.12f}" if h.get("Exposure") is not None else "N/A",
             "Exposure_label": h.get("Exposure_label", ""),
+            "Detectability_value": f"{h.get('Detectability', 0.0):.12f}" if h.get("Detectability") is not None else "N/A",
             "Detectability_label": h.get("Detectability_label", ""),
+            "ControlEffectiveness_value": f"{h.get('ControlEffectiveness', 0.0):.12f}" if h.get("ControlEffectiveness") is not None else "N/A",
             "ControlEffectiveness_label": h.get("ControlEffectiveness_label", ""),
             "RawRisk": f"{h.get('RawRisk',0.0):.3f}",
             "AdjustedRisk": f"{h.get('AdjustedRisk',0.0):.3f}",
