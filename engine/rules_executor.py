@@ -50,6 +50,33 @@ def _resolve_ruleset_path(ruleset_id):
     return id_to_file.get(ruleset_id, f"data/{ruleset_id}_equipment_type_mappings.json")
 
 
+def _item_to_title(item):
+    """Normalize ruleset IQ/OQ/PQ item to string (for dedup and downstream). Accepts str or dict with title."""
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        return item.get("title") or item.get("id") or str(item)
+    return str(item)
+
+
+def _normalize_list(lst):
+    """Convert list of strings or dicts to list of unique title strings."""
+    seen = set()
+    out = []
+    for item in lst:
+        title = _item_to_title(item)
+        if title and title not in seen:
+            seen.add(title)
+            out.append(title)
+    return out
+
+
+def _merge_list(existing, new_items):
+    """Merge new items into existing, normalizing both. Returns list of unique title strings."""
+    combined = _normalize_list(existing) + _normalize_list(new_items)
+    return list(dict.fromkeys(combined))
+
+
 def apply_iqoqpq_mapping(pkg, ruleset_path=None):
     """Apply ruleset mapping rules to populate hazard IQ_list, OQ_list, PQ_list and package IQ, OQ, PQ."""
     path = ruleset_path or _resolve_ruleset_path(pkg.get("rulesetId", ""))
@@ -77,11 +104,11 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
                 if _eval_condition(logic["if"], hazard, pkg):
                     then = logic["then"]
                     if "IQ" in then:
-                        hazard["IQ_list"] = list(set(hazard["IQ_list"]) | set(then["IQ"]))
+                        hazard["IQ_list"] = _merge_list(hazard["IQ_list"], then["IQ"])
                     if "OQ" in then:
-                        hazard["OQ_list"] = list(set(hazard["OQ_list"]) | set(then["OQ"]))
+                        hazard["OQ_list"] = _merge_list(hazard["OQ_list"], then["OQ"])
                     if "PQ" in then:
-                        hazard["PQ_list"] = list(set(hazard["PQ_list"]) | set(then["PQ"]))
+                        hazard["PQ_list"] = _merge_list(hazard["PQ_list"], then["PQ"])
 
     iq_checklist = []
     pq_items = []

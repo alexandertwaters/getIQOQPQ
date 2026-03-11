@@ -13,12 +13,21 @@ except ImportError:
 
 _HAZCAT_CACHE = {}
 
+_HAZCAT_VERSION_TO_FILE = {
+    "hazcat_v1.1": "data/hazcat_v1.1_equipment_types - comprehensive.json",
+}
+
+
 def _load_hazcat(hazcat_version):
     """Load hazcat by version; resolve path and cache."""
     if hazcat_version in _HAZCAT_CACHE:
         return _HAZCAT_CACHE[hazcat_version]
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path = os.path.join(base, "data", f"{hazcat_version}_equipment_types.json")
+    filename = _HAZCAT_VERSION_TO_FILE.get(
+        hazcat_version,
+        f"{hazcat_version}_equipment_types.json",
+    )
+    path = os.path.join(base, filename) if not os.path.isabs(filename) else filename
     if not os.path.exists(path):
         return {}
     with open(path, "r", encoding="utf-8") as f:
