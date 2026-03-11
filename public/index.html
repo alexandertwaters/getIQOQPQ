@@ -18,8 +18,9 @@
   </div>
   <script>
     const API = '/api/v1';
+    const NAR_CLEANROOM = 'Not in a Cleanroom';
     let state = {
-      step: 1,
+      flowStep: 0,
       cohorts: [],
       hazards: [],
       loading: true,
@@ -29,6 +30,7 @@
       selectedEquipment: null,
       equipmentId: '',
       siteContext: { cleanroomClass: 'ISO 7', utilities: [], productContact: true, productionThroughput: 'Medium' },
+      cleanroomNotApplicable: false,
       equipmentControls: {},
       equipmentControlsCatalog: null,
       hazardContextOptions: null,
@@ -40,6 +42,49 @@
       result: null,
       artifactUrls: null,
     };
+
+    function getStepList() {
+      const steps = [
+        { id: 'cohort', label: 'Equipment cohort' },
+        { id: 'equipmentType', label: 'Equipment type' },
+      ];
+      if (!state.selectedEquipment) return steps;
+      steps.push({ id: 'utilities', label: 'Utilities' });
+      const catalog = state.equipmentControlsCatalog;
+      (catalog?.controlCategories || []).forEach((cat, i) => {
+        steps.push({ id: 'equipmentControl', idx: i, label: cat.label });
+      });
+      steps.push({ id: 'throughput', label: 'Production throughput' });
+      steps.push({ id: 'productContact', label: 'Product contact' });
+      steps.push({ id: 'cleanroom', label: 'Cleanroom class' });
+      (state.hazards || []).forEach((h, i) => {
+        steps.push({ id: 'hazard', idx: i, label: h.title });
+      });
+      steps.push({ id: 'review', label: 'Review & Generate Draft' });
+      return steps;
+    }
+
+    function getCurrentStep() {
+      const steps = getStepList();
+      const idx = Math.min(state.flowStep, steps.length - 1);
+      return steps[idx] || steps[0];
+    }
+
+    function nextStep() {
+      const steps = getStepList();
+      if (state.flowStep < steps.length - 1) state.flowStep++;
+      render();
+    }
+
+    function prevStep() {
+      if (state.flowStep > 0) state.flowStep--;
+      render();
+    }
+
+    function goToStep(idx) {
+      state.flowStep = Math.max(0, Math.min(idx, getStepList().length - 1));
+      render();
+    }
 
     async function fetchJson(url) {
       const r = await fetch(url);
@@ -130,6 +175,16 @@
       render();
     }
 
+    async function selectEquipmentTypeAndNext() {
+      if (!state.selectedEquipment) return;
+      state.loading = true;
+      render();
+      await loadHazards();
+      state.loading = false;
+      state.flowStep = 2;
+      render();
+    }
+
     function setHazardContext(hazardId, contextId, value) {
       const r = state.hazardRatings[hazardId] || {};
       if (!r.hazardContext) r.hazardContext = {};
@@ -169,6 +224,13 @@
       render();
     }
 
+    function setCleanroomNotApplicable(checked) {
+      state.cleanroomNotApplicable = checked;
+      if (checked) state.siteContext.cleanroomClass = NAR_CLEANROOM;
+      else state.siteContext.cleanroomClass = state.siteContextMetadata.cleanroomClasses?.find(c => c.value === 'ISO 7')?.value || 'ISO 7';
+      render();
+    }
+
     async function downloadDocx() {
       const md = state.result?.markdownContent;
       if (!md) return;
@@ -202,11 +264,15 @@
       state.error = null;
       render();
       try {
+        const sc = state.siteContext;
         const payload = {
           equipmentId: state.equipmentId || 'E-' + state.selectedEquipment.id + '-001',
           cohort: state.selectedCohort,
           type: state.selectedEquipment.name,
-          siteContext: state.siteContext,
+          siteContext: {
+            ...sc,
+            cleanroomClass: state.cleanroomNotApplicable ? NAR_CLEANROOM : sc.cleanroomClass,
+          },
           controlArchitecture: 'PLC or SCADA',
           hazards: state.hazards.map(h => {
             const r = state.hazardRatings[h.hazardId] || {};
@@ -245,7 +311,6 @@
         const artRes = await fetch(API + '/artifact?fingerprint=' + encodeURIComponent(data.fingerprint));
         const artData = await artRes.json();
         state.artifactUrls = artData.files || {};
-        state.step = 5;
       } catch (e) {
         state.error = e.message;
       }
@@ -253,168 +318,188 @@
       render();
     }
 
-    function render() {
-      const c = document.getElementById('content');
-      if (state.loading) {
-        c.innerHTML = '<div class="flex min-h-[200px] items-center justify-center text-slate-500">Loading...</div>';
-        return;
-      }
+    function renderProgressBar() {
+      if (state.result) return '';
+      const steps = getStepList();
+      const total = steps.length;
+      const current = Math.min(state.flowStep + 1, total);
+      const pct = total > 0 ? (current / total) * 100 : 0;
+      return '<div class="mb-8 no-print"><div class="flex justify-between text-xs text-slate-500 mb-1"><span>Step ' + current + ' of ' + total + '</span><span>' + (getCurrentStep().label || '') + '</span></div><div class="h-2 w-full rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-slate-700 transition-all duration-300 rounded-full" style="width:' + pct + '%"></div></div></div>';
+    }
 
-      let html = '';
-      if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">' + state.error + '</div>';
+    function renderStepContent() {
+      const steps = getStepList();
+      if (state.flowStep >= steps.length && !state.result) return '<div class="rounded-xl border border-slate-200 bg-white p-6">Invalid step.</div>';
+      const step = getCurrentStep();
+      const esc = (s) => String(s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-      html += '<div class="mb-8 flex gap-2 no-print">';
-      [1,2,3,4].forEach(s => {
-        const label = s===1?'Equipment':s===2?'Site':s===3?'Hazards':'Review';
-        const cls = state.step===s ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
-        html += '<button onclick="state.step='+s+';render()" class="rounded px-3 py-1 text-sm font-medium '+cls+'">'+label+'</button>';
-      });
-      html += '</div>';
-
-      if (state.step === 1) {
-        html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Select equipment</h2>';
+      if (step.id === 'cohort') {
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment cohort</h2><p class="text-sm text-slate-500">Select the equipment category.</p>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Cohort</label><select onchange="state.selectedCohort=this.value;state.selectedEquipment=null;render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2">';
+        html += '<option value="">Select cohort...</option>';
         state.cohorts.forEach(co => {
-          html += '<div><label class="block text-sm font-medium text-slate-600">'+co.cohortId+'</label><div class="mt-2 flex flex-wrap gap-2">';
-          co.equipmentTypes.forEach(et => {
-            html += '<button onclick="state.selectedCohort=\''+co.cohortId+'\';state.selectedEquipment={id:\''+et.equipmentTypeId+'\',name:\''+et.equipmentType.replace(/'/g,"\\'")+'\'};loadHazards();state.step=2;render()" class="rounded-lg border border-slate-200 px-4 py-2 text-left text-sm hover:border-slate-400 hover:bg-slate-50">'+et.equipmentType+'</button>';
-          });
-          html += '</div></div>';
+          html += '<option value="'+esc(co.cohortId)+'"'+(state.selectedCohort===co.cohortId?' selected':'')+'>'+co.cohortId+'</option>';
         });
-        html += '</div>';
+        html += '</select></div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300" disabled>Back</button>';
+        html += '<button onclick="nextStep()" '+(state.selectedCohort?'':'disabled')+' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">Next</button></div></div>';
+        return html;
       }
 
-      if (state.step === 2 && state.selectedEquipment) {
-        const sc = state.siteContext;
-        html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
-        html += '<h2 class="text-lg font-semibold">Site context</h2><p class="text-sm text-slate-500">Equipment: '+state.selectedEquipment.name+'</p>';
-        html += '<div><label class="block text-sm font-medium">Equipment ID</label><input type="text" value="'+state.equipmentId+'" onchange="state.equipmentId=this.value" placeholder="e.g. E-STER-PV-001" class="mt-1 w-full rounded border border-slate-200 px-3 py-2"></div>';
-        const cleanroomOpts = state.siteContextMetadata.cleanroomClasses.length ? state.siteContextMetadata.cleanroomClasses : [{value:'ISO 5',label:'ISO 5'},{value:'ISO 6',label:'ISO 6'},{value:'ISO 7',label:'ISO 7'},{value:'ISO 8',label:'ISO 8'}];
-        html += '<div><label class="block text-sm font-medium">Cleanroom class</label>';
-        if (cleanroomOpts[0]?.help) html += '<p class="text-xs text-slate-500 mt-0.5">ISO 14644-1 classification for the area where this equipment operates.</p>';
-        html += '<select onchange="state.siteContext.cleanroomClass=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
-        cleanroomOpts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+v+'"'+(sc.cleanroomClass===v?' selected':'')+'>'+lab+'</option>'; });
-        html += '</select>';
-        const selCleanroom = cleanroomOpts.find(o=>(o.value||o)===sc.cleanroomClass);
-        if (selCleanroom?.help) html += '<p class="mt-1 text-xs text-slate-600">'+selCleanroom.help.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
-        html += '</div>';
+      if (step.id === 'equipmentType') {
+        const cohortData = state.cohorts.find(c => c.cohortId === state.selectedCohort);
+        const types = cohortData?.equipmentTypes || [];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment type</h2><p class="text-sm text-slate-500">Select the equipment type.</p>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Equipment type</label><select onchange="state.selectedEquipment={id:this.value,name:this.options[this.selectedIndex].text};render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2">';
+        html += '<option value="">Select equipment...</option>';
+        types.forEach(et => {
+          html += '<option value="'+esc(et.equipmentTypeId)+'"'+(state.selectedEquipment?.id===et.equipmentTypeId?' selected':'')+'>'+et.equipmentType+'</option>';
+        });
+        html += '</select></div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="selectEquipmentTypeAndNext()" '+(state.selectedEquipment?'':'disabled')+' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">'+(state.loading?'Loading...':'Next')+'</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'utilities') {
         const em = state.equipmentMetadata?.equipmentMetadata || state.equipmentMetadata;
         const utilList = em?.defaultUtilities?.length ? em.defaultUtilities : ['Steam','Electricity','Compressed Air','WFI','Nitrogen'];
         const utilDesc = em?.utilityDescriptors || {};
         const utilMaster = state.equipmentMetadata?.utilitiesMasterList || {};
-        html += '<div><label class="block text-sm font-medium">Utilities</label><p class="text-xs text-slate-500 mt-0.5">Select utilities that supply this equipment. Filtered for this equipment type.</p><div class="mt-2 flex flex-wrap gap-2">';
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Utilities</h2><p class="text-sm text-slate-500">Select all utilities that supply this equipment.</p>';
+        html += '<div class="flex flex-wrap gap-2">';
         utilList.forEach(u => {
-          const checked = sc.utilities.includes(u);
+          const checked = state.siteContext.utilities.includes(u);
           const desc = utilDesc[u] || utilMaster[u] || '';
-          html += '<label class="flex cursor-pointer items-center gap-2 rounded border px-3 py-2 hover:bg-slate-50 '+(checked?'border-emerald-500 bg-emerald-50/50':'border-slate-200')+'" title="'+desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleUtility(\''+u.replace(/'/g,"\\'")+'\')"><span class="text-sm">'+u+'</span>';
-          if (desc) html += '<span class="text-slate-400 cursor-help" title="'+desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'">ⓘ</span>';
+          html += '<label class="flex cursor-pointer items-center gap-2 rounded border px-4 py-2 hover:bg-slate-50 '+(checked?'border-emerald-500 bg-emerald-50/50':'border-slate-200')+'" title="'+desc.replace(/"/g,'&quot;')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleUtility(\''+esc(u)+'\')"><span class="text-sm">'+u+'</span>';
+          if (desc) html += '<span class="text-slate-400 cursor-help">ⓘ</span>';
           html += '</label>';
         });
-        html += '</div></div>';
-        const pcHelp = state.siteContextMetadata.productContact?.help || '';
-        html += '<div><label class="flex cursor-pointer items-center gap-2"><input type="checkbox" '+(sc.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> Product contact</label>';
-        if (pcHelp) html += '<p class="ml-6 mt-0.5 text-xs text-slate-600" title="'+pcHelp.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'">'+pcHelp.replace(/</g,'&lt;').replace(/>/g,'&gt;').slice(0,180)+(pcHelp.length>180?'... Hover for full text.':'')+'</p>';
         html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'equipmentControl' && step.idx !== undefined) {
         const catalog = state.equipmentControlsCatalog;
-        if (catalog && catalog.controlCategories && catalog.controlCategories.length > 0) {
-          html += '<div class="rounded-lg border border-slate-200 bg-slate-50/50 p-4"><h3 class="text-sm font-semibold text-slate-700">Equipment controls</h3><p class="mt-0.5 text-xs text-slate-500">Select controls present at your site/equipment. Affects risk assessment and qualification scope.</p>';
-          catalog.controlCategories.forEach(cat => {
-            html += '<div class="mt-4"><div class="text-xs font-medium text-slate-600">'+cat.label+'</div>';
-            (cat.controls || []).forEach(ctrl => {
-              const cid = ctrl.controlId; const val = state.equipmentControls[cid];
-              const esc = (s)=>String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-              if (ctrl.valueType === 'boolean') {
-                html += '<label class="mt-1 flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" '+(val?'checked':'')+' onchange="setEquipmentControl(\''+esc(cid)+'\',this.checked)"> '+ctrl.label+'</label>';
-                if (ctrl.help) html += '<p class="ml-5 text-xs text-slate-500">'+esc(ctrl.help).replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
-              } else if (ctrl.valueType === 'choice' && ctrl.options && ctrl.options.length) {
-                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+ctrl.label+'</label>';
-                html += '<select onchange="setEquipmentControl(\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1.5 text-sm">';
-                html += '<option value="">Select...</option>';
-                ctrl.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
-                html += '</select></div>';
-              }
-            });
-            html += '</div>';
+        const cats = catalog?.controlCategories || [];
+        const cat = cats[step.idx];
+        if (!cat) return '';
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment controls: '+cat.label+'</h2><p class="text-sm text-slate-500">Select controls that apply to this equipment.</p>';
+        (cat.controls || []).forEach(ctrl => {
+          const cid = ctrl.controlId; const val = state.equipmentControls[cid];
+          if (ctrl.valueType === 'boolean') {
+            html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-3 py-2 hover:bg-slate-50 mb-2"><input type="checkbox" '+(val?'checked':'')+' onchange="setEquipmentControl(\''+esc(cid)+'\',this.checked)"> <span class="text-sm font-medium">'+ctrl.label+'</span></label>';
+            if (ctrl.help) html += '<p class="ml-6 mb-3 text-xs text-slate-500">'+esc(ctrl.help).replace(/</g,'&lt;')+'</p>';
+          } else if (ctrl.valueType === 'choice' && ctrl.options?.length) {
+            html += '<div class="mb-4"><label class="block text-sm font-medium text-slate-600 mb-1">'+ctrl.label+'</label>';
+            html += '<select onchange="setEquipmentControl(\''+esc(cid)+'\',this.value)" class="w-full max-w-md rounded border border-slate-200 px-3 py-2">';
+            html += '<option value="">Select...</option>';
+            ctrl.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
+            html += '</select></div>';
+          }
+        });
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'throughput') {
+        const opts = state.siteContextMetadata.productionThroughput?.length ? state.siteContextMetadata.productionThroughput : [{value:'Low',label:'Low'},{value:'Medium',label:'Medium'},{value:'High',label:'High'}];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Production throughput</h2><p class="text-sm text-slate-500">Select the production throughput level.</p>';
+        html += '<select onchange="state.siteContext.productionThroughput=this.value;render()" class="w-full max-w-md rounded border border-slate-200 px-3 py-2">';
+        opts.forEach(o => { const v = o.value||o; html += '<option value="'+esc(v)+'"'+(state.siteContext.productionThroughput===v?' selected':'')+'>'+(o.label||o)+'</option>'; });
+        html += '</select>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'productContact') {
+        const pcHelp = state.siteContextMetadata.productContact?.help || '';
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Product contact</h2>';
+        if (pcHelp) html += '<p class="text-sm text-slate-500">'+pcHelp.slice(0,280).replace(/</g,'&lt;')+(pcHelp.length>280?'...':'')+'</p>';
+        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 hover:bg-slate-50"><input type="checkbox" '+(state.siteContext.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> <span class="font-medium">Product contact</span></label>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'cleanroom') {
+        const opts = state.siteContextMetadata.cleanroomClasses?.length ? state.siteContextMetadata.cleanroomClasses.filter(c => (c.value||c) !== NAR_CLEANROOM) : [{value:'ISO 5',label:'ISO 5'},{value:'ISO 6',label:'ISO 6'},{value:'ISO 7',label:'ISO 7'},{value:'ISO 8',label:'ISO 8'}];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Cleanroom class</h2><p class="text-sm text-slate-500">ISO 14644-1 classification for the area where this equipment operates.</p>';
+        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 mb-4 hover:bg-slate-50"><input type="checkbox" '+(state.cleanroomNotApplicable?'checked':'')+' onchange="setCleanroomNotApplicable(this.checked)"> <span class="font-medium">Not in a cleanroom</span> <span class="text-slate-500">(N/A)</span></label>';
+        html += '<div><label class="block text-sm font-medium text-slate-600 mb-1">Cleanroom class</label><select onchange="state.siteContext.cleanroomClass=this.value;render()" '+(state.cleanroomNotApplicable?'disabled':'')+' class="w-full max-w-md rounded border border-slate-200 px-3 py-2 '+(state.cleanroomNotApplicable?'opacity-50 cursor-not-allowed':'')+'">';
+        opts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+esc(v)+'"'+(state.siteContext.cleanroomClass===v?' selected':'')+'>'+lab+'</option>'; });
+        html += '</select></div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'hazard' && step.idx !== undefined) {
+        const h = state.hazards[step.idx];
+        if (!h) return '';
+        const r = state.hazardRatings[h.hazardId] || {};
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Configure hazard: '+h.title+'</h2><p class="text-sm text-slate-600">'+h.definition.replace(/</g,'&lt;')+'</p>';
+        const fields = [
+          {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
+          {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
+          {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
+          {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
+          {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
+        ];
+        fields.forEach(({key,l,opts}) => {
+          const sel = r[key]||'';
+          const selOpt = opts.find(o=>(o.label||o)===sel);
+          html += '<div class="mt-3"><label class="block text-sm font-medium text-slate-600">'+l+'</label>';
+          html += '<select onchange="setHazardRating(\''+esc(h.hazardId)+'\',\''+key+'\',this.value)" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
+          html += '<option value="">Select...</option>';
+          (opts||[]).forEach(o => { const lab = o.label||o; html += '<option value="'+esc(lab)+'"'+(sel===lab?' selected':'')+'>'+lab+'</option>'; });
+          html += '</select>';
+          if (selOpt?.help) html += '<p class="mt-0.5 text-xs text-slate-500">'+esc(selOpt.help).replace(/</g,'&lt;')+'</p>';
+          html += '</div>';
+        });
+        const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
+        if (ctxForHazard?.contextOptions?.length) {
+          html += '<div class="mt-4 rounded border border-slate-200 p-3"><label class="block text-sm font-medium text-slate-600 mb-2">Hazard context</label>';
+          ctxForHazard.contextOptions.forEach(opt => {
+            const cid = opt.contextId; const val = (r.hazardContext || {})[cid];
+            if (opt.valueType === 'boolean') {
+              html += '<label class="flex cursor-pointer items-center gap-2 mb-2"><input type="checkbox" '+(val?'checked':'')+' onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.checked)"> '+opt.label+'</label>';
+            } else if (opt.valueType === 'choice' && opt.options?.length) {
+              html += '<div class="mb-2"><label class="text-xs text-slate-500">'+opt.label+'</label>';
+              html += '<select onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1.5">';
+              html += '<option value="">Select...</option>';
+              opt.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
+              html += '</select></div>';
+            } else if (opt.valueType === 'multiSelect' && opt.options?.length) {
+              html += '<div class="mb-2"><label class="text-xs text-slate-500">'+opt.label+'</label><div class="mt-1 flex flex-wrap gap-1">';
+              const selArr = Array.isArray(val) ? val : [];
+              opt.options.forEach(o => {
+                const ch = selArr.includes(o.value);
+                html += '<label class="inline-flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-xs '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleHazardContextMulti(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',\''+esc(o.value)+'\')"> '+(o.label||o.value)+'</label>';
+              });
+              html += '</div></div>';
+            }
           });
           html += '</div>';
         }
-        const throughputOpts = state.siteContextMetadata.productionThroughput.length ? state.siteContextMetadata.productionThroughput : [{value:'Low',label:'Low'},{value:'Medium',label:'Medium'},{value:'High',label:'High'}];
-        html += '<div><label class="block text-sm font-medium">Production throughput</label><select onchange="state.siteContext.productionThroughput=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
-        throughputOpts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+v+'"'+(sc.productionThroughput===v?' selected':'')+'>'+lab+'</option>'; });
-        html += '</select>';
-        const selThroughput = throughputOpts.find(o=>(o.value||o)===sc.productionThroughput);
-        if (selThroughput?.help) html += '<p class="mt-1 text-xs text-slate-600">'+selThroughput.help.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="state.step=1;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="state.step=3;render()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
       }
 
-      if (state.step === 3 && state.selectedEquipment) {
-        html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Configure hazards</h2>';
-        if (state.hazards.length === 0) html += '<p class="text-slate-500">Loading hazards...</p>';
-        state.hazards.forEach(h => {
-          const r = state.hazardRatings[h.hazardId] || {};
-          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><h3 class="font-medium">'+h.title+'</h3><p class="mt-1 text-sm text-slate-600">'+h.definition+'</p>';
-          const fields = [
-            {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
-            {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
-            {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
-            {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
-            {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
-          ];
-          fields.forEach(({key,l,opts}) => {
-            const sel = r[key]||'';
-            const selOpt = opts.find(o=>(o.label||o)===sel);
-            html += '<div class="mt-3"><div class="flex items-center gap-2"><label class="block text-xs font-medium text-slate-500">'+l+'</label>';
-            html += '<select onchange="setHazardRating(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+key+'\',this.value)" class="flex-1 rounded border border-slate-200 px-2 py-1.5 text-sm">';
-            html += '<option value="">Select...</option>';
-            (opts||[]).forEach(o => { const lab = o.label||o; html += '<option value="'+lab.replace(/"/g,'&quot;')+'"'+(sel===lab?' selected':'')+'>'+lab+'</option>'; });
-            html += '</select>';
-            if (selOpt && (selOpt.help||selOpt.example)) {
-              const isExp = state.expandedHelp === h.hazardId+'.'+key;
-              const info = (selOpt.help||'') + (selOpt.example ? ' Example: ' + selOpt.example : '');
-              html += '<button type="button" title="Show help" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full '+(isExp?'bg-slate-500 text-white':'bg-slate-300 text-slate-600 hover:bg-slate-400')+' text-xs font-bold" onclick="toggleHelp(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+key.replace(/'/g,"\\'")+'\')">i</button>';
-              if (isExp) html += '<div class="mt-1 w-full rounded bg-slate-100 px-2 py-1.5 text-xs text-slate-700">'+info.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';
-            }
-            html += '</div></div>';
-          });
-          const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
-          if (ctxForHazard && ctxForHazard.contextOptions && ctxForHazard.contextOptions.length > 0) {
-            html += '<div class="mt-3 rounded border border-slate-200 bg-white p-2"><label class="block text-xs font-medium text-slate-500">Hazard context</label><p class="text-xs text-slate-500 mt-0.5">Describe load/configuration for this hazard.</p>';
-            ctxForHazard.contextOptions.forEach(opt => {
-              const cid = opt.contextId; const val = (r.hazardContext || {})[cid];
-              const esc = (s)=>String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-              if (opt.valueType === 'boolean') {
-                html += '<label class="mt-1 flex cursor-pointer items-center gap-2 text-xs"><input type="checkbox" '+(val?'checked':'')+' onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.checked)"> '+opt.label+'</label>';
-              } else if (opt.valueType === 'choice' && opt.options && opt.options.length) {
-                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+opt.label+'</label>';
-                html += '<select onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1 text-xs">';
-                html += '<option value="">Select...</option>';
-                opt.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
-                html += '</select></div>';
-              } else if (opt.valueType === 'multiSelect' && opt.options && opt.options.length) {
-                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+opt.label+'</label><div class="mt-0.5 flex flex-wrap gap-1">';
-                const selArr = Array.isArray(val) ? val : [];
-                opt.options.forEach(o => {
-                  const ch = selArr.includes(o.value);
-                  html += '<label class="inline-flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-xs '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleHazardContextMulti(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',\''+esc(o.value)+'\')"> '+(o.label||o.value)+'</label>';
-                });
-                html += '</div></div>';
-              }
-            });
-            html += '</div>';
-          }
-          html += '</div></div>';
-        });
-        html += '<div class="flex gap-2"><button onclick="state.step=2;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="state.step=4;render()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-      }
-
-      if (state.step === 4 && state.selectedEquipment) {
+      if (step.id === 'review') {
         const sc = state.siteContext;
-        html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
-        html += '<h2 class="text-lg font-semibold">Review and generate draft</h2>';
-        html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Equipment</dt><dd>'+state.selectedEquipment.name+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>'+sc.cleanroomClass+', '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+', Throughput: '+sc.productionThroughput+'</dd>';
+        const displayCleanroom = state.cleanroomNotApplicable ? 'N/A (Not in a cleanroom)' : sc.cleanroomClass;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
+        html += '<h2 class="text-lg font-semibold">Review & Generate Draft</h2>';
+        html += '<div><label class="block text-sm font-medium text-slate-600 mb-1">Equipment ID (optional)</label><input type="text" value="'+esc(state.equipmentId)+'" onchange="state.equipmentId=this.value" placeholder="e.g. E-STER-PV-001" class="w-full max-w-md rounded border border-slate-200 px-3 py-2"></div>';
+        html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Equipment</dt><dd>'+state.selectedEquipment?.name+'</dd>';
+        html += '<dt class="mt-2 font-medium text-slate-500">Cohort</dt><dd>'+state.selectedCohort+'</dd>';
+        html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>Cleanroom: '+displayCleanroom+', Utilities: '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+', Throughput: '+sc.productionThroughput+'</dd>';
         const ec = state.equipmentControls || {};
         const ecSet = Object.entries(ec).filter(([,v]) => v !== '' && v !== false).length;
         if (ecSet) html += '<dt class="mt-2 font-medium text-slate-500">Equipment controls</dt><dd>'+ecSet+' selected</dd>';
@@ -422,34 +507,29 @@
         html += '<div class="space-y-4"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
         state.hazards.forEach(h => {
           const r = state.hazardRatings[h.hazardId] || {};
-          const fields = [
-            {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
-            {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
-            {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
-            {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
-            {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
-          ];
-          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><div class="font-medium text-sm text-slate-800">'+h.title+'</div>';
-          html += '<p class="mt-0.5 text-xs text-slate-600">'+h.definition.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
-          fields.forEach(({key,l,opts}) => {
-            const sel = r[key]||'';
-            const selOpt = opts.find(o=>(o.label||o)===sel);
-            const desc = selOpt ? ((selOpt.help||'')+(selOpt.example?' Example: '+selOpt.example:'')) : '';
-            html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">'+l+':</span> <span class="text-slate-800">'+(sel||'—')+'</span>'+(desc?' <span class="block mt-0.5 text-slate-500 pl-2 border-l-2 border-slate-200">'+desc.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>':'')+'</div>';
-          });
-          const hc = r.hazardContext || {};
-          const hcEntries = Object.entries(hc).filter(([,v]) => v !== '' && v !== false && !(Array.isArray(v) && v.length === 0));
-          if (hcEntries.length) html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">Hazard context:</span> <span class="text-slate-800">'+hcEntries.map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('; ')+'</span></div>';
-          if (h.ruleId) html += '<div class="mt-1 text-xs text-slate-500">Rule: '+h.ruleId+'</div>';
-          if (h.standards && h.standards.length) html += '<div class="mt-0.5 text-xs text-slate-500">Standards: '+h.standards.join(', ')+'</div>';
-          html += '</div>';
+          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><div class="font-medium text-sm">'+h.title+'</div>';
+          html += '<div class="mt-1 text-xs text-slate-600">'+r.Severity_label+' / '+r.ProbabilityOfOccurrence_label+' / '+r.Exposure_label+' / '+r.Detectability_label+' / '+r.ControlEffectiveness_label+'</div></div>';
         });
         html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="state.step=3;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
         html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate Draft')+'</button></div></div>';
+        return html;
       }
 
-      if (state.step === 5 && state.result) {
+      return '';
+    }
+
+    function render() {
+      const c = document.getElementById('content');
+      if (state.loading && !state.equipmentMetadata) {
+        c.innerHTML = '<div class="flex min-h-[200px] items-center justify-center text-slate-500">Loading...</div>';
+        return;
+      }
+
+      let html = '';
+      if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">'+state.error+'</div>';
+
+      if (state.result) {
         const md = state.result.markdownContent || '';
         const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g,'<br>');
         html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
@@ -465,7 +545,10 @@
         html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
         html += '</div>';
         html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate prose-sm max-w-none" id="draft-preview">'+draftHtml+'</div>';
-        html += '<button onclick="state.step=1;state.result=null;state.artifactUrls=null;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
+        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.equipmentControlsCatalog=null;state.equipmentMetadata=null;load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
+      } else {
+        html += renderProgressBar();
+        html += renderStepContent();
       }
 
       c.innerHTML = html;
