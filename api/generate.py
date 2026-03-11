@@ -91,7 +91,7 @@ def _handle_post(payload):
         json.dump(pkg, f, indent=2)
 
     template_md = _PROJECT_ROOT / "templates" / "human_readable_template_markdown_v1.md"
-    langmap = _PROJECT_ROOT / "rules" / "hazard_to_language_map_v1.json"
+    langmap = _PROJECT_ROOT / "rules" / "hazard_to_language_map_v1 - comprehensive.json"
     rendered_dir = Path(tmpdir) / "rendered"
     rendered_dir.mkdir(parents=True, exist_ok=True)
     render_markdown(str(pkg_path), str(template_md), str(langmap), str(rendered_dir))

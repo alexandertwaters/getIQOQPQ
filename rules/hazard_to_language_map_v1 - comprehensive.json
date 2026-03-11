@@ -1,0 +1,499 @@
+{
+  "version": "langmap_v1",
+  "generatedAt": "2026-03-11T02:00:00Z",
+  "mappings": [
+    {
+      "match": {
+        "testId": "chamber temperature uniformity mapping"
+      },
+      "human": {
+        "title": "Chamber temperature uniformity mapping",
+        "objective": "Verify temperature uniformity across mapped locations at the target cycle temperature.",
+        "setup": "Install calibrated thermocouples at supplier mapping points; use NIST traceable data logger; ensure chamber empty or use representative non-production load per protocol.",
+        "steps": [
+          "Install thermocouples at all mapped locations identified in supplier mapping plan.",
+          "Run a representative sterilization cycle at the target temperature without product load or with representative load as specified.",
+          "Record temperature versus time at all mapped points throughout the cycle.",
+          "Compute plateau temperature and plateau duration for each mapped point."
+        ],
+        "dataToRecord": "Time series for each thermocouple; maximum and minimum plateau temperatures; plateau durations; cycle log and setpoint trace.",
+        "acceptanceCriteria": "All mapped points must be within \u00b12.0 \u00b0C of the setpoint during plateau and plateau duration must meet the dwell time requirement specified by the manufacturer or protocol."
+      }
+    },
+    {
+      "match": {
+        "testId": "vacuum and leak test"
+      },
+      "human": {
+        "title": "Vacuum and leak performance test",
+        "objective": "Verify vacuum pump performance, chamber leak rate, and pre\u2011vacuum cycle performance.",
+        "setup": "Instrument vacuum gauge and leak test apparatus per supplier instructions; ensure vacuum pump warmed up and instrument calibration current.",
+        "steps": [
+          "Execute a pre\u2011vacuum cycle and measure the vacuum level achieved.",
+          "Hold vacuum for the defined hold period and measure leak rate.",
+          "If applicable, perform helium leak detection per supplier guidance.",
+          "Record pump inlet/outlet parameters and any alarm events."
+        ],
+        "dataToRecord": "Vacuum level traces, leak rate values, pump performance logs, helium leak detector readings if performed.",
+        "acceptanceCriteria": "Vacuum level meets supplier specification and leak rate is below supplier threshold; pump performance within manufacturer tolerances."
+      }
+    },
+    {
+      "match": {
+        "testId": "Bowie-Dick or air removal test"
+      },
+      "human": {
+        "title": "Bowie\u2011Dick air removal test",
+        "objective": "Verify air removal efficiency for pre\u2011vacuum sterilizers.",
+        "setup": "Standardized Bowie\u2011Dick test pack per ISO 11140\u20114; chamber empty except for test pack; thermocouples not required for this test.",
+        "steps": [
+          "Run a Bowie\u2011Dick cycle using the standardized test pack.",
+          "Inspect the test pack result according to ISO 11140\u20114 criteria and manufacturer instructions.",
+          "Document pass/fail and any deviations."
+        ],
+        "dataToRecord": "Test pack result images, cycle log, and pass/fail determination.",
+        "acceptanceCriteria": "Bowie\u2011Dick test indicates successful air removal per manufacturer and ISO 11140\u20114 guidance."
+      }
+    },
+    {
+      "match": {
+        "testId": "biological indicator placement matrix"
+      },
+      "human": {
+        "title": "Biological indicator placement and PQ runs",
+        "objective": "Demonstrate microbial inactivation for worst\u2011case loads using biological indicators.",
+        "setup": "Place biological indicators (BIs) at worst\u2011case locations identified in mapping; include positive and negative controls; follow BI manufacturer incubation instructions.",
+        "steps": [
+          "Place BIs at designated worst\u2011case locations and run PQ cycle with worst\u2011case load.",
+          "Collect BIs and incubate per BI manufacturer instructions.",
+          "Record incubation results and repeat for required consecutive PQ cycles."
+        ],
+        "dataToRecord": "BI incubation results, cycle logs, load maps, and BI lot numbers.",
+        "acceptanceCriteria": "All biological indicators show no growth after incubation per BI manufacturer instructions and OQ parameters met for each PQ run."
+      }
+    },
+    {
+      "match": {
+        "testId": "steam quality and condensate check"
+      },
+      "human": {
+        "title": "Steam quality and condensate verification",
+        "objective": "Verify steam dryness, condensate management, and absence of wet steam that could affect sterilization.",
+        "setup": "Install steam quality measurement instruments (e.g., dryness fraction meter) and inspect condensate traps and steam traps per supplier guidance.",
+        "steps": [
+          "Measure steam dryness fraction and record values across representative cycles.",
+          "Inspect and test condensate traps and steam traps for correct operation.",
+          "Document any condensate carryover or wet steam indicators."
+        ],
+        "dataToRecord": "Steam dryness fraction readings, condensate trap inspection logs, and cycle conditions.",
+        "acceptanceCriteria": "Steam dryness and condensate control meet supplier specifications and applicable standards; no evidence of wet steam during cycles."
+      }
+    },
+    {
+      "match": {
+        "testId": "control system and alarm verification"
+      },
+      "human": {
+        "title": "Control system and alarm verification",
+        "objective": "Verify control system logic, alarm thresholds, and alarm notification behavior.",
+        "setup": "Access to PLC/controls, alarm logs, and test user accounts; test environment or safe mode for alarm injection.",
+        "steps": [
+          "Review control logic and alarm configuration against supplier documentation.",
+          "Simulate alarm conditions and verify alarm generation, logging, and notification.",
+          "Verify alarm thresholds and that alarms trigger required operator actions."
+        ],
+        "dataToRecord": "Alarm logs, screenshots of alarm events, control logic snapshots, and test results.",
+        "acceptanceCriteria": "Alarms generate as configured, are logged with timestamp and user, and notifications reach intended recipients; control logic matches documented behavior."
+      }
+    },
+    {
+      "match": {
+        "testId": "EtO concentration and humidity verification"
+      },
+      "human": {
+        "title": "EtO concentration and humidity verification",
+        "objective": "Verify EtO gas concentration and chamber humidity meet validated process parameters.",
+        "setup": "Install calibrated EtO concentration sensors and humidity probes; ensure calibration certificates available.",
+        "steps": [
+          "Run representative EtO cycle and record EtO concentration and humidity profiles.",
+          "Compare measured profiles to validated setpoints and acceptance ranges.",
+          "Document any excursions and corrective actions."
+        ],
+        "dataToRecord": "EtO concentration time series, humidity traces, cycle logs, and sensor calibration certificates.",
+        "acceptanceCriteria": "EtO concentration and humidity remain within validated limits for the required dwell period."
+      }
+    },
+    {
+      "match": {
+        "testId": "dwell time verification"
+      },
+      "human": {
+        "title": "Dwell time verification",
+        "objective": "Confirm that the sterilization dwell time at target conditions meets validated requirements.",
+        "setup": "Use cycle logs and validated sensors to measure time at setpoint; ensure time synchronization across instruments.",
+        "steps": [
+          "Run representative cycle and record time at target temperature/conditions.",
+          "Verify dwell time meets or exceeds validated requirement for product geometry.",
+          "Document cycle logs and any deviations."
+        ],
+        "dataToRecord": "Cycle time traces, time-at-temperature calculations, and acceptance comparison.",
+        "acceptanceCriteria": "Dwell time at target conditions meets validated requirement for the product and load configuration."
+      }
+    },
+    {
+      "match": {
+        "testId": "aeration performance test"
+      },
+      "human": {
+        "title": "Aeration performance test",
+        "objective": "Verify aeration removes residual sterilant to acceptable levels for the product.",
+        "setup": "Use validated residual testing methods and sample product per protocol; ensure aeration equipment and monitoring in place.",
+        "steps": [
+          "Run aeration cycle per validated procedure.",
+          "Collect product samples and perform residual testing per method.",
+          "Compare residual levels to acceptance criteria."
+        ],
+        "dataToRecord": "Residual test results, aeration cycle logs, and sample identifiers.",
+        "acceptanceCriteria": "Residual sterilant levels are below specified acceptance limits for the product type."
+      }
+    },
+    {
+      "match": {
+        "testId": "pump flow accuracy"
+      },
+      "human": {
+        "title": "Pump flow accuracy verification",
+        "objective": "Verify pump flow rate accuracy across the operational envelope.",
+        "setup": "Use calibrated flow meters or gravimetric methods; set pump to representative flow setpoints.",
+        "steps": [
+          "Set pump to low, mid, and high flow setpoints and measure delivered flow.",
+          "Record measured versus setpoint values and compute percent error.",
+          "Repeat measurements per protocol and average results."
+        ],
+        "dataToRecord": "Measured flow values, setpoints, percent error calculations, and calibration certificates.",
+        "acceptanceCriteria": "Measured flow is within supplier or method specified tolerance across the tested envelope."
+      }
+    },
+    {
+      "match": {
+        "testId": "wavelength accuracy"
+      },
+      "human": {
+        "title": "Wavelength accuracy verification",
+        "objective": "Verify spectrophotometer wavelength accuracy and calibration.",
+        "setup": "Use certified wavelength standards (holmium oxide, didymium) and follow instrument vendor procedures.",
+        "steps": [
+          "Run wavelength calibration standards and record measured peak positions.",
+          "Compare measured peaks to certified values and compute deviations.",
+          "Document calibration certificate and any adjustments."
+        ],
+        "dataToRecord": "Standard spectra, measured peak positions, deviation calculations, and calibration certificates.",
+        "acceptanceCriteria": "Wavelength deviations are within instrument and method specified tolerances."
+      }
+    },
+    {
+      "match": {
+        "testId": "system suitability verification"
+      },
+      "human": {
+        "title": "System suitability verification",
+        "objective": "Confirm analytical system performance meets method suitability criteria prior to sample analysis.",
+        "setup": "Prepare system suitability standard per method and ensure instrument warm\u2011up and equilibration.",
+        "steps": [
+          "Inject system suitability standard and record chromatographic parameters (e.g., resolution, tailing, theoretical plates).",
+          "Compare measured parameters to method acceptance criteria.",
+          "Document results and proceed only if criteria met."
+        ],
+        "dataToRecord": "Chromatograms, calculated system suitability metrics, and pass/fail determination.",
+        "acceptanceCriteria": "All system suitability metrics meet method acceptance criteria."
+      }
+    },
+    {
+      "match": {
+        "testId": "autosampler performance"
+      },
+      "human": {
+        "title": "Autosampler performance verification",
+        "objective": "Verify autosampler precision, carryover, and injection accuracy.",
+        "setup": "Use calibration standards and carryover test solutions; ensure autosampler syringes and vials are appropriate.",
+        "steps": [
+          "Perform repeated injections of a standard to assess precision.",
+          "Run carryover sequence (high standard followed by blank) and measure carryover.",
+          "Verify injection volumes and retention time stability."
+        ],
+        "dataToRecord": "Injection sequence logs, precision statistics, carryover measurements, and chromatograms.",
+        "acceptanceCriteria": "Autosampler precision and carryover meet method and supplier acceptance criteria."
+      }
+    },
+    {
+      "match": {
+        "testId": "HEPA installation verification"
+      },
+      "human": {
+        "title": "HEPA installation verification",
+        "objective": "Confirm HEPA filters are installed correctly and plenum sealing is intact.",
+        "setup": "Access to HEPA bank, filter serials, and installation records; particle counter and integrity test equipment.",
+        "steps": [
+          "Inspect filter frames and gaskets for correct installation.",
+          "Perform filter integrity test (DOP/PAO or equivalent) per standard.",
+          "Record filter serial numbers and test results."
+        ],
+        "dataToRecord": "Filter serials, integrity test results, and inspection photos.",
+        "acceptanceCriteria": "No leaks detected; filter installation meets supplier and standard requirements."
+      }
+    },
+    {
+      "match": {
+        "testId": "airflow and pressure differential tests"
+      },
+      "human": {
+        "title": "Airflow and pressure differential verification",
+        "objective": "Verify airflow rates and pressure differentials between zones meet design and cleanroom classification requirements.",
+        "setup": "Calibrated anemometer, differential pressure gauge, and access to zone boundaries.",
+        "steps": [
+          "Measure supply and return airflow rates at representative diffusers.",
+          "Measure pressure differentials between adjacent zones and to ambient.",
+          "Compare measurements to design and ISO 14644 classification requirements."
+        ],
+        "dataToRecord": "Airflow readings, pressure differential logs, and measurement locations.",
+        "acceptanceCriteria": "Airflow and pressure differentials meet design specifications and maintain required cascade for cleanroom classification."
+      }
+    },
+    {
+      "match": {
+        "testId": "HEPA leak test"
+      },
+      "human": {
+        "title": "HEPA filter leak test",
+        "objective": "Detect leaks in HEPA filters and plenums using aerosol challenge.",
+        "setup": "DOP/PAO aerosol generator, photometer, and access to filter face and plenum.",
+        "steps": [
+          "Challenge HEPA filter with aerosol per standard method.",
+          "Scan filter face and plenum for leaks using photometer.",
+          "Document any leak locations and remedial actions."
+        ],
+        "dataToRecord": "Photometer readings, leak locations, and test conditions.",
+        "acceptanceCriteria": "No leaks above allowable threshold per standard."
+      }
+    },
+    {
+      "match": {
+        "testId": "operational particle mapping per ISO 14644-1"
+      },
+      "human": {
+        "title": "Operational particle mapping (ISO 14644-1)",
+        "objective": "Demonstrate particle counts under operational conditions meet ISO classification.",
+        "setup": "Calibrated particle counter, representative operational load and personnel, and defined sampling locations.",
+        "steps": [
+          "Run representative operations and sample particle counts at defined locations and heights.",
+          "Record particle counts for required size channels and durations.",
+          "Compare results to ISO 14644-1 limits for the target cleanroom class."
+        ],
+        "dataToRecord": "Particle count logs, sampling locations, operational description, and environmental conditions.",
+        "acceptanceCriteria": "Particle counts meet ISO 14644-1 limits for the specified cleanroom class."
+      }
+    },
+    {
+      "match": {
+        "testId": "WFI loop integrity and conductivity verification"
+      },
+      "human": {
+        "title": "WFI loop integrity and conductivity verification",
+        "objective": "Verify WFI distribution loop integrity and water conductivity meet pharmacopeial limits.",
+        "setup": "Calibrated conductivity meter, sample ports, and access to WFI loop documentation.",
+        "steps": [
+          "Collect conductivity samples at representative points in the WFI loop.",
+          "Perform loop integrity checks and inspect for dead legs or bypasses.",
+          "Document sample results and any corrective actions."
+        ],
+        "dataToRecord": "Conductivity readings, sample locations, and loop inspection notes.",
+        "acceptanceCriteria": "Conductivity and loop integrity meet pharmacopeial and site specifications."
+      }
+    },
+    {
+      "match": {
+        "testId": "WFI distribution loop microbial challenge and recovery"
+      },
+      "human": {
+        "title": "WFI distribution loop microbial challenge and recovery",
+        "objective": "Demonstrate WFI loop can recover to acceptable microbial levels after challenge.",
+        "setup": "Microbiological challenge materials, sampling plan, and validated test methods.",
+        "steps": [
+          "Introduce controlled microbial challenge per protocol and operate loop.",
+          "Collect samples at defined intervals and perform microbial enumeration.",
+          "Assess recovery and time to acceptable microbial levels."
+        ],
+        "dataToRecord": "Microbial counts over time, sample IDs, and challenge conditions.",
+        "acceptanceCriteria": "Microbial counts return to acceptable levels within defined recovery time per protocol."
+      }
+    },
+    {
+      "match": {
+        "testId": "vacuum pump performance and leak test"
+      },
+      "human": {
+        "title": "Vacuum pump performance and leak test",
+        "objective": "Verify vacuum pump performance and system leak rate under operational conditions.",
+        "setup": "Calibrated vacuum gauges, leak test apparatus, and pump performance logs.",
+        "steps": [
+          "Measure pump vacuum level and throughput under representative load.",
+          "Perform leak test and record leak rate.",
+          "Compare pump performance to supplier specifications."
+        ],
+        "dataToRecord": "Pump performance logs, vacuum traces, and leak rate values.",
+        "acceptanceCriteria": "Pump performance and leak rate meet supplier and site acceptance criteria."
+      }
+    },
+    {
+      "match": {
+        "testId": "instrument air dew point and particle verification"
+      },
+      "human": {
+        "title": "Instrument air dew point and particle verification",
+        "objective": "Verify instrument/compressed air meets dew point and particulate quality requirements.",
+        "setup": "Dew point meter, particle counter, and sample points downstream of dryers and filters.",
+        "steps": [
+          "Measure dew point and particle counts at representative points under load.",
+          "Record results and compare to ISO 8573 or site specifications.",
+          "Document filter and dryer maintenance status."
+        ],
+        "dataToRecord": "Dew point readings, particle counts, and sample locations.",
+        "acceptanceCriteria": "Dew point and particle counts meet specified class for instrument air."
+      }
+    },
+    {
+      "match": {
+        "testId": "air quality verification under operational load"
+      },
+      "human": {
+        "title": "Air quality verification under operational load",
+        "objective": "Confirm air quality (particles, dew point, oil) remains acceptable during production.",
+        "setup": "Particle counter, dew point meter, oil vapor detector, and representative production conditions.",
+        "steps": [
+          "Run production under representative load and sample air quality at critical points.",
+          "Record particle counts, dew point, and oil content.",
+          "Compare results to acceptance criteria and document deviations."
+        ],
+        "dataToRecord": "Particle counts, dew point, oil measurements, and operational context.",
+        "acceptanceCriteria": "Air quality parameters meet site and supplier acceptance criteria during operational load."
+      }
+    },
+    {
+      "match": {
+        "testId": "seal strength and temperature profiling"
+      },
+      "human": {
+        "title": "Seal strength and temperature profiling",
+        "objective": "Verify sealer temperature profile and resulting seal strength across materials and speeds.",
+        "setup": "Seal strength tester, temperature profiler, and representative film/material samples.",
+        "steps": [
+          "Run sealer across representative speeds and materials while recording temperature profile.",
+          "Collect sealed samples and perform seal strength tests.",
+          "Compare seal strength to supplier and method acceptance criteria."
+        ],
+        "dataToRecord": "Temperature profiles, seal strength measurements, and sample identifiers.",
+        "acceptanceCriteria": "Seal strength meets acceptance criteria across tested materials and speeds."
+      }
+    },
+    {
+      "match": {
+        "testId": "vision inspection calibration"
+      },
+      "human": {
+        "title": "Vision inspection system calibration",
+        "objective": "Verify vision system lighting, focus, and algorithm thresholds produce reliable defect detection.",
+        "setup": "Calibration targets, representative product samples, and access to algorithm configuration.",
+        "steps": [
+          "Calibrate lighting and focus using standard targets.",
+          "Run known good and known bad samples to verify detection sensitivity and false positive rate.",
+          "Adjust algorithm thresholds as required and document settings."
+        ],
+        "dataToRecord": "Calibration images, detection statistics, and algorithm configuration snapshots.",
+        "acceptanceCriteria": "Vision system detects defects within acceptable sensitivity and false positive limits."
+      }
+    },
+    {
+      "match": {
+        "testId": "filler dosing accuracy across operational envelope"
+      },
+      "human": {
+        "title": "Filler dosing accuracy verification",
+        "objective": "Verify filler dosing accuracy across low, medium, and high flow conditions.",
+        "setup": "Calibrated balance or flow meter, representative product, and sampling plan.",
+        "steps": [
+          "Run filler at low, mid, and high setpoints and collect samples.",
+          "Weigh or measure dispensed volumes and compute percent error.",
+          "Compare results to supplier and method tolerances."
+        ],
+        "dataToRecord": "Measured volumes/weights, setpoints, percent error calculations, and sample IDs.",
+        "acceptanceCriteria": "Dosing accuracy within specified tolerance across operational envelope."
+      }
+    },
+    {
+      "match": {
+        "testId": "in-line checkweigher verification"
+      },
+      "human": {
+        "title": "In-line checkweigher verification",
+        "objective": "Verify checkweigher accuracy, repeatability, and rejection logic.",
+        "setup": "Calibrated weights, checkweigher calibration records, and representative product flow.",
+        "steps": [
+          "Run calibration sequence with known weights and verify measured values.",
+          "Test rejection logic with underweight and overweight samples.",
+          "Document calibration and test results."
+        ],
+        "dataToRecord": "Calibration logs, measured weights, rejection events, and test conditions.",
+        "acceptanceCriteria": "Checkweigher accuracy and rejection logic meet supplier and site acceptance criteria."
+      }
+    },
+    {
+      "match": {
+        "testId": "method system suitability per method"
+      },
+      "human": {
+        "title": "Method system suitability verification",
+        "objective": "Confirm the analytical method and system meet suitability criteria for the intended test.",
+        "setup": "Prepare method-specific system suitability standards and follow method SOP.",
+        "steps": [
+          "Run system suitability standard and calculate method-specific metrics (e.g., resolution, RSD, recovery).",
+          "Compare metrics to method acceptance criteria.",
+          "Document results and proceed with sample testing only if criteria met."
+        ],
+        "dataToRecord": "Chromatograms, calculated metrics, and pass/fail determination.",
+        "acceptanceCriteria": "All method-specific system suitability metrics meet acceptance criteria."
+      }
+    },
+    {
+      "match": {
+        "testId": "audit trail integrity test"
+      },
+      "human": {
+        "title": "Audit trail integrity test",
+        "objective": "Verify that the computerized data system records immutable audit trails and that audit trails cannot be altered without detection.",
+        "setup": "Access to CDS with test user accounts and audit trail viewer; test dataset and controlled actions prepared.",
+        "steps": [
+          "Perform a sequence of controlled actions (create, modify, delete) using test accounts.",
+          "Verify audit trail entries record user, timestamp, and action.",
+          "Attempt an authorized and an unauthorized modification and verify detection mechanisms."
+        ],
+        "dataToRecord": "Audit trail entries, screenshots, user account logs, and test action records.",
+        "acceptanceCriteria": "Audit trail records all actions with user and timestamp; unauthorized modifications are detected and logged."
+      }
+    },
+    {
+      "match": {
+        "testId": "default"
+      },
+      "human": {
+        "title": "{{testId}}",
+        "objective": "Execute the supplier recommended verification for {{testId}}.",
+        "setup": "Follow supplier documentation and applicable standards.",
+        "steps": [
+          "Execute supplier recommended procedure for {{testId}}."
+        ],
+        "dataToRecord": "Supplier report and measured values.",
+        "acceptanceCriteria": "Meet supplier acceptance criteria or applicable standard."
+      }
+    }
+  ]
+}

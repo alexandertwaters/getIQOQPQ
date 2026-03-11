@@ -15,7 +15,10 @@
   "rewrites": [
     { "source": "/api/v1/generate", "destination": "/api/generate" },
     { "source": "/api/v1/artifact", "destination": "/api/artifact" },
-    { "source": "/api/v1/equipment-types", "destination": "/api/v1/equipment_types" }
+    { "source": "/api/v1/equipment-types", "destination": "/api/v1/equipment_types" },
+    { "source": "/api/v1/equipment-metadata", "destination": "/api/v1/equipment_metadata" },
+    { "source": "/api/v1/site-context", "destination": "/api/v1/site_context" },
+    { "source": "/api/v1/contextual-tag-descriptors", "destination": "/api/v1/contextual_tag_descriptors" }
   ],
   "env": {
     "ARTIFACT_BUCKET": "artifacts"

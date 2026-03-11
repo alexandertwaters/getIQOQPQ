@@ -1,0 +1,656 @@
+{
+  "version": "equipment_metadata_v1",
+  "generatedAt": "2026-03-11T03:00:00Z",
+  "utilitiesMasterList": {
+    "Steam": "Saturated steam for sterilization or process heating; may require condensate management and steam quality monitoring.",
+    "Vacuum": "Vacuum system for pre-vacuum sterilizers or process evacuation; includes pumps, traps, and leak testing.",
+    "WFI": "Water for Injection distribution loop; requires conductivity and microbial monitoring.",
+    "Compressed Air": "Compressed air for pneumatic actuation; quality depends on filtration and dryers.",
+    "Instrument Air": "Clean, dry air for instruments; typically higher quality than general compressed air.",
+    "Electricity": "Mains electrical supply; may include single-phase or three-phase and UPS/backups.",
+    "Nitrogen": "Inert gas supply for blanketing, purging, or instrument operation.",
+    "Cooling Water": "Chilled or process cooling water for heat removal; quality and temperature control required.",
+    "Steam Condensate Return": "Condensate handling and return systems associated with steam utilities.",
+    "Process Water (PW)": "Purified water for non-WFI process needs; may require conductivity and TOC monitoring.",
+    "CIP/SIP Utilities": "Clean-in-place / steam-in-place connections and controls for sanitary equipment.",
+    "Ethernet/Network": "Network connectivity for computerized control, data capture, and remote monitoring.",
+    "PLC/Control Power": "Control power and PLC connectivity separate from main electrical supply.",
+    "Compressed Gas (Oxygen)": "Oxygen supply for specific processes; safety and purity considerations apply.",
+    "Compressed Gas (CO2)": "CO2 supply for process or packaging; purity and pressure control required.",
+    "Cooling Glycol": "Closed-loop glycol cooling for temperature control where chilled water is not used.",
+    "Vacuum Steam Trap": "Specialized steam trap and condensate handling for vacuum/sterilization systems",
+    "Helium": "Helium supply for leak detection and helium-based leak testing.",
+    "WFI Sampling Ports": "Dedicated sample ports for WFI microbial and conductivity sampling.",
+    "HEPA Filter Bank": "HEPA filter banks and plenums for particle filtration; integrity testing and installation verification per ISO 14644."
+  },
+  "equipmentMetadata": [
+    {
+      "equipmentTypeId": "STER_PV_AUT",
+      "equipmentType": "Pre-Vacuum Steam Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Steam","Vacuum","Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Steam": "Primary sterilant; requires steam quality and condensate control.",
+        "Vacuum": "Pre-vacuum pump and leak testing required for air removal.",
+        "Electricity": "Power for controls, heaters, and pumps; consider UPS for critical cycles.",
+        "Compressed Air": "Actuation and pneumatic valves; instrument-quality air recommended."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Requires Bowie-Dick, thermocouple mapping, BI program; WFI only if integrated aeration sampling is present."
+    },
+    {
+      "equipmentTypeId": "STER_GRAV_AUT",
+      "equipmentType": "Gravity Displacement Steam Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Steam","Electricity"],
+      "utilityDescriptors": {
+        "Steam": "Primary sterilant; gravity displacement relies on steam penetration.",
+        "Electricity": "Power for controls and instrumentation."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Less vacuum dependency than pre-vacuum units; steam quality monitoring recommended."
+    },
+    {
+      "equipmentTypeId": "STER_ETO",
+      "equipmentType": "Ethylene Oxide Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Electricity","WFI","Compressed Air","Nitrogen"],
+      "utilityDescriptors": {
+        "Electricity": "Power for controls and gas injection systems.",
+        "WFI": "Used for some aeration or cleaning steps; not always required.",
+        "Compressed Air": "Pneumatic actuation and gas handling support.",
+        "Nitrogen": "Purge gas for safe handling and process control."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Requires EtO monitoring, aeration verification, and residual testing per product type."
+    },
+    {
+      "equipmentTypeId": "STER_GAMMA",
+      "equipmentType": "Gamma Irradiation Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Electricity"],
+      "utilityDescriptors": {
+        "Electricity": "Power for conveyors, source handling, and control systems."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "High",
+      "notes": "Dosimetry program and conveyor automation are common; facility-level shielding and QA required."
+    },
+    {
+      "equipmentTypeId": "STER_EBEAM",
+      "equipmentType": "Electron Beam Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Electricity","Cooling Water"],
+      "utilityDescriptors": {
+        "Electricity": "High-power supply for accelerator and controls.",
+        "Cooling Water": "Critical for accelerator cooling and stability."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "High",
+      "notes": "Requires dosimetry, accelerator maintenance schedule, and cooling system verification."
+    },
+    {
+      "equipmentTypeId": "STER_H2O2",
+      "equipmentType": "Low Temperature Hydrogen Peroxide Plasma Sterilizer",
+      "cohort": "Sterilization",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for plasma generation and controls.",
+        "Compressed Air": "Pneumatic actuation and gas handling support."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Material compatibility checks and aeration/residual verification required for product contact."
+    },
+    {
+      "equipmentTypeId": "COLD_PHARMA_REF",
+      "equipmentType": "Pharmaceutical Refrigerator 2-8°C",
+      "cohort": "Cold Chain & Storage",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Primary power; backup power recommended for critical storage.",
+        "Ethernet/Network": "Temperature alarm, remote notification, and logging connectivity."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "High",
+      "notes": "Continuous temperature logging and alarm verification required; PQ includes temperature excursion tests."
+    },
+    {
+      "equipmentTypeId": "COLD_ULTRA_FREEZER",
+      "equipmentType": "Ultra-Low Freezer ≤ -70°C",
+      "cohort": "Cold Chain & Storage",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Stable power and backup recommended.",
+        "Ethernet/Network": "Remote monitoring and alarm notification for excursions."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "High",
+      "notes": "PQ includes long-duration temperature stability and recovery tests."
+    },
+    {
+      "equipmentTypeId": "COLD_WALKIN",
+      "equipmentType": "Cold Storage Walk-in Chamber",
+      "cohort": "Cold Chain & Storage",
+      "defaultUtilities": ["Electricity","Cooling Glycol","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for compressors and controls.",
+        "Cooling Glycol": "Chilled fluid for large-volume cooling systems.",
+        "Ethernet/Network": "Monitoring and logging for temperature control."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Medium",
+      "notes": "Airflow and door-seal integrity checks recommended for large chambers."
+    },
+    {
+      "equipmentTypeId": "COLD_CRYO",
+      "equipmentType": "Cryogenic LN2 Storage Cabinet",
+      "cohort": "Cold Chain & Storage",
+      "defaultUtilities": ["Electricity","Nitrogen"],
+      "utilityDescriptors": {
+        "Electricity": "Power for alarms and monitoring.",
+        "Nitrogen": "LN2 supply for cryogenic storage; safety systems required."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Low",
+      "notes": "Safety interlocks and oxygen-deficiency monitoring recommended."
+    },
+    {
+      "equipmentTypeId": "PKG_HEAT_SEALER",
+      "equipmentType": "Heat Sealer",
+      "cohort": "Packaging",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for heating elements and controls.",
+        "Compressed Air": "Pneumatic actuation for sealing heads and conveyors."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "OQ includes seal strength and temperature profiling; material-specific acceptance criteria apply."
+    },
+    {
+      "equipmentTypeId": "PKG_ULTRASONIC_SEALER",
+      "equipmentType": "Ultrasonic Sealer",
+      "cohort": "Packaging",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for ultrasonic generator and controls.",
+        "Compressed Air": "Actuation and part handling."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Ultrasonic parameter validation and in-line inspection recommended."
+    },
+    {
+      "equipmentTypeId": "PKG_FFS",
+      "equipmentType": "Form-Fill-Seal Machine",
+      "cohort": "Packaging",
+      "defaultUtilities": ["Electricity","Compressed Air","Instrument Air","Cooling Water"],
+      "utilityDescriptors": {
+        "Electricity": "Power for motors, heaters, and controls.",
+        "Compressed Air": "Pneumatic actuation and product handling.",
+        "Instrument Air": "Clean air for sensitive pneumatic controls.",
+        "Cooling Water": "Cooling for sealing heads and motors."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Filler dosing accuracy, seal integrity, and in-line checkweigher tests are typical OQ/PQ items."
+    },
+    {
+      "equipmentTypeId": "PKG_BLISTER",
+      "equipmentType": "Blister Pack Line",
+      "cohort": "Packaging",
+      "defaultUtilities": ["Electricity","Compressed Air","Cooling Water"],
+      "utilityDescriptors": {
+        "Electricity": "Power for forming, sealing, and conveyors.",
+        "Compressed Air": "Actuation and vacuum forming assistance.",
+        "Cooling Water": "Cooling for forming and sealing stations."
+      },
+      "typicalCleanroomClass": "ISO 7",
+      "productContactLikelihood": "High",
+      "notes": "Vision inspection and seal integrity checks commonly included in OQ/PQ."
+    },
+    {
+      "equipmentTypeId": "PKG_LABELER",
+      "equipmentType": "Labeling and Serialization Station",
+      "cohort": "Packaging",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for applicators and conveyors.",
+        "Ethernet/Network": "Connectivity for serialization data and traceability systems."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Data integrity and serialization verification may be required for regulated products."
+    },
+    {
+      "equipmentTypeId": "MET_BALANCE",
+      "equipmentType": "Analytical Balance",
+      "cohort": "Metrology",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for balance electronics.",
+        "Ethernet/Network": "Optional connectivity for LIMS or data capture."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Calibration certificate collection and repeatability tests are standard OQ/PQ items."
+    },
+    {
+      "equipmentTypeId": "MET_CMM",
+      "equipmentType": "Coordinate Measuring Machine",
+      "cohort": "Metrology",
+      "defaultUtilities": ["Electricity","Ethernet/Network","Cooling Glycol"],
+      "utilityDescriptors": {
+        "Electricity": "Power for axes and control systems.",
+        "Ethernet/Network": "Data transfer to metrology software.",
+        "Cooling Glycol": "Temperature stabilization for high-precision machines."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Environmental control and calibration across range required for PQ."
+    },
+    {
+      "equipmentTypeId": "MET_GAUGE",
+      "equipmentType": "Calibrated Gauge Block Station",
+      "cohort": "Metrology",
+      "defaultUtilities": ["Electricity"],
+      "utilityDescriptors": {
+        "Electricity": "Power for environmental monitoring and data logging."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Calibration certificates and repeatability checks required."
+    },
+    {
+      "equipmentTypeId": "MET_VISION",
+      "equipmentType": "Dimensional Vision System",
+      "cohort": "Metrology",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for lighting and cameras.",
+        "Ethernet/Network": "Image transfer and analysis connectivity."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Vision calibration and measurement uncertainty verification required."
+    },
+    {
+      "equipmentTypeId": "ANA_HPLC",
+      "equipmentType": "HPLC System",
+      "cohort": "Analytical",
+      "defaultUtilities": ["Electricity","Ethernet/Network","Instrument Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for pumps, detectors, and autosampler.",
+        "Ethernet/Network": "Optional CDS connectivity for electronic records.",
+        "Instrument Air": "Pneumatic valves and autosampler actuation."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "If CDS with electronic records present, CSV tests and audit trail verification required."
+    },
+    {
+      "equipmentTypeId": "ANA_GCMS",
+      "equipmentType": "GC / GC-MS System",
+      "cohort": "Analytical",
+      "defaultUtilities": ["Electricity","Ethernet/Network","Nitrogen"],
+      "utilityDescriptors": {
+        "Electricity": "Power for detectors and control electronics.",
+        "Ethernet/Network": "Data capture and instrument control connectivity.",
+        "Nitrogen": "Carrier gas for GC; helium may be used for MS detectors per instrument specification."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Method suitability and detector performance verification required."
+    },
+    {
+      "equipmentTypeId": "ANA_UVVIS",
+      "equipmentType": "UV-Vis Spectrophotometer",
+      "cohort": "Analytical",
+      "defaultUtilities": ["Electricity"],
+      "utilityDescriptors": {
+        "Electricity": "Power for lamp and detector systems."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Wavelength accuracy and stray light verification are typical OQ items."
+    },
+    {
+      "equipmentTypeId": "ANA_TOC",
+      "equipmentType": "TOC Analyzer",
+      "cohort": "Analytical",
+      "defaultUtilities": ["Electricity","Process Water (PW)"],
+      "utilityDescriptors": {
+        "Electricity": "Power for analyzer electronics.",
+        "Process Water (PW)": "Reagent and rinse water quality may affect results."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Blank and calibration checks required during OQ/PQ."
+    },
+    {
+      "equipmentTypeId": "ANA_DISS",
+      "equipmentType": "Dissolution Tester",
+      "cohort": "Analytical",
+      "defaultUtilities": ["Electricity","Process Water (PW)"],
+      "utilityDescriptors": {
+        "Electricity": "Power for paddles and heaters.",
+        "Process Water (PW)": "Water quality for dissolution media preparation."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Method validation and repeatability runs required for PQ."
+    },
+    {
+      "equipmentTypeId": "IVD_HEM",
+      "equipmentType": "Hematology Analyzer",
+      "cohort": "IVD",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for instrument and sample handling.",
+        "Ethernet/Network": "Connectivity for LIS integration and data capture."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Clinical sample runs and QC trending required for PQ."
+    },
+    {
+      "equipmentTypeId": "IVD_IMMUNO",
+      "equipmentType": "Immunoassay Analyzer",
+      "cohort": "IVD",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for reagent handling and detectors.",
+        "Ethernet/Network": "Data connectivity for results and QC."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Reagent verification and clinical sample validation required."
+    },
+    {
+      "equipmentTypeId": "IVD_POC",
+      "equipmentType": "Point-of-Care Rapid Test Reader",
+      "cohort": "IVD",
+      "defaultUtilities": ["Electricity"],
+      "utilityDescriptors": {
+        "Electricity": "Power for reader and display."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Low",
+      "notes": "Simpler PQs focused on reader accuracy and connectivity."
+    },
+    {
+      "equipmentTypeId": "IVD_PCR",
+      "equipmentType": "Molecular PCR Instrument",
+      "cohort": "IVD",
+      "defaultUtilities": ["Electricity","Ethernet/Network","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for thermal cycler and optics.",
+        "Ethernet/Network": "Data capture and LIMS connectivity.",
+        "Compressed Air": "Optional for pneumatic sample handling."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Method validation and contamination control checks required."
+    },
+    {
+      "equipmentTypeId": "MFG_INJ_MOLD",
+      "equipmentType": "Injection Molding Press",
+      "cohort": "Manufacturing",
+      "defaultUtilities": ["Electricity","Cooling Water","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for press and controls.",
+        "Cooling Water": "Mold cooling and temperature control.",
+        "Compressed Air": "Actuation and part handling."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Tooling verification, process capability, and SPC checks required for PQ."
+    },
+    {
+      "equipmentTypeId": "MFG_CNC",
+      "equipmentType": "CNC Machining Center",
+      "cohort": "Manufacturing",
+      "defaultUtilities": ["Electricity","Cooling Water","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for spindles and controls.",
+        "Cooling Water": "Tooling and spindle cooling.",
+        "Ethernet/Network": "Program transfer and monitoring."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Low",
+      "notes": "Tooling verification and dimensional PQs required."
+    },
+    {
+      "equipmentTypeId": "MFG_ROBOT",
+      "equipmentType": "Assembly Robot Cell",
+      "cohort": "Manufacturing",
+      "defaultUtilities": ["Electricity","Ethernet/Network","PLC/Control Power"],
+      "utilityDescriptors": {
+        "Electricity": "Power for robot axes and controllers.",
+        "Ethernet/Network": "Program and data connectivity.",
+        "PLC/Control Power": "Safety PLC and interlock power."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Safety PLC verification, program baseline, and long-run PQ with safety monitoring required."
+    },
+    {
+      "equipmentTypeId": "MFG_TORQUE",
+      "equipmentType": "Torque Application Station",
+      "cohort": "Manufacturing",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for torque tools and controllers.",
+        "Ethernet/Network": "Data capture for torque results."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Torque calibration and repeatability tests required."
+    },
+    {
+      "equipmentTypeId": "INS_VISION",
+      "equipmentType": "Vision Inspection System",
+      "cohort": "Inspection & Test",
+      "defaultUtilities": ["Electricity","Ethernet/Network"],
+      "utilityDescriptors": {
+        "Electricity": "Power for cameras and lighting.",
+        "Ethernet/Network": "Image transfer and algorithm updates."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Calibration targets and detection performance verification required."
+    },
+    {
+      "equipmentTypeId": "INS_XRAY",
+      "equipmentType": "X-ray Inspection Machine",
+      "cohort": "Inspection & Test",
+      "defaultUtilities": ["Electricity","Helium"],
+      "utilityDescriptors": {
+        "Electricity": "Power for X-ray source and detectors.",
+        "Helium": "Optional for helium leak detection integration."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Radiation safety, imaging calibration, and detection sensitivity PQs required."
+    },
+    {
+      "equipmentTypeId": "INS_LEAK",
+      "equipmentType": "Leak Tester (Pressure Decay)",
+      "cohort": "Inspection & Test",
+      "defaultUtilities": ["Electricity","Helium"],
+      "utilityDescriptors": {
+        "Electricity": "Power for pumps and gauges.",
+        "Helium": "Used for helium-based leak detection where applicable."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Leak rate verification and calibration required."
+    },
+    {
+      "equipmentTypeId": "INS_HELIUM",
+      "equipmentType": "Helium Leak Detector",
+      "cohort": "Inspection & Test",
+      "defaultUtilities": ["Electricity","Helium"],
+      "utilityDescriptors": {
+        "Electricity": "Power for detector and vacuum systems.",
+        "Helium": "Supply for tracer gas testing."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Calibration and sensitivity verification required."
+    },
+    {
+      "equipmentTypeId": "DEC_WASHER",
+      "equipmentType": "Washer-Disinfector",
+      "cohort": "Decontamination",
+      "defaultUtilities": ["Electricity","CIP/SIP Utilities","Process Water (PW)"],
+      "utilityDescriptors": {
+        "Electricity": "Power for pumps and controls.",
+        "CIP/SIP Utilities": "Connections for cleaning and sterilization cycles.",
+        "Process Water (PW)": "Detergent and rinse water supply."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "High",
+      "notes": "Validated cycles and residual detergent checks required."
+    },
+    {
+      "equipmentTypeId": "DEC_ULTRASONIC",
+      "equipmentType": "Ultrasonic Cleaner",
+      "cohort": "Decontamination",
+      "defaultUtilities": ["Electricity","Process Water (PW)"],
+      "utilityDescriptors": {
+        "Electricity": "Power for ultrasonic generator.",
+        "Process Water (PW)": "Water for cleaning baths."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "High",
+      "notes": "Detergent concentration and cleaning efficacy verification required."
+    },
+    {
+      "equipmentTypeId": "DEC_MANUAL",
+      "equipmentType": "Manual Cleaning Station",
+      "cohort": "Decontamination",
+      "defaultUtilities": ["Process Water (PW)"],
+      "utilityDescriptors": {
+        "Process Water (PW)": "Water and detergent supply for manual cleaning."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "High",
+      "notes": "SOP adherence and cleaning validation required."
+    },
+    {
+      "equipmentTypeId": "ASM_ULTRASONIC",
+      "equipmentType": "Ultrasonic Welding Station",
+      "cohort": "Assembly & Joining",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for ultrasonic generator and controls.",
+        "Compressed Air": "Actuation and part handling."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Weld strength and parameter validation required."
+    },
+    {
+      "equipmentTypeId": "ASM_HEAT_STAKE",
+      "equipmentType": "Heat Staking Machine",
+      "cohort": "Assembly & Joining",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for heaters and controls.",
+        "Compressed Air": "Actuation and part handling."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Parameter validation and pull tests required for PQ."
+    },
+    {
+      "equipmentTypeId": "ASM_ADHESIVE",
+      "equipmentType": "Adhesive Dispensing and Cure Oven",
+      "cohort": "Assembly & Joining",
+      "defaultUtilities": ["Electricity","Compressed Air","Cooling Water"],
+      "utilityDescriptors": {
+        "Electricity": "Power for dispensers and ovens.",
+        "Compressed Air": "Actuation for dispensing systems.",
+        "Cooling Water": "Oven cooling and temperature control."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Medium",
+      "notes": "Dispense accuracy and cure profile verification required."
+    },
+    {
+      "equipmentTypeId": "ASM_CRIMP",
+      "equipmentType": "Crimping Station",
+      "cohort": "Assembly & Joining",
+      "defaultUtilities": ["Electricity","Compressed Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for crimping heads and controls.",
+        "Compressed Air": "Actuation and part handling."
+      },
+      "typicalCleanroomClass": "ISO 8",
+      "productContactLikelihood": "Low",
+      "notes": "Crimp force and dimensional checks required."
+    },
+    {
+      "equipmentTypeId": "FAC_HVAC_AHU",
+      "equipmentType": "HVAC Air Handling Unit serving cleanrooms",
+      "cohort": "Facilities & Utilities",
+      "defaultUtilities": ["Electricity","HEPA Filter Bank","Cooling Water","Steam Condensate Return"],
+      "utilityDescriptors": {
+        "Electricity": "Power for fans, dampers, and controls.",
+        "HEPA Filter Bank": "HEPA filter banks and plenums for particle control.",
+        "Cooling Water": "Chilled water for coil cooling.",
+        "Steam Condensate Return": "Steam trap and condensate handling for humidification systems."
+      },
+      "typicalCleanroomClass": "ISO 5",
+      "productContactLikelihood": "Low",
+      "notes": "Airflow, pressure cascade, HEPA integrity, and particle mapping are critical OQ/PQ items."
+    },
+    {
+      "equipmentTypeId": "FAC_HEPA_BANK",
+      "equipmentType": "HEPA Filter Bank and Plenum",
+      "cohort": "Facilities & Utilities",
+      "defaultUtilities": ["Electricity","HEPA Filter Bank"],
+      "utilityDescriptors": {
+        "Electricity": "Power for monitoring and differential pressure sensors.",
+        "HEPA Filter Bank": "Filter media and plenum integrity."
+      },
+      "typicalCleanroomClass": "ISO 5",
+      "productContactLikelihood": "Low",
+      "notes": "Filter integrity testing and installation verification required."
+    },
+    {
+      "equipmentTypeId": "FAC_PW_LOOP",
+      "equipmentType": "Purified Water Loop",
+      "cohort": "Facilities & Utilities",
+      "defaultUtilities": ["Electricity","WFI","Process Water (PW)","WFI Sampling Ports"],
+      "utilityDescriptors": {
+        "Electricity": "Power for pumps and UV/TOC systems.",
+        "WFI": "Water for Injection distribution where applicable.",
+        "Process Water (PW)": "Purified water for non-WFI uses.",
+        "WFI Sampling Ports": "Dedicated ports for microbial and conductivity sampling."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Medium",
+      "notes": "Loop integrity, conductivity, and microbial challenge/recovery tests required for PQ."
+    },
+    {
+      "equipmentTypeId": "FAC_COMP_AIR",
+      "equipmentType": "Compressed Air System with Dryers",
+      "cohort": "Facilities & Utilities",
+      "defaultUtilities": ["Electricity","Compressed Air","Instrument Air"],
+      "utilityDescriptors": {
+        "Electricity": "Power for compressors and dryers.",
+        "Compressed Air": "General plant compressed air.",
+        "Instrument Air": "Filtered, dried air for instrument use."
+      },
+      "typicalCleanroomClass": null,
+      "productContactLikelihood": "Low",
+      "notes": "Dew point, particle, and oil content verification required for instrument-grade air."
+    }
+  ]
+}

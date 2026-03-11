@@ -26,9 +26,12 @@
       selectedCohort: '',
       selectedEquipment: null,
       equipmentId: '',
-      siteContext: { cleanroomClass: 'ISO 7', utilities: ['Steam', 'Electricity'], productContact: true, productionThroughput: 'Medium' },
+      siteContext: { cleanroomClass: 'ISO 7', utilities: [], productContact: true, productionThroughput: 'Medium' },
       hazardRatings: {},
       catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
+      siteContextMetadata: { cleanroomClasses: [], productContact: {}, productionThroughput: [] },
+      equipmentMetadata: null,
+      contextualTagDescriptors: {},
       generating: false,
       result: null,
       artifactUrls: null,
@@ -42,12 +45,18 @@
 
     async function load() {
       try {
-        const [equip, cat] = await Promise.all([
+        const [equip, cat, siteCtx, tagDesc] = await Promise.all([
           fetchJson(API + '/equipment-types'),
           fetchJson(API + '/catalog/version').catch(() => state.catalog),
+          fetchJson(API + '/site-context').catch(() => ({ cleanroomClasses: [], productContact: {}, productionThroughput: [] })),
+          fetchJson(API + '/contextual-tag-descriptors').catch(() => ({ tags: {} })),
         ]);
         state.cohorts = equip.cohorts || [];
         state.catalog = { ...state.catalog, ...cat };
+        state.siteContextMetadata = { cleanroomClasses: siteCtx.cleanroomClasses || [], productContact: siteCtx.productContact || {}, productionThroughput: siteCtx.productionThroughput || [] };
+        state.contextualTagDescriptors = tagDesc.tags || {};
+        if (state.siteContextMetadata.cleanroomClasses.length) state.siteContext.cleanroomClass = state.siteContextMetadata.cleanroomClasses.find(c => c.value === 'ISO 7') ? 'ISO 7' : state.siteContextMetadata.cleanroomClasses[0]?.value || 'ISO 7';
+        if (state.siteContextMetadata.productionThroughput.length) state.siteContext.productionThroughput = state.siteContextMetadata.productionThroughput.find(t => t.value === 'Medium') ? 'Medium' : state.siteContextMetadata.productionThroughput[0]?.value || 'Medium';
       } catch (e) {
         state.error = e.message;
       }
@@ -55,8 +64,24 @@
       render();
     }
 
+    async function loadEquipmentMetadata(equipmentTypeId) {
+      try {
+        const d = await fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId);
+        state.equipmentMetadata = d;
+        const em = d.equipmentMetadata;
+        if (em?.defaultUtilities?.length) state.siteContext.utilities = [...em.defaultUtilities];
+        else state.siteContext.utilities = state.siteContext.utilities.length ? state.siteContext.utilities : ['Electricity'];
+      } catch (e) {
+        state.equipmentMetadata = null;
+        if (!state.siteContext.utilities.length) state.siteContext.utilities = ['Electricity'];
+      }
+      render();
+    }
+
     async function loadHazards() {
       if (!state.selectedEquipment) return;
+      state.equipmentMetadata = null;
+      await loadEquipmentMetadata(state.selectedEquipment.id);
       const d = await fetchJson(API + '/hazards?equipmentTypeId=' + state.selectedEquipment.id);
       state.hazards = d.hazards || [];
       state.hazardRatings = {};
@@ -191,19 +216,39 @@
         html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
         html += '<h2 class="text-lg font-semibold">Site context</h2><p class="text-sm text-slate-500">Equipment: '+state.selectedEquipment.name+'</p>';
         html += '<div><label class="block text-sm font-medium">Equipment ID</label><input type="text" value="'+state.equipmentId+'" onchange="state.equipmentId=this.value" placeholder="e.g. E-STER-PV-001" class="mt-1 w-full rounded border border-slate-200 px-3 py-2"></div>';
-        html += '<div><label class="block text-sm font-medium">Cleanroom class</label><select onchange="state.siteContext.cleanroomClass=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
-        ['ISO 5','ISO 6','ISO 7','ISO 8'].forEach(v => html += '<option value="'+v+'"'+(sc.cleanroomClass===v?' selected':'')+'>'+v+'</option>');
-        html += '</select></div>';
-        html += '<div><label class="block text-sm font-medium">Utilities</label><div class="mt-2 flex flex-wrap gap-2">';
-        ['Steam','Electricity','Compressed Air','WFI','Nitrogen'].forEach(u => {
+        const cleanroomOpts = state.siteContextMetadata.cleanroomClasses.length ? state.siteContextMetadata.cleanroomClasses : [{value:'ISO 5',label:'ISO 5'},{value:'ISO 6',label:'ISO 6'},{value:'ISO 7',label:'ISO 7'},{value:'ISO 8',label:'ISO 8'}];
+        html += '<div><label class="block text-sm font-medium">Cleanroom class</label>';
+        if (cleanroomOpts[0]?.help) html += '<p class="text-xs text-slate-500 mt-0.5">ISO 14644-1 classification for the area where this equipment operates.</p>';
+        html += '<select onchange="state.siteContext.cleanroomClass=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
+        cleanroomOpts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+v+'"'+(sc.cleanroomClass===v?' selected':'')+'>'+lab+'</option>'; });
+        html += '</select>';
+        const selCleanroom = cleanroomOpts.find(o=>(o.value||o)===sc.cleanroomClass);
+        if (selCleanroom?.help) html += '<p class="mt-1 text-xs text-slate-600">'+selCleanroom.help.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+        html += '</div>';
+        const em = state.equipmentMetadata?.equipmentMetadata || state.equipmentMetadata;
+        const utilList = em?.defaultUtilities?.length ? em.defaultUtilities : ['Steam','Electricity','Compressed Air','WFI','Nitrogen'];
+        const utilDesc = em?.utilityDescriptors || {};
+        const utilMaster = state.equipmentMetadata?.utilitiesMasterList || {};
+        html += '<div><label class="block text-sm font-medium">Utilities</label><p class="text-xs text-slate-500 mt-0.5">Select utilities that supply this equipment. Filtered for this equipment type.</p><div class="mt-2 flex flex-wrap gap-2">';
+        utilList.forEach(u => {
           const checked = sc.utilities.includes(u);
-          html += '<label class="flex cursor-pointer items-center gap-2 rounded border border-slate-200 px-3 py-2 hover:bg-slate-50"><input type="checkbox" '+ (checked?'checked':'') +' onchange="toggleUtility(\''+u+'\')"><span>'+u+'</span></label>';
+          const desc = utilDesc[u] || utilMaster[u] || '';
+          html += '<label class="flex cursor-pointer items-center gap-2 rounded border px-3 py-2 hover:bg-slate-50 '+(checked?'border-emerald-500 bg-emerald-50/50':'border-slate-200')+'" title="'+desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleUtility(\''+u.replace(/'/g,"\\'")+'\')"><span class="text-sm">'+u+'</span>';
+          if (desc) html += '<span class="text-slate-400 cursor-help" title="'+desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'">ⓘ</span>';
+          html += '</label>';
         });
         html += '</div></div>';
-        html += '<div><label class="flex cursor-pointer items-center gap-2"><input type="checkbox" '+(sc.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> Product contact</label></div>';
+        const pcHelp = state.siteContextMetadata.productContact?.help || '';
+        html += '<div><label class="flex cursor-pointer items-center gap-2"><input type="checkbox" '+(sc.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> Product contact</label>';
+        if (pcHelp) html += '<p class="ml-6 mt-0.5 text-xs text-slate-600" title="'+pcHelp.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'">'+pcHelp.replace(/</g,'&lt;').replace(/>/g,'&gt;').slice(0,180)+(pcHelp.length>180?'... Hover for full text.':'')+'</p>';
+        html += '</div>';
+        const throughputOpts = state.siteContextMetadata.productionThroughput.length ? state.siteContextMetadata.productionThroughput : [{value:'Low',label:'Low'},{value:'Medium',label:'Medium'},{value:'High',label:'High'}];
         html += '<div><label class="block text-sm font-medium">Production throughput</label><select onchange="state.siteContext.productionThroughput=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
-        ['Low','Medium','High'].forEach(v => html += '<option value="'+v+'"'+(sc.productionThroughput===v?' selected':'')+'>'+v+'</option>');
-        html += '</select></div>';
+        throughputOpts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+v+'"'+(sc.productionThroughput===v?' selected':'')+'>'+lab+'</option>'; });
+        html += '</select>';
+        const selThroughput = throughputOpts.find(o=>(o.value||o)===sc.productionThroughput);
+        if (selThroughput?.help) html += '<p class="mt-1 text-xs text-slate-600">'+selThroughput.help.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+        html += '</div>';
         html += '<div class="flex gap-2"><button onclick="state.step=1;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
         html += '<button onclick="state.step=3;render()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
       }
@@ -240,12 +285,16 @@
           });
           if (h.contextualTags && h.contextualTags.length > 0) {
             html += '<div class="mt-3"><label class="block text-xs font-medium text-slate-500">Contextual tags (select all that apply)</label>';
+            html += '<p class="text-xs text-slate-500 mt-0.5">Describe controls and context; may affect qualification scope.</p>';
             html += '<div class="mt-1 flex flex-wrap gap-2">';
             h.contextualTags.forEach(tag => {
               const checked = selTags.includes(tag);
-              html += '<label class="inline-flex cursor-pointer items-center gap-1.5 rounded border px-2 py-1 text-xs '+(checked?'border-emerald-500 bg-emerald-50':'border-slate-200 hover:bg-slate-100')+'">';
+              const tagHelp = state.contextualTagDescriptors[tag] || '';
+              html += '<label class="inline-flex cursor-pointer items-center gap-1.5 rounded border px-2 py-1 text-xs '+(checked?'border-emerald-500 bg-emerald-50':'border-slate-200 hover:bg-slate-100')+'"'+(tagHelp?' title="'+tagHelp.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'"':'')+'>';
               html += '<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleContextualTag(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+tag.replace(/'/g,"\\'")+'\')">';
-              html += '<span>'+tag+'</span></label>';
+              html += '<span>'+tag+'</span>';
+              if (tagHelp) html += '<span class="text-slate-400 cursor-help">ⓘ</span>';
+              html += '</label>';
             });
             html += '</div></div>';
           }

@@ -38,7 +38,7 @@ render:
         if [ -d "$d" ]; then
           for f in "$d"/*.json; do
             if [ -f "$f" ]; then
-              python engine/render_engine.py "$f" templates/human_readable_template_markdown_v1.md rules/hazard_to_language_map_v1.json artifacts/dryrun/rendered
+              python engine/render_engine.py "$f" templates/human_readable_template_markdown_v1.md "rules/hazard_to_language_map_v1 - comprehensive.json" artifacts/dryrun/rendered
             fi
           done
         fi

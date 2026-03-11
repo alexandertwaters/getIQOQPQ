@@ -97,7 +97,7 @@ class TestRenderOutput(unittest.TestCase):
         with open(pkg_path, "w", encoding="utf8") as f:
             json.dump(self.pkg, f, indent=2)
         template = _REPO / "templates" / "human_readable_template_markdown_v1.md"
-        langmap = _REPO / "rules" / "hazard_to_language_map_v1.json"
+        langmap = _REPO / "rules" / "hazard_to_language_map_v1 - comprehensive.json"
         render_markdown(str(pkg_path), str(template), str(langmap), self.tmpdir)
 
     def tearDown(self):
