@@ -102,7 +102,7 @@
     "behavior": {
       "source": "hazcat_v1.1_equipment_types - comprehensive.json",
       "filterBy": "equipmentTypeId",
-      "tileFields": ["title","definition","standards","contextualTags"],
+      "tileFields": ["title","definition","standards"],
       "precheckSuggested": true,
       "allowCustomHazards": false,
       "minSelected": 1
@@ -159,16 +159,6 @@
         "optionsSource": "hazard.controlEffectivenessOptions",
         "optionFields": ["label", "help", "example"],
         "required": true
-      },
-      {
-        "id": "contextualTags_selected",
-        "type": "multiselect",
-        "label": "Contextual tags (select all that apply)",
-        "help": "View catalog contextual tags and select all that apply to refine traceability.",
-        "optionsSource": "hazard.contextualTags",
-        "storeAs": "contextualTags_selected",
-        "required": false,
-        "minSelected": 0
       },
       {
         "id": "applyQuickDefaults",

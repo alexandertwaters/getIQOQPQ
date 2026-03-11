@@ -77,18 +77,14 @@ def run_vector(vector):
         }
         numeric = apply_linkage_adjustments(numeric, hazard_for_linkage, pkg)
         qual_depth_escalation = numeric.pop("_qualificationDepthEscalation", False)
-        # User-selected contextual tags (from vector); catalog has full list
-        contextual_tags_selected = h.get("contextualTags", [])
-
         hazard_context = h.get("hazardContext", {})
+
         hazard_entry = {
             "hazardId": h["hazardId"],
             "title": catalog.get("title") or h.get("title", ""),
             "hazardContext": hazard_context if hazard_context else None,
             "qualificationDepthEscalation": qual_depth_escalation,
             "definition": catalog.get("definition") or h.get("definition", ""),
-            "contextualTags": catalog.get("contextualTags", []),
-            "contextualTags_selected": contextual_tags_selected,
             "severityOptions": catalog.get("severityOptions", []),
             "probabilityOptions": catalog.get("probabilityOptions", []),
             "exposureOptions": catalog.get("exposureOptions", []),

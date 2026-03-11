@@ -16,7 +16,6 @@ NUMERIC_PRECISION = 12
 # controlEffectivenessOptions, quickDefaults, standards (freeform/help text).
 CANONICAL_HAZARD_KEYS = [
     "hazardId",
-    "contextualTags",      # populated from contextualTags_selected
     "Severity",
     "ProbabilityOfOccurrence",
     "Exposure",
@@ -48,12 +47,8 @@ def canonicalize_package_for_fingerprint(pkg):
     hazards = sorted(pkg["hazards"], key=lambda h: h["hazardId"])
     canonical_hazards = []
     for h in hazards:
-        tags = h.get("contextualTags_selected")
-        if tags is None:
-            tags = h.get("contextualTags", [])
         ch = OrderedDict()
         ch["hazardId"] = h["hazardId"]
-        ch["contextualTags"] = sorted(tags)
         hc = h.get("hazardContext") or {}
         hc_items = [(k, tuple(sorted(v)) if isinstance(v, list) else v) for k, v in sorted(hc.items())]
         ch["hazardContext"] = json.dumps(hc_items, separators=(',', ':')) if hc_items else ""

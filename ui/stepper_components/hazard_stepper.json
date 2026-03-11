@@ -6,8 +6,7 @@
       "tileFields": [
         "title",
         "definition",
-        "standards",
-        "contextualTags"
+        "standards"
       ],
       "precheckSuggested": true,
       "allowCustomHazards": false,
@@ -92,16 +91,6 @@
           "example"
         ],
         "required": true
-      },
-      {
-        "id": "contextualTags_selected",
-        "type": "multiselect",
-        "label": "Contextual tags (select all that apply)",
-        "help": "View catalog contextual tags and select all that apply to refine traceability.",
-        "optionsSource": "hazard.contextualTags",
-        "storeAs": "contextualTags_selected",
-        "required": false,
-        "minSelected": 0
       },
       {
         "id": "applyQuickDefaults",

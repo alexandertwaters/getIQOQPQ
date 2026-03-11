@@ -75,15 +75,11 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     hazards_ctx = []
     for h in pkg.get("hazards", []):
         expanded = expand_tests_for_hazard(h, langmap)
-        tags_catalog = h.get("contextualTags", [])
-        tags_selected = h.get("contextualTags_selected", tags_catalog)
         hazards_ctx.append({
             "hazardId": h.get("hazardId", ""),
             "title": h.get("title", ""),
             "definition": h.get("definition", ""),
             "standards_comma": ", ".join(h.get("standards", [])) if h.get("standards") else "",
-            "contextualTags_catalog_comma": ", ".join(sorted(tags_catalog)),
-            "contextualTags_selected_comma": ", ".join(sorted(tags_selected)),
             "ruleId": h.get("ruleId", ""),
             "severityOptions": h.get("severityOptions", []),
             "probabilityOptions": h.get("probabilityOptions", []),
@@ -145,11 +141,10 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "Probability_label", "Probability_numeric", "Exposure_label", "Exposure_numeric",
             "Detectability_label", "Detectability_numeric", "ControlEffectiveness_label", "ControlEffectiveness_numeric",
             "RawRisk", "AdjustedRisk", "ResidualRisk", "EscalatedResidualRiskForMapping",
-            "ruleId", "standards", "contextualTags_selected"
+            "ruleId", "standards"
         ]
         cf.write(",".join(headers) + "\n")
         for h in sorted(pkg.get("hazards", []), key=lambda x: x["hazardId"]):
-            tags_sel = h.get("contextualTags_selected", [])
             stds = h.get("standards", [])
             row = [
                 h.get("hazardId", ""),
@@ -171,7 +166,6 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
                 f"{h.get('EscalatedResidualRiskForMapping',0.0):.12f}",
                 h.get("ruleId", ""),
                 "; ".join(stds) if stds else "",
-                "; ".join(sorted(tags_sel)) if tags_sel else ""
             ]
             cf.write(",".join(_csv_escape(x) for x in row) + "\n")
 

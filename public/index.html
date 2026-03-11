@@ -36,7 +36,6 @@
       catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
       siteContextMetadata: { cleanroomClasses: [], productContact: {}, productionThroughput: [] },
       equipmentMetadata: null,
-      contextualTagDescriptors: {},
       generating: false,
       result: null,
       artifactUrls: null,
@@ -50,16 +49,14 @@
 
     async function load() {
       try {
-        const [equip, cat, siteCtx, tagDesc] = await Promise.all([
+        const [equip, cat, siteCtx] = await Promise.all([
           fetchJson(API + '/equipment-types'),
           fetchJson(API + '/catalog/version').catch(() => state.catalog),
           fetchJson(API + '/site-context').catch(() => ({ cleanroomClasses: [], productContact: {}, productionThroughput: [] })),
-          fetchJson(API + '/contextual-tag-descriptors').catch(() => ({ tags: {} })),
         ]);
         state.cohorts = equip.cohorts || [];
         state.catalog = { ...state.catalog, ...cat };
         state.siteContextMetadata = { cleanroomClasses: siteCtx.cleanroomClasses || [], productContact: siteCtx.productContact || {}, productionThroughput: siteCtx.productionThroughput || [] };
-        state.contextualTagDescriptors = tagDesc.tags || {};
         if (state.siteContextMetadata.cleanroomClasses.length) state.siteContext.cleanroomClass = state.siteContextMetadata.cleanroomClasses.find(c => c.value === 'ISO 7') ? 'ISO 7' : state.siteContextMetadata.cleanroomClasses[0]?.value || 'ISO 7';
         if (state.siteContextMetadata.productionThroughput.length) state.siteContext.productionThroughput = state.siteContextMetadata.productionThroughput.find(t => t.value === 'Medium') ? 'Medium' : state.siteContextMetadata.productionThroughput[0]?.value || 'Medium';
       } catch (e) {
@@ -127,7 +124,6 @@
           Exposure_label: q.defaultExposure || '',
           Detectability_label: q.defaultDetectability || '',
           ControlEffectiveness_label: q.defaultControlEffectiveness || '',
-          contextualTags_selected: [],
           hazardContext,
         };
       });
@@ -170,16 +166,6 @@
     function toggleHelp(hazardId, field) {
       const key = hazardId + '.' + field;
       state.expandedHelp = state.expandedHelp === key ? null : key;
-      render();
-    }
-
-    function toggleContextualTag(hazardId, tag) {
-      const r = state.hazardRatings[hazardId] || {};
-      const sel = r.contextualTags_selected || [];
-      const i = sel.indexOf(tag);
-      if (i >= 0) sel.splice(i, 1);
-      else sel.push(tag);
-      state.hazardRatings[hazardId] = { ...r, contextualTags_selected: sel };
       render();
     }
 
@@ -234,7 +220,6 @@
               hazardId: h.hazardId,
               title: h.title,
               definition: h.definition,
-              contextualTags: r.contextualTags_selected || [],
               hazardContext: Object.keys(hcFiltered).length ? hcFiltered : undefined,
               ruleId: h.ruleId || '',
               ...r,
@@ -368,7 +353,6 @@
         if (state.hazards.length === 0) html += '<p class="text-slate-500">Loading hazards...</p>';
         state.hazards.forEach(h => {
           const r = state.hazardRatings[h.hazardId] || {};
-          const selTags = r.contextualTags_selected || [];
           html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><h3 class="font-medium">'+h.title+'</h3><p class="mt-1 text-sm text-slate-600">'+h.definition+'</p>';
           const fields = [
             {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
@@ -393,21 +377,6 @@
             }
             html += '</div></div>';
           });
-          if (h.contextualTags && h.contextualTags.length > 0) {
-            html += '<div class="mt-3"><label class="block text-xs font-medium text-slate-500">Contextual tags (select all that apply)</label>';
-            html += '<p class="text-xs text-slate-500 mt-0.5">Describe controls and context; may affect qualification scope.</p>';
-            html += '<div class="mt-1 flex flex-wrap gap-2">';
-            h.contextualTags.forEach(tag => {
-              const checked = selTags.includes(tag);
-              const tagHelp = state.contextualTagDescriptors[tag] || '';
-              html += '<label class="inline-flex cursor-pointer items-center gap-1.5 rounded border px-2 py-1 text-xs '+(checked?'border-emerald-500 bg-emerald-50':'border-slate-200 hover:bg-slate-100')+'"'+(tagHelp?' title="'+tagHelp.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'"':'')+'>';
-              html += '<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleContextualTag(\''+h.hazardId.replace(/'/g,"\\'")+'\',\''+tag.replace(/'/g,"\\'")+'\')">';
-              html += '<span>'+tag+'</span>';
-              if (tagHelp) html += '<span class="text-slate-400 cursor-help">ⓘ</span>';
-              html += '</label>';
-            });
-            html += '</div></div>';
-          }
           const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
           if (ctxForHazard && ctxForHazard.contextOptions && ctxForHazard.contextOptions.length > 0) {
             html += '<div class="mt-3 rounded border border-slate-200 bg-white p-2"><label class="block text-xs font-medium text-slate-500">Hazard context</label><p class="text-xs text-slate-500 mt-0.5">Describe load/configuration for this hazard.</p>';
@@ -468,7 +437,6 @@
             const desc = selOpt ? ((selOpt.help||'')+(selOpt.example?' Example: '+selOpt.example:'')) : '';
             html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">'+l+':</span> <span class="text-slate-800">'+(sel||'—')+'</span>'+(desc?' <span class="block mt-0.5 text-slate-500 pl-2 border-l-2 border-slate-200">'+desc.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>':'')+'</div>';
           });
-          if (r.contextualTags_selected && r.contextualTags_selected.length) html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">Contextual tags:</span> <span class="text-slate-800">'+r.contextualTags_selected.join(', ')+'</span></div>';
           const hc = r.hazardContext || {};
           const hcEntries = Object.entries(hc).filter(([,v]) => v !== '' && v !== false && !(Array.isArray(v) && v.length === 0));
           if (hcEntries.length) html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">Hazard context:</span> <span class="text-slate-800">'+hcEntries.map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('; ')+'</span></div>';

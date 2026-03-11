@@ -31,8 +31,6 @@
 - Detectability: **{{ h.Detectability_label }}**
 - Control Effectiveness: **{{ h.ControlEffectiveness_label }}**
 
-**Contextual tags (catalog):** {{ h.contextualTags_catalog_comma }}
-**Contextual tags (selected):** {{ h.contextualTags_selected_comma }}
 {% if h.hazardContext %}
 {% for k, v in h.hazardContext.items() %}
 {% if v is not none and v != false and v != '' %}

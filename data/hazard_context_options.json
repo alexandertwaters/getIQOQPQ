@@ -85,6 +85,16 @@
                 {"value": "solid", "label": "Solid loads"}
               ]
             },
+            {
+              "contextId": "load_config",
+              "label": "Load configuration",
+              "help": "How loads are configured in the chamber.",
+              "valueType": "choice",
+              "options": [
+                {"value": "single_type", "label": "Single load type per cycle", "help": "One load type per run."},
+                {"value": "mixed_loads", "label": "Mixed loads", "help": "Multiple load types in same cycle."}
+              ]
+            },
             {"contextId": "load_density", "label": "Load density", "valueType": "choice", "options": [{"value": "low", "label": "Low"}, {"value": "medium", "label": "Medium"}, {"value": "high", "label": "High"}]}
           ]
         }
@@ -155,7 +165,8 @@
           "title": "Temperature excursion causing product degradation",
           "contextOptions": [
             {"contextId": "traffic", "label": "High traffic area", "help": "Frequent door openings.", "valueType": "boolean"},
-            {"contextId": "product_type", "label": "Product sensitivity", "valueType": "choice", "options": [{"value": "critical", "label": "Critical (e.g., biologics)"}, {"value": "standard", "label": "Standard"}]}
+            {"contextId": "product_type", "label": "Product sensitivity", "valueType": "choice", "options": [{"value": "critical", "label": "Critical (e.g., biologics)"}, {"value": "standard", "label": "Standard"}]},
+            {"contextId": "storage_volume", "label": "Storage volume / throughput", "help": "Scale of storage or throughput.", "valueType": "choice", "options": [{"value": "small", "label": "Small"}, {"value": "medium", "label": "Medium"}, {"value": "large", "label": "Large"}]}
           ]
         }
       ]
@@ -168,7 +179,8 @@
           "hazardId": "H_COLD_ULTRA_001",
           "title": "Temperature excursion causing product degradation",
           "contextOptions": [
-            {"contextId": "product_type", "label": "Product type", "valueType": "choice", "options": [{"value": "vials", "label": "Vials"}, {"value": "bulk", "label": "Bulk containers"}]}
+            {"contextId": "product_type", "label": "Product type", "valueType": "choice", "options": [{"value": "vials", "label": "Vials"}, {"value": "bulk", "label": "Bulk containers"}]},
+            {"contextId": "traffic", "label": "High traffic area", "help": "Frequent door openings or access.", "valueType": "boolean"}
           ]
         }
       ]
@@ -246,7 +258,9 @@
           "hazardId": "H_PKG_BLISTER_001",
           "title": "Seal or cavity contamination in blister packs",
           "contextOptions": [
-            {"contextId": "cavity_size", "label": "Cavity size / geometry", "valueType": "choice", "options": [{"value": "small", "label": "Small"}, {"value": "large", "label": "Large"}]}
+            {"contextId": "cavity_size", "label": "Cavity size / geometry", "valueType": "choice", "options": [{"value": "small", "label": "Small"}, {"value": "large", "label": "Large"}]},
+            {"contextId": "forming_type", "label": "Forming type", "valueType": "choice", "options": [{"value": "thermoform", "label": "Thermoform"}, {"value": "cold_form", "label": "Cold form"}]},
+            {"contextId": "product_form", "label": "Product form", "valueType": "choice", "options": [{"value": "solid", "label": "Solid"}, {"value": "liquid", "label": "Liquid"}]}
           ]
         }
       ]
@@ -321,7 +335,7 @@
     {"equipmentTypeId": "INS_XRAY", "hazardContextOptions": [{"hazardId": "H_INS_XRAY_001", "title": "Defect miss or false reject", "contextOptions": [{"contextId": "defect_type", "label": "Defect type", "valueType": "choice", "options": [{"value": "foreign_matter", "label": "Foreign matter"}, {"value": "void", "label": "Void/cavity"}]}]}]},
     {"equipmentTypeId": "INS_LEAK", "hazardContextOptions": [{"hazardId": "H_INS_LEAK_001", "title": "Leak miss or false reject", "contextOptions": [{"contextId": "leak_sensitivity", "label": "Leak sensitivity", "valueType": "choice", "options": [{"value": "tight", "label": "Tight spec"}, {"value": "standard", "label": "Standard"}]}]}]},
     {"equipmentTypeId": "INS_HELIUM", "hazardContextOptions": [{"hazardId": "H_INS_HELIUM_001", "title": "Leak detection error", "contextOptions": [{"contextId": "leak_sensitivity", "label": "Sensitivity required", "valueType": "choice", "options": [{"value": "high", "label": "High"}, {"value": "standard", "label": "Standard"}]}]}]},
-    {"equipmentTypeId": "DEC_WASHER", "hazardContextOptions": [{"hazardId": "H_DEC_WASH_001", "title": "Inadequate cleaning or disinfection", "contextOptions": [{"contextId": "load_type", "label": "Load type", "valueType": "multiSelect", "options": [{"value": "instruments", "label": "Instruments"}, {"value": "racks", "label": "Racks"}, {"value": "kits", "label": "Kits"}]}]}]},
+    {"equipmentTypeId": "DEC_WASHER", "hazardContextOptions": [{"hazardId": "H_DEC_WASH_001", "title": "Inadequate cleaning or disinfection", "contextOptions": [{"contextId": "load_type", "label": "Load type", "valueType": "multiSelect", "options": [{"value": "instruments", "label": "Instruments"}, {"value": "racks", "label": "Racks"}, {"value": "kits", "label": "Kits"}]}, {"contextId": "item_complexity", "label": "Item complexity", "help": "Cleaning challenge of items.", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex"}, {"value": "lumened", "label": "Lumened"}]}]}]},
     {"equipmentTypeId": "DEC_ULTRASONIC", "hazardContextOptions": [{"hazardId": "H_DEC_ULTRA_001", "title": "Inadequate cleaning", "contextOptions": [{"contextId": "item_complexity", "label": "Item complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex (lumens, crevices)"}]}]}]},
     {"equipmentTypeId": "DEC_MANUAL", "hazardContextOptions": [{"hazardId": "H_DEC_MANUAL_001", "title": "Human error or inconsistent cleaning", "contextOptions": [{"contextId": "item_complexity", "label": "Item complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex"}]}]}]},
     {"equipmentTypeId": "ASM_ULTRASONIC", "hazardContextOptions": [{"hazardId": "H_ASM_ULTRA_001", "title": "Weld failure", "contextOptions": [{"contextId": "joint_type", "label": "Joint type", "valueType": "choice", "options": [{"value": "hermetic", "label": "Hermetic"}, {"value": "structural", "label": "Structural"}]}]}]},
@@ -330,7 +344,7 @@
     {"equipmentTypeId": "ASM_CRIMP", "hazardContextOptions": [{"hazardId": "H_ASM_CRIMP_001", "title": "Crimp quality failure", "contextOptions": [{"contextId": "connection_type", "label": "Connection type", "valueType": "choice", "options": [{"value": "electrical", "label": "Electrical"}, {"value": "fluid", "label": "Fluid"}]}]}]},
     {"equipmentTypeId": "FAC_HVAC_AHU", "hazardContextOptions": [{"hazardId": "H_FAC_HVAC_001", "title": "HVAC failure", "contextOptions": [{"contextId": "area_class", "label": "Area classification", "valueType": "choice", "options": [{"value": "iso5", "label": "ISO 5"}, {"value": "iso7", "label": "ISO 7"}, {"value": "iso8", "label": "ISO 8"}]}]}]},
     {"equipmentTypeId": "FAC_HEPA_BANK", "hazardContextOptions": [{"hazardId": "H_FAC_HEPA_001", "title": "HEPA filter bypass or failure", "contextOptions": [{"contextId": "area_class", "label": "Area classification", "valueType": "choice", "options": [{"value": "iso5", "label": "ISO 5"}, {"value": "iso7", "label": "ISO 7"}]}]}]},
-    {"equipmentTypeId": "FAC_PW_LOOP", "hazardContextOptions": [{"hazardId": "H_FAC_PW_001", "title": "Water contamination", "contextOptions": [{"contextId": "loop_type", "label": "Loop type", "valueType": "choice", "options": [{"value": "recirculating", "label": "Recirculating"}, {"value": "dead_leg", "label": "Dead leg present"}]}]}]},
+    {"equipmentTypeId": "FAC_PW_LOOP", "hazardContextOptions": [{"hazardId": "H_FAC_PW_001", "title": "Water contamination", "contextOptions": [{"contextId": "loop_type", "label": "Loop type", "valueType": "choice", "options": [{"value": "recirculating", "label": "Recirculating"}, {"value": "dead_leg", "label": "Dead leg present"}]}, {"contextId": "distribution_type", "label": "Distribution type", "help": "Loop distribution configuration.", "valueType": "choice", "options": [{"value": "loop", "label": "Loop"}, {"value": "sub-loop", "label": "Sub-loop"}, {"value": "branch", "label": "Branch"}]}, {"contextId": "point_of_use_count", "label": "Point-of-use count", "help": "Number of use points served.", "valueType": "choice", "options": [{"value": "few", "label": "Few (1-5)"}, {"value": "moderate", "label": "Moderate (6-20)"}, {"value": "many", "label": "Many (20+)"}]}]}]},
     {"equipmentTypeId": "FAC_COMP_AIR", "hazardContextOptions": [{"hazardId": "H_FAC_COMP_001", "title": "Compressed air contamination", "contextOptions": [{"contextId": "air_use", "label": "Air use", "valueType": "choice", "options": [{"value": "product_contact", "label": "Product contact"}, {"value": "instrument", "label": "Instrument only"}]}]}]}
   ],
   "defaultContextOptions": {
