@@ -69,6 +69,7 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     ctx["fingerprint"] = pkg.get("fingerprint", "")
     ctx["qualificationBand"] = pkg.get("qualificationBand", "")
     ctx["ResidualRiskIndex"] = f"{pkg.get('ResidualRiskIndex', 0.0):.3f}"
+    ctx["equipmentControls"] = pkg.get("equipmentControls", {})
     ctx["recommendation"] = pkg.get("recommendation", "")
 
     hazards_ctx = []
@@ -104,7 +105,9 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "PQ_list": [t.get("title", "") for t in expanded["PQ_tests"]],
             "IQ_tests": expanded["IQ_tests"],
             "OQ_tests": expanded["OQ_tests"],
-            "PQ_tests": expanded["PQ_tests"]
+            "PQ_tests": expanded["PQ_tests"],
+            "hazardContext": h.get("hazardContext", {}),
+            "qualificationDepthEscalation": h.get("qualificationDepthEscalation", False),
         })
     ctx["hazards"] = hazards_ctx
     ctx["IQ"] = {"checklist": pkg.get("IQ", {}).get("checklist", [])}

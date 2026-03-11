@@ -1,0 +1,175 @@
+{
+  "version": "risk_linkage_rules_v1",
+  "generatedAt": "2026-03-11T14:00:00Z",
+  "description": "Links equipment controls, utilities, and hazard context to risk parameter adjustments. Per ISO 14971 and FDA QSMR: controls that reduce probability improve detectability or effectiveness lower risk; challenging context elevates risk and qualification depth.",
+  "controlAdjustments": [
+    {
+      "controlId": "CTRL_STER_PV_006",
+      "whenValue": true,
+      "appliesToHazardIds": [],
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Backup power reduces probability of cycle abortion and power-loss-related failures.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_COLD_REF_006",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_COLD_REF"],
+      "rationale": "Backup power reduces probability of temperature excursion.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": -0.12 }
+    },
+    {
+      "controlId": "CTRL_COLD_ULTRA_005",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_COLD_ULTRA"],
+      "rationale": "Backup power reduces probability of freezer excursion.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": -0.12 }
+    },
+    {
+      "controlId": "CTRL_COLD_WALK_005",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_COLD_WALKIN"],
+      "rationale": "Backup power reduces probability of walk-in excursion.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_004",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Remote alarm notifications improve detectability of cycle or equipment failure.",
+      "adjustment": { "Detectability_delta": 0.08 }
+    },
+    {
+      "controlId": "CTRL_COLD_REF_004",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_COLD_"],
+      "rationale": "Remote alarm improves excursion detectability.",
+      "adjustment": { "Detectability_delta": 0.08 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_007",
+      "whenValue": true,
+      "appliesToHazardIds": ["H_STER_PV_001", "H_STER_GRAV_001"],
+      "rationale": "Thermocouple mapping improves cold-spot detection and control.",
+      "adjustment": { "Detectability_delta": 0.06, "ControlEffectiveness_delta": -0.08 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_008",
+      "whenValue": "every_run",
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "BI every run substantially improves control effectiveness.",
+      "adjustment": { "ControlEffectiveness_delta": -0.15 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_008",
+      "whenValue": "periodic",
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Periodic BI improves control effectiveness.",
+      "adjustment": { "ControlEffectiveness_delta": -0.08 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_008",
+      "whenValue": "none",
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "No BI program reduces control effectiveness.",
+      "adjustment": { "ControlEffectiveness_delta": 0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_009",
+      "whenValue": "every_run",
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "Bowie-Dick every run improves air removal failure detectability.",
+      "adjustment": { "Detectability_delta": 0.08 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_009",
+      "whenValue": "daily",
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "Daily Bowie-Dick improves detectability.",
+      "adjustment": { "Detectability_delta": 0.06 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_009",
+      "whenValue": "none",
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "No Bowie-Dick reduces air removal failure detectability.",
+      "adjustment": { "Detectability_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_010",
+      "whenValue": "yes",
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Validated cycles improve control effectiveness.",
+      "adjustment": { "ControlEffectiveness_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_010",
+      "whenValue": "no",
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Unvalidated cycles reduce control effectiveness.",
+      "adjustment": { "ControlEffectiveness_delta": 0.12 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_011",
+      "whenValue": true,
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "Vacuum pump redundancy reduces air removal failure probability.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": -0.10 }
+    }
+  ],
+  "hazardContextAdjustments": [
+    {
+      "contextId": "load_type",
+      "contextValueIn": ["tubing_pathway"],
+      "appliesToHazardIds": ["H_STER_PV_001", "H_STER_PV_002"],
+      "rationale": "Tortuous pathway/lumened items challenge steam penetration; elevates risk.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.12, "ControlEffectiveness_delta": 0.08 },
+      "qualificationDepthEscalation": true
+    },
+    {
+      "contextId": "load_type",
+      "contextValueIn": ["porous"],
+      "appliesToHazardIds": ["H_STER_PV_001", "H_STER_PV_002", "H_STER_GRAV_001"],
+      "rationale": "Porous loads increase steam penetration challenge.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.06 },
+      "qualificationDepthEscalation": false
+    },
+    {
+      "contextId": "load_type",
+      "contextValueIn": ["lumened"],
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "Lumened devices challenge air removal.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.10 },
+      "qualificationDepthEscalation": true
+    },
+    {
+      "contextId": "load_config",
+      "contextValue": "mixed_loads",
+      "appliesToHazardIds": ["H_STER_PV_001", "H_STER_GRAV_001"],
+      "rationale": "Mixed loads increase worst-case mapping and cycle validation complexity.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.08 },
+      "qualificationDepthEscalation": true
+    },
+    {
+      "contextId": "load_density",
+      "contextValue": "high",
+      "appliesToHazardIds": ["H_STER_PV_001", "H_STER_GRAV_001"],
+      "rationale": "High load density increases cold-spot risk.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.08 }
+    },
+    {
+      "contextId": "load_density",
+      "contextValue": "high",
+      "appliesToHazardIds": ["H_STER_PV_002"],
+      "rationale": "High load density challenges air removal.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.06 }
+    },
+    {
+      "contextId": "traffic",
+      "contextValue": true,
+      "appliesToRulePrefixes": ["R_COLD_"],
+      "rationale": "High traffic area increases door-open events and temperature excursion probability.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.08 }
+    }
+  ]
+}

@@ -1,0 +1,342 @@
+{
+  "version": "hazard_context_options_v1",
+  "generatedAt": "2026-03-11T12:00:00Z",
+  "description": "Hazard-specific context options for scenario description. Used on Hazards tab for hazard configuration. These describe the load, configuration, or situation—not site-level controls.",
+  "equipmentTypes": [
+    {
+      "equipmentTypeId": "STER_PV_AUT",
+      "equipmentType": "Pre-Vacuum Steam Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_PV_001",
+          "title": "Sterility failure due to load cold spots",
+          "contextOptions": [
+            {
+              "contextId": "load_type",
+              "label": "Load types run",
+              "help": "Product and packaging configurations that affect steam penetration.",
+              "valueType": "multiSelect",
+              "options": [
+                {"value": "pouches", "label": "Pouches", "help": "Peel pouches or flexible pouches."},
+                {"value": "trays_wrapped", "label": "Wrapped trays", "help": "Instrument trays with wraps."},
+                {"value": "trays_unwrapped", "label": "Unwrapped trays", "help": "Solid-bottom trays without wrap."},
+                {"value": "vials", "label": "Vials", "help": "Glass or plastic vials."},
+                {"value": "porous", "label": "Porous loads", "help": "Textiles, kits, porous items."},
+                {"value": "tubing_pathway", "label": "Challenging pathway items", "help": "Peristaltic tubing, lumened devices, complex geometries."}
+              ]
+            },
+            {
+              "contextId": "load_config",
+              "label": "Load configuration",
+              "help": "How loads are configured in the chamber.",
+              "valueType": "choice",
+              "options": [
+                {"value": "single_type", "label": "Single load type per cycle", "help": "One load type per run."},
+                {"value": "mixed_loads", "label": "Mixed loads", "help": "Multiple load types in same cycle."}
+              ]
+            },
+            {
+              "contextId": "load_density",
+              "label": "Typical load density",
+              "help": "Density of load affects steam penetration.",
+              "valueType": "choice",
+              "options": [
+                {"value": "low", "label": "Low", "help": "Sparse loading."},
+                {"value": "medium", "label": "Medium", "help": "Standard loading."},
+                {"value": "high", "label": "High", "help": "Dense loading; higher cold-spot risk."}
+              ]
+            }
+          ]
+        },
+        {
+          "hazardId": "H_STER_PV_002",
+          "title": "Air removal failure in pre-vacuum cycle",
+          "contextOptions": [
+            {
+              "contextId": "load_type",
+              "label": "Load types (air removal sensitivity)",
+              "help": "Load types that affect air removal.",
+              "valueType": "multiSelect",
+              "options": [
+                {"value": "porous", "label": "Porous loads", "help": "Higher air removal challenge."},
+                {"value": "lumened", "label": "Lumened devices", "help": "Long lumens challenge air removal."},
+                {"value": "solid", "label": "Solid loads", "help": "Lower air removal challenge."}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_GRAV_AUT",
+      "equipmentType": "Gravity Displacement Steam Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_GRAV_001",
+          "title": "Sterility failure due to inadequate steam penetration",
+          "contextOptions": [
+            {
+              "contextId": "load_type",
+              "label": "Load types",
+              "valueType": "multiSelect",
+              "options": [
+                {"value": "wrapped", "label": "Wrapped loads"},
+                {"value": "porous", "label": "Porous loads"},
+                {"value": "solid", "label": "Solid loads"}
+              ]
+            },
+            {"contextId": "load_density", "label": "Load density", "valueType": "choice", "options": [{"value": "low", "label": "Low"}, {"value": "medium", "label": "Medium"}, {"value": "high", "label": "High"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_ETO",
+      "equipmentType": "Ethylene Oxide Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_ETO_001",
+          "title": "Residual EtO toxic residues",
+          "contextOptions": [
+            {"contextId": "packaging_type", "label": "Packaging", "valueType": "multiSelect", "options": [{"value": "porous", "label": "Porous packaging"}, {"value": "non_porous", "label": "Non-porous packaging"}]},
+            {"contextId": "product_density", "label": "Product density", "valueType": "choice", "options": [{"value": "low", "label": "Low"}, {"value": "high", "label": "High", "help": "Dense loads may trap residuals."}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_GAMMA",
+      "equipmentType": "Gamma Irradiation Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_GAMMA_001",
+          "title": "Dose nonconformance due to shielding or source issues",
+          "contextOptions": [
+            {"contextId": "packaging_density", "label": "Packaging density", "valueType": "choice", "options": [{"value": "low", "label": "Low"}, {"value": "high", "label": "High"}]},
+            {"contextId": "geometry_sensitive", "label": "Geometry sensitive", "help": "Product geometry affects dose distribution.", "valueType": "boolean"}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_EBEAM",
+      "equipmentType": "Electron Beam Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_EBEAM_001",
+          "title": "Dose nonconformance due to beam instability",
+          "contextOptions": [
+            {"contextId": "packaging_geometry", "label": "Packaging geometry sensitive", "valueType": "boolean"},
+            {"contextId": "product_thickness", "label": "Product thickness / density", "valueType": "choice", "options": [{"value": "thin", "label": "Thin"}, {"value": "thick", "label": "Thick", "help": "Higher dose gradient risk."}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "STER_H2O2",
+      "equipmentType": "Low Temperature Hydrogen Peroxide Plasma Sterilizer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_STER_H2O2_001",
+          "title": "Residual oxidant or material compatibility issues",
+          "contextOptions": [
+            {"contextId": "packaging_type", "label": "Packaging (porous)", "valueType": "boolean", "help": "Porous packaging may trap residuals."},
+            {"contextId": "material_sensitivity", "label": "Material sensitivity", "help": "Cellulose, paper, adhesives may absorb H2O2.", "valueType": "boolean"}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_PHARMA_REF",
+      "equipmentType": "Pharmaceutical Refrigerator 2-8°C",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_COLD_REF_001",
+          "title": "Temperature excursion causing product degradation",
+          "contextOptions": [
+            {"contextId": "traffic", "label": "High traffic area", "help": "Frequent door openings.", "valueType": "boolean"},
+            {"contextId": "product_type", "label": "Product sensitivity", "valueType": "choice", "options": [{"value": "critical", "label": "Critical (e.g., biologics)"}, {"value": "standard", "label": "Standard"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_ULTRA_FREEZER",
+      "equipmentType": "Ultra-Low Freezer ≤ -70°C",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_COLD_ULTRA_001",
+          "title": "Temperature excursion causing product degradation",
+          "contextOptions": [
+            {"contextId": "product_type", "label": "Product type", "valueType": "choice", "options": [{"value": "vials", "label": "Vials"}, {"value": "bulk", "label": "Bulk containers"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_WALKIN",
+      "equipmentType": "Cold Storage Walk-in Chamber",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_COLD_WALKIN_001",
+          "title": "Temperature excursion causing product degradation",
+          "contextOptions": [
+            {"contextId": "traffic", "label": "High traffic area", "valueType": "boolean"}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "COLD_CRYO",
+      "equipmentType": "Cryogenic LN2 Storage Cabinet",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_COLD_CRYO_001",
+          "title": "Temperature or O2 excursion",
+          "contextOptions": [
+            {"contextId": "cabinet_type", "label": "Cabinet type", "valueType": "choice", "options": [{"value": "vapor_phase", "label": "Vapor phase"}, {"value": "liquid_phase", "label": "Liquid phase"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_HEAT_SEALER",
+      "equipmentType": "Heat Sealer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_PKG_HEAT_001",
+          "title": "Seal integrity failure causing sterility breach",
+          "contextOptions": [
+            {"contextId": "material_type", "label": "Material types", "valueType": "multiSelect", "options": [{"value": "tyvek_pe", "label": "Tyvek/PE"}, {"value": "foil", "label": "Foil laminates"}, {"value": "flexible", "label": "Flexible films"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_ULTRASONIC_SEALER",
+      "equipmentType": "Ultrasonic Sealer",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_PKG_ULTRA_001",
+          "title": "Seal inconsistency due to material or parameter mismatch",
+          "contextOptions": [
+            {"contextId": "material_variability", "label": "Material batch variability", "help": "High lot-to-lot variability in seal materials.", "valueType": "boolean"}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_FFS",
+      "equipmentType": "Form-Fill-Seal Machine",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_PKG_FFS_001",
+          "title": "Filling or sealing contamination due to equipment failure",
+          "contextOptions": [
+            {"contextId": "fill_type", "label": "Fill type", "valueType": "choice", "options": [{"value": "automated", "label": "Automated filling"}, {"value": "semi_automated", "label": "Semi-automated filling"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_BLISTER",
+      "equipmentType": "Blister Pack Line",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_PKG_BLISTER_001",
+          "title": "Seal or cavity contamination in blister packs",
+          "contextOptions": [
+            {"contextId": "cavity_size", "label": "Cavity size / geometry", "valueType": "choice", "options": [{"value": "small", "label": "Small"}, {"value": "large", "label": "Large"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "PKG_LABELER",
+      "equipmentType": "Labeling and Serialization Station",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_PKG_LABEL_001",
+          "title": "Label misapplication or serialization mismatch",
+          "contextOptions": [
+            {"contextId": "label_complexity", "label": "Label complexity", "valueType": "choice", "options": [{"value": "single", "label": "Single label"}, {"value": "multi_label", "label": "Multi-panel labels"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_BALANCE",
+      "equipmentType": "Analytical Balance",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_MET_BAL_001",
+          "title": "Measurement error due to calibration drift or environment",
+          "contextOptions": [
+            {"contextId": "use_criticality", "label": "Use criticality", "valueType": "choice", "options": [{"value": "release", "label": "Release testing"}, {"value": "in_process", "label": "In-process"}, {"value": "routine", "label": "Routine"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "MET_CMM",
+      "equipmentType": "Coordinate Measuring Machine",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_MET_CMM_001",
+          "title": "Measurement inaccuracy due to fixture or probe error",
+          "contextOptions": [
+            {"contextId": "measurement_type", "label": "Measurement type", "valueType": "choice", "options": [{"value": "first_article", "label": "First-article inspection"}, {"value": "production", "label": "Production sampling"}]}
+          ]
+        }
+      ]
+    },
+    {
+      "equipmentTypeId": "ANA_HPLC",
+      "equipmentType": "HPLC System",
+      "hazardContextOptions": [
+        {
+          "hazardId": "H_ANA_HPLC_001",
+          "title": "Analytical method failure due to column or detector issues",
+          "contextOptions": [
+            {"contextId": "assay_type", "label": "Assay type", "valueType": "choice", "options": [{"value": "release", "label": "Release testing"}, {"value": "stability", "label": "Stability"}, {"value": "in_process", "label": "In-process"}]}
+          ]
+        }
+      ]
+    },
+    {"equipmentTypeId": "MET_GAUGE", "hazardContextOptions": [{"hazardId": "H_MET_GAUGE_001", "title": "Calibration drift or misuse", "contextOptions": [{"contextId": "use_frequency", "label": "Use frequency", "valueType": "choice", "options": [{"value": "high", "label": "High"}, {"value": "low", "label": "Low"}]}]}]},
+    {"equipmentTypeId": "MET_VISION", "hazardContextOptions": [{"hazardId": "H_MET_VISION_001", "title": "Vision measurement error", "contextOptions": [{"contextId": "part_complexity", "label": "Part complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple geometry"}, {"value": "complex", "label": "Complex geometry"}]}]}]},
+    {"equipmentTypeId": "ANA_GCMS", "hazardContextOptions": [{"hazardId": "H_ANA_GCMS_001", "title": "Method or detector failure", "contextOptions": [{"contextId": "assay_type", "label": "Assay type", "valueType": "choice", "options": [{"value": "release", "label": "Release"}, {"value": "residuals", "label": "Residuals"}, {"value": "identity", "label": "Identity"}]}]}]},
+    {"equipmentTypeId": "ANA_UVVIS", "hazardContextOptions": [{"hazardId": "H_ANA_UVVIS_001", "title": "Wavelength or detector drift", "contextOptions": [{"contextId": "assay_type", "label": "Assay type", "valueType": "choice", "options": [{"value": "release", "label": "Release"}, {"value": "identity", "label": "Identity"}]}]}]},
+    {"equipmentTypeId": "ANA_TOC", "hazardContextOptions": [{"hazardId": "H_ANA_TOC_001", "title": "TOC measurement error", "contextOptions": [{"contextId": "water_type", "label": "Water type", "valueType": "choice", "options": [{"value": "wfi", "label": "WFI"}, {"value": "pw", "label": "Purified water"}]}]}]},
+    {"equipmentTypeId": "ANA_DISS", "hazardContextOptions": [{"hazardId": "H_ANA_DISS_001", "title": "Dissolution rate error", "contextOptions": [{"contextId": "apparatus", "label": "Apparatus", "valueType": "choice", "options": [{"value": "paddle", "label": "Paddle"}, {"value": "basket", "label": "Basket"}]}]}]},
+    {"equipmentTypeId": "IVD_HEM", "hazardContextOptions": [{"hazardId": "H_IVD_HEM_001", "title": "Hematology result error", "contextOptions": [{"contextId": "sample_type", "label": "Sample type", "valueType": "choice", "options": [{"value": "whole_blood", "label": "Whole blood"}, {"value": "other", "label": "Other"}]}]}]},
+    {"equipmentTypeId": "IVD_IMMUNO", "hazardContextOptions": [{"hazardId": "H_IVD_IMM_001", "title": "Immunoassay result error", "contextOptions": [{"contextId": "assay_sensitivity", "label": "Assay sensitivity", "valueType": "choice", "options": [{"value": "high", "label": "High (trace levels)"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "IVD_POC", "hazardContextOptions": [{"hazardId": "H_IVD_POC_001", "title": "Reader or strip error", "contextOptions": [{"contextId": "use_environment", "label": "Use environment", "valueType": "choice", "options": [{"value": "lab", "label": "Lab"}, {"value": "point_of_care", "label": "Point of care"}]}]}]},
+    {"equipmentTypeId": "IVD_PCR", "hazardContextOptions": [{"hazardId": "H_IVD_PCR_001", "title": "PCR amplification or contamination", "contextOptions": [{"contextId": "assay_type", "label": "Assay type", "valueType": "choice", "options": [{"value": "qualitative", "label": "Qualitative"}, {"value": "quantitative", "label": "Quantitative"}]}]}]},
+    {"equipmentTypeId": "MFG_INJ_MOLD", "hazardContextOptions": [{"hazardId": "H_MFG_INJ_001", "title": "Dimensional or cosmetic defect", "contextOptions": [{"contextId": "material_type", "label": "Material", "valueType": "choice", "options": [{"value": "thermoplastic", "label": "Thermoplastic"}, {"value": "elastomer", "label": "Elastomer"}]}]}]},
+    {"equipmentTypeId": "MFG_CNC", "hazardContextOptions": [{"hazardId": "H_MFG_CNC_001", "title": "Dimensional or surface defect", "contextOptions": [{"contextId": "tolerance", "label": "Tolerance criticality", "valueType": "choice", "options": [{"value": "tight", "label": "Tight"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "MFG_ROBOT", "hazardContextOptions": [{"hazardId": "H_MFG_ROBOT_001", "title": "Assembly or safety failure", "contextOptions": [{"contextId": "assembly_complexity", "label": "Assembly complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex"}]}]}]},
+    {"equipmentTypeId": "MFG_TORQUE", "hazardContextOptions": [{"hazardId": "H_MFG_TORQUE_001", "title": "Torque application error", "contextOptions": [{"contextId": "joint_criticality", "label": "Joint criticality", "valueType": "choice", "options": [{"value": "critical", "label": "Critical"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "INS_VISION", "hazardContextOptions": [{"hazardId": "H_INS_VISION_001", "title": "Defect miss or false reject", "contextOptions": [{"contextId": "defect_type", "label": "Defect type", "valueType": "choice", "options": [{"value": "cosmetic", "label": "Cosmetic"}, {"value": "functional", "label": "Functional"}]}]}]},
+    {"equipmentTypeId": "INS_XRAY", "hazardContextOptions": [{"hazardId": "H_INS_XRAY_001", "title": "Defect miss or false reject", "contextOptions": [{"contextId": "defect_type", "label": "Defect type", "valueType": "choice", "options": [{"value": "foreign_matter", "label": "Foreign matter"}, {"value": "void", "label": "Void/cavity"}]}]}]},
+    {"equipmentTypeId": "INS_LEAK", "hazardContextOptions": [{"hazardId": "H_INS_LEAK_001", "title": "Leak miss or false reject", "contextOptions": [{"contextId": "leak_sensitivity", "label": "Leak sensitivity", "valueType": "choice", "options": [{"value": "tight", "label": "Tight spec"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "INS_HELIUM", "hazardContextOptions": [{"hazardId": "H_INS_HELIUM_001", "title": "Leak detection error", "contextOptions": [{"contextId": "leak_sensitivity", "label": "Sensitivity required", "valueType": "choice", "options": [{"value": "high", "label": "High"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "DEC_WASHER", "hazardContextOptions": [{"hazardId": "H_DEC_WASH_001", "title": "Inadequate cleaning or disinfection", "contextOptions": [{"contextId": "load_type", "label": "Load type", "valueType": "multiSelect", "options": [{"value": "instruments", "label": "Instruments"}, {"value": "racks", "label": "Racks"}, {"value": "kits", "label": "Kits"}]}]}]},
+    {"equipmentTypeId": "DEC_ULTRASONIC", "hazardContextOptions": [{"hazardId": "H_DEC_ULTRA_001", "title": "Inadequate cleaning", "contextOptions": [{"contextId": "item_complexity", "label": "Item complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex (lumens, crevices)"}]}]}]},
+    {"equipmentTypeId": "DEC_MANUAL", "hazardContextOptions": [{"hazardId": "H_DEC_MANUAL_001", "title": "Human error or inconsistent cleaning", "contextOptions": [{"contextId": "item_complexity", "label": "Item complexity", "valueType": "choice", "options": [{"value": "simple", "label": "Simple"}, {"value": "complex", "label": "Complex"}]}]}]},
+    {"equipmentTypeId": "ASM_ULTRASONIC", "hazardContextOptions": [{"hazardId": "H_ASM_ULTRA_001", "title": "Weld failure", "contextOptions": [{"contextId": "joint_type", "label": "Joint type", "valueType": "choice", "options": [{"value": "hermetic", "label": "Hermetic"}, {"value": "structural", "label": "Structural"}]}]}]},
+    {"equipmentTypeId": "ASM_HEAT_STAKE", "hazardContextOptions": [{"hazardId": "H_ASM_HEAT_001", "title": "Heat staking joint failure", "contextOptions": [{"contextId": "joint_criticality", "label": "Joint criticality", "valueType": "choice", "options": [{"value": "critical", "label": "Critical"}, {"value": "standard", "label": "Standard"}]}]}]},
+    {"equipmentTypeId": "ASM_ADHESIVE", "hazardContextOptions": [{"hazardId": "H_ASM_ADH_001", "title": "Bond failure", "contextOptions": [{"contextId": "bond_type", "label": "Bond type", "valueType": "choice", "options": [{"value": "structural", "label": "Structural"}, {"value": "sealing", "label": "Sealing"}]}]}]},
+    {"equipmentTypeId": "ASM_CRIMP", "hazardContextOptions": [{"hazardId": "H_ASM_CRIMP_001", "title": "Crimp quality failure", "contextOptions": [{"contextId": "connection_type", "label": "Connection type", "valueType": "choice", "options": [{"value": "electrical", "label": "Electrical"}, {"value": "fluid", "label": "Fluid"}]}]}]},
+    {"equipmentTypeId": "FAC_HVAC_AHU", "hazardContextOptions": [{"hazardId": "H_FAC_HVAC_001", "title": "HVAC failure", "contextOptions": [{"contextId": "area_class", "label": "Area classification", "valueType": "choice", "options": [{"value": "iso5", "label": "ISO 5"}, {"value": "iso7", "label": "ISO 7"}, {"value": "iso8", "label": "ISO 8"}]}]}]},
+    {"equipmentTypeId": "FAC_HEPA_BANK", "hazardContextOptions": [{"hazardId": "H_FAC_HEPA_001", "title": "HEPA filter bypass or failure", "contextOptions": [{"contextId": "area_class", "label": "Area classification", "valueType": "choice", "options": [{"value": "iso5", "label": "ISO 5"}, {"value": "iso7", "label": "ISO 7"}]}]}]},
+    {"equipmentTypeId": "FAC_PW_LOOP", "hazardContextOptions": [{"hazardId": "H_FAC_PW_001", "title": "Water contamination", "contextOptions": [{"contextId": "loop_type", "label": "Loop type", "valueType": "choice", "options": [{"value": "recirculating", "label": "Recirculating"}, {"value": "dead_leg", "label": "Dead leg present"}]}]}]},
+    {"equipmentTypeId": "FAC_COMP_AIR", "hazardContextOptions": [{"hazardId": "H_FAC_COMP_001", "title": "Compressed air contamination", "contextOptions": [{"contextId": "air_use", "label": "Air use", "valueType": "choice", "options": [{"value": "product_contact", "label": "Product contact"}, {"value": "instrument", "label": "Instrument only"}]}]}]}
+  ],
+  "defaultContextOptions": {
+    "description": "Generic context options for equipment types not explicitly listed. Hazard context may be minimal or inferred from controls.",
+    "genericOptions": [
+      {"contextId": "use_criticality", "label": "Use criticality", "valueType": "choice", "options": [{"value": "critical", "label": "Critical"}, {"value": "non_critical", "label": "Non-critical"}]}
+    ]
+  }
+}

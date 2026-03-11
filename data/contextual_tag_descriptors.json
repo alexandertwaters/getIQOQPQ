@@ -1,7 +1,7 @@
 {
   "version": "contextual_tag_descriptors_v1",
   "generatedAt": "2026-03-11T04:00:00Z",
-  "description": "Explanatory descriptors for contextual tags in the hazcat. Tags document controls and context that may affect qualification depth and test inclusion per FDA QSMR and ISO 13485.",
+  "description": "Explanatory descriptors for contextual tags in the hazcat. Tags document controls and context that may affect qualification depth and test inclusion per FDA QSMR and ISO 13485. Note: Equipment-type-specific controls are now in equipment_controls_catalog.json (Site tab). Hazard-specific context options are in hazard_context_options.json (Hazards tab).",
   "tags": {
     "Load type wrapped": "Product/load is wrapped (e.g., wrapped trays). Affects worst-case load selection for sterilization mapping.",
     "Load type tray": "Product/load is in trays. Affects chamber mapping and BI placement.",

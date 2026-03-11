@@ -51,7 +51,7 @@ def _get_supabase():
 def _upload_file(supabase, bucket, path_in_bucket, local_path, content_type="application/json"):
     with open(local_path, "rb") as f:
         data = f.read()
-    supabase.storage.from_(bucket).upload(path_in_bucket, data, {"content-type": content_type})
+    supabase.storage.from_(bucket).upload(path_in_bucket, data, {"content-type": content_type, "upsert": "true"})
 
 
 def _handle_post(payload):
@@ -80,6 +80,8 @@ def _handle_post(payload):
         "hazcatVersion": payload["hazcatVersion"],
         "hazards": payload["hazards"],
     }
+    if payload.get("equipmentControls"):
+        vector["equipmentControls"] = payload["equipmentControls"]
 
     pkg = run_vector(vector)
     fingerprint = pkg["fingerprint"]
@@ -124,10 +126,19 @@ def _handle_post(payload):
         except Exception as e:
             print("DB upsert error", str(e))
 
+    markdown_content = None
+    if rendered_dir.exists():
+        for f in rendered_dir.iterdir():
+            if f.suffix == ".md":
+                with open(f, "r", encoding="utf-8") as mf:
+                    markdown_content = mf.read()
+                break
+
     return 200, {
         "fingerprint": fingerprint,
         "artifactPath": f"{base_path}/",
         "artifactBucket": ARTIFACT_BUCKET,
+        "markdownContent": markdown_content,
         "metadata": {
             "rulesetId": pkg.get("rulesetId"),
             "hazcatVersion": pkg.get("hazcatVersion"),

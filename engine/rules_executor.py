@@ -110,6 +110,20 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
                     if "PQ" in then:
                         hazard["PQ_list"] = _merge_list(hazard["PQ_list"], then["PQ"])
 
+        # Context escalation: add extra IQ/OQ/PQ when hazard context indicates elevated risk
+        # (e.g., tortuous pathway, lumened devices, mixed loads) per FDA QSMR / ISO 14971
+        if hazard.get("qualificationDepthEscalation") and pkg.get("qualificationBand") in ("Targeted", "Full"):
+            rid = (hazard.get("ruleId") or "").upper()
+            if rid.startswith("R_STER_PV") or rid.startswith("R_STER_GRAV"):
+                hazard["OQ_list"] = _merge_list(hazard["OQ_list"], [
+                    "Thermocouple mapping at lumen/worst-case geometry locations",
+                    "BI placement validation at challenging pathway sites",
+                ])
+                hazard["PQ_list"] = _merge_list(hazard["PQ_list"], [
+                    "Extended PQ cycles for worst-case load configurations including lumened/tortuous items",
+                    "BI at lumen interior and challenging pathway locations",
+                ])
+
     iq_checklist = []
     pq_items = []
     for h in pkg["hazards"]:

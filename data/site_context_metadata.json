@@ -1,7 +1,7 @@
 {
   "version": "site_context_metadata_v1",
   "generatedAt": "2026-03-11T04:00:00Z",
-  "description": "Site context options with regulatory explanations for equipment qualification per FDA QSMR, 21 CFR 820, and ISO 13485.",
+  "description": "Site context options with regulatory explanations for equipment qualification per FDA QSMR, 21 CFR 820, and ISO 13485. Equipment-type-specific controls are in equipment_controls_catalog.json (API: /api/v1/equipment-controls?equipmentTypeId=...). Hazard context options are in hazard_context_options.json (API: /api/v1/hazard-context-options?equipmentTypeId=...).",
   "regulatoryReferences": {
     "cleanroom": "ISO 14644-1:2015; FDA Guidance for Aseptic Processing; 21 CFR 820.70",
     "productContact": "21 CFR 820.70; ISO 13485:2016 Clause 7.5; FDA QSR design controls",

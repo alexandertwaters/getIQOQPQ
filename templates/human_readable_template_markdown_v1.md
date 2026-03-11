@@ -3,6 +3,9 @@
 **Model**: {{ equipment.model }}
 **Cohort**: {{ equipment.cohort }}
 **Site context**: Cleanroom {{ siteContext.cleanroomClass }}; Utilities: {{ siteContext.utilities_comma }}; Product contact: {{ siteContext.productContact_label }}; Throughput: {{ siteContext.productionThroughput }}
+{% if equipmentControls %}
+**Equipment controls (risk adjustment inputs):** {% if equipmentControls %}{% for k, v in equipmentControls.items() | sort %}{{ k }}={{ v }}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}None{% endif %}
+{% endif %}
 **Ruleset**: {{ rulesetId }}  •  **Hazard catalog**: {{ hazcatVersion }}
 **Package fingerprint**: {{ fingerprint }}
 
@@ -30,6 +33,19 @@
 
 **Contextual tags (catalog):** {{ h.contextualTags_catalog_comma }}
 **Contextual tags (selected):** {{ h.contextualTags_selected_comma }}
+{% if h.hazardContext %}
+{% for k, v in h.hazardContext.items() %}
+{% if v is not none and v != false and v != '' %}
+{% if v is sequence and v is not string %}
+**Hazard context {{ k }}:** {{ v | join(', ') }}
+{% else %}
+**Hazard context {{ k }}:** {{ v }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if h.qualificationDepthEscalation %}
+**Qualification depth escalation:** Yes (challenging load/context; extra OQ/PQ items added){% endif %}
 
 **Rule:** {{ h.ruleId }}
 **Standards:** {{ h.standards_comma }}

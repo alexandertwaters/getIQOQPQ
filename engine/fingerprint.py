@@ -42,6 +42,8 @@ def canonicalize_package_for_fingerprint(pkg):
     canonical["siteContext.productContact"] = bool(sc["productContact"])
     canonical["siteContext.productionThroughput"] = sc["productionThroughput"]
     canonical["controlArchitecture"] = pkg["controlArchitecture"]
+    ec = pkg.get("equipmentControls") or {}
+    canonical["equipmentControls"] = json.dumps(sorted(ec.items()), separators=(',', ':')) if ec else ""
 
     hazards = sorted(pkg["hazards"], key=lambda h: h["hazardId"])
     canonical_hazards = []
@@ -52,6 +54,9 @@ def canonicalize_package_for_fingerprint(pkg):
         ch = OrderedDict()
         ch["hazardId"] = h["hazardId"]
         ch["contextualTags"] = sorted(tags)
+        hc = h.get("hazardContext") or {}
+        hc_items = [(k, tuple(sorted(v)) if isinstance(v, list) else v) for k, v in sorted(hc.items())]
+        ch["hazardContext"] = json.dumps(hc_items, separators=(',', ':')) if hc_items else ""
         ch["Severity"] = format_num(h["Severity"])
         ch["ProbabilityOfOccurrence"] = format_num(h["ProbabilityOfOccurrence"])
         ch["Exposure"] = format_num(h["Exposure"])

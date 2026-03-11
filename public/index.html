@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IQ/OQ/PQ Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>@media print{.no-print{display:none !important}#draft-preview{max-height:none !important}}</style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
   <div id="app" class="mx-auto max-w-2xl px-4 py-12">
-    <div class="mb-10">
+    <div class="mb-10 no-print">
       <h1 class="text-2xl font-bold text-slate-800">IQ/OQ/PQ Generator</h1>
       <p class="mt-1 text-slate-500">Create advisory qualification packages</p>
     </div>
@@ -27,6 +29,9 @@
       selectedEquipment: null,
       equipmentId: '',
       siteContext: { cleanroomClass: 'ISO 7', utilities: [], productContact: true, productionThroughput: 'Medium' },
+      equipmentControls: {},
+      equipmentControlsCatalog: null,
+      hazardContextOptions: null,
       hazardRatings: {},
       catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
       siteContextMetadata: { cleanroomClasses: [], productContact: {}, productionThroughput: [] },
@@ -66,15 +71,33 @@
 
     async function loadEquipmentMetadata(equipmentTypeId) {
       try {
-        const d = await fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId);
-        state.equipmentMetadata = d;
-        const em = d.equipmentMetadata;
+        const [metaRes, ctrlRes] = await Promise.all([
+          fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId),
+          fetchJson(API + '/equipment-controls?equipmentTypeId=' + equipmentTypeId).catch(() => null),
+        ]);
+        state.equipmentMetadata = metaRes;
+        const em = metaRes.equipmentMetadata;
         if (em?.defaultUtilities?.length) state.siteContext.utilities = [...em.defaultUtilities];
         else state.siteContext.utilities = state.siteContext.utilities.length ? state.siteContext.utilities : ['Electricity'];
+        state.equipmentControlsCatalog = ctrlRes;
+        state.equipmentControls = {};
+        (ctrlRes?.controlCategories || []).forEach(cat => {
+          (cat.controls || []).forEach(ctrl => {
+            if (ctrl.valueType === 'boolean') state.equipmentControls[ctrl.controlId] = false;
+            else if (ctrl.valueType === 'choice' && ctrl.options?.length) state.equipmentControls[ctrl.controlId] = '';
+          });
+        });
       } catch (e) {
         state.equipmentMetadata = null;
+        state.equipmentControlsCatalog = null;
+        state.equipmentControls = {};
         if (!state.siteContext.utilities.length) state.siteContext.utilities = ['Electricity'];
       }
+      render();
+    }
+
+    function setEquipmentControl(controlId, value) {
+      state.equipmentControls[controlId] = value;
       render();
     }
 
@@ -82,11 +105,22 @@
       if (!state.selectedEquipment) return;
       state.equipmentMetadata = null;
       await loadEquipmentMetadata(state.selectedEquipment.id);
-      const d = await fetchJson(API + '/hazards?equipmentTypeId=' + state.selectedEquipment.id);
-      state.hazards = d.hazards || [];
+      const [hazRes, ctxRes] = await Promise.all([
+        fetchJson(API + '/hazards?equipmentTypeId=' + state.selectedEquipment.id),
+        fetchJson(API + '/hazard-context-options?equipmentTypeId=' + state.selectedEquipment.id).catch(() => ({ hazardContextOptions: [] })),
+      ]);
+      state.hazards = hazRes.hazards || [];
+      state.hazardContextOptions = ctxRes.hazardContextOptions || [];
       state.hazardRatings = {};
       state.hazards.forEach(h => {
         const q = h.quickDefaults || {};
+        const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
+        const hazardContext = {};
+        (ctxForHazard?.contextOptions || []).forEach(opt => {
+          if (opt.valueType === 'boolean') hazardContext[opt.contextId] = false;
+          else if (opt.valueType === 'choice') hazardContext[opt.contextId] = '';
+          else if (opt.valueType === 'multiSelect') hazardContext[opt.contextId] = [];
+        });
         state.hazardRatings[h.hazardId] = {
           Severity_label: q.defaultSeverity || '',
           ProbabilityOfOccurrence_label: q.defaultProbability || '',
@@ -94,8 +128,29 @@
           Detectability_label: q.defaultDetectability || '',
           ControlEffectiveness_label: q.defaultControlEffectiveness || '',
           contextualTags_selected: [],
+          hazardContext,
         };
       });
+      render();
+    }
+
+    function setHazardContext(hazardId, contextId, value) {
+      const r = state.hazardRatings[hazardId] || {};
+      if (!r.hazardContext) r.hazardContext = {};
+      r.hazardContext[contextId] = value;
+      state.hazardRatings[hazardId] = { ...r };
+      render();
+    }
+
+    function toggleHazardContextMulti(hazardId, contextId, value) {
+      const r = state.hazardRatings[hazardId] || {};
+      if (!r.hazardContext) r.hazardContext = {};
+      const arr = r.hazardContext[contextId] || [];
+      const i = arr.indexOf(value);
+      if (i >= 0) arr.splice(i, 1);
+      else arr.push(value);
+      r.hazardContext[contextId] = arr;
+      state.hazardRatings[hazardId] = { ...r };
       render();
     }
 
@@ -128,6 +183,24 @@
       render();
     }
 
+    async function downloadDocx() {
+      const md = state.result?.markdownContent;
+      if (!md) return;
+      try {
+        const r = await fetch(API + '/draft-docx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markdownContent: md }) });
+        if (!r.ok) throw new Error('Failed to generate DOCX');
+        const blob = await r.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'qualification-draft.docx';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (e) {
+        state.error = e.message;
+        render();
+      }
+    }
+
     function canGenerate() {
       if (!state.selectedEquipment || !state.catalog.rulesetId || !state.catalog.hazcatVersion) return false;
       for (const h of state.hazards) {
@@ -151,11 +224,18 @@
           controlArchitecture: 'PLC or SCADA',
           hazards: state.hazards.map(h => {
             const r = state.hazardRatings[h.hazardId] || {};
+            const hc = r.hazardContext || {};
+            const hcFiltered = Object.keys(hc).reduce((o, k) => {
+              const v = hc[k];
+              if (v !== '' && v !== false && !(Array.isArray(v) && v.length === 0)) o[k] = v;
+              return o;
+            }, {});
             return {
               hazardId: h.hazardId,
               title: h.title,
               definition: h.definition,
               contextualTags: r.contextualTags_selected || [],
+              hazardContext: Object.keys(hcFiltered).length ? hcFiltered : undefined,
               ruleId: h.ruleId || '',
               ...r,
             };
@@ -163,6 +243,13 @@
           rulesetId: state.catalog.rulesetId,
           hazcatVersion: state.catalog.hazcatVersion,
         };
+        const ec = state.equipmentControls || {};
+        const ecFiltered = Object.keys(ec).reduce((o, k) => {
+          const v = ec[k];
+          if (v !== '' && v !== false) o[k] = v;
+          return o;
+        }, {});
+        if (Object.keys(ecFiltered).length) payload.equipmentControls = ecFiltered;
         const res = await fetch(API + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -191,7 +278,7 @@
       let html = '';
       if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">' + state.error + '</div>';
 
-      html += '<div class="mb-8 flex gap-2">';
+      html += '<div class="mb-8 flex gap-2 no-print">';
       [1,2,3,4].forEach(s => {
         const label = s===1?'Equipment':s===2?'Site':s===3?'Hazards':'Review';
         const cls = state.step===s ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
@@ -242,6 +329,29 @@
         html += '<div><label class="flex cursor-pointer items-center gap-2"><input type="checkbox" '+(sc.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> Product contact</label>';
         if (pcHelp) html += '<p class="ml-6 mt-0.5 text-xs text-slate-600" title="'+pcHelp.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'">'+pcHelp.replace(/</g,'&lt;').replace(/>/g,'&gt;').slice(0,180)+(pcHelp.length>180?'... Hover for full text.':'')+'</p>';
         html += '</div>';
+        const catalog = state.equipmentControlsCatalog;
+        if (catalog && catalog.controlCategories && catalog.controlCategories.length > 0) {
+          html += '<div class="rounded-lg border border-slate-200 bg-slate-50/50 p-4"><h3 class="text-sm font-semibold text-slate-700">Equipment controls</h3><p class="mt-0.5 text-xs text-slate-500">Select controls present at your site/equipment. Affects risk assessment and qualification scope.</p>';
+          catalog.controlCategories.forEach(cat => {
+            html += '<div class="mt-4"><div class="text-xs font-medium text-slate-600">'+cat.label+'</div>';
+            (cat.controls || []).forEach(ctrl => {
+              const cid = ctrl.controlId; const val = state.equipmentControls[cid];
+              const esc = (s)=>String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+              if (ctrl.valueType === 'boolean') {
+                html += '<label class="mt-1 flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" '+(val?'checked':'')+' onchange="setEquipmentControl(\''+esc(cid)+'\',this.checked)"> '+ctrl.label+'</label>';
+                if (ctrl.help) html += '<p class="ml-5 text-xs text-slate-500">'+esc(ctrl.help).replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+              } else if (ctrl.valueType === 'choice' && ctrl.options && ctrl.options.length) {
+                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+ctrl.label+'</label>';
+                html += '<select onchange="setEquipmentControl(\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1.5 text-sm">';
+                html += '<option value="">Select...</option>';
+                ctrl.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
+                html += '</select></div>';
+              }
+            });
+            html += '</div>';
+          });
+          html += '</div>';
+        }
         const throughputOpts = state.siteContextMetadata.productionThroughput.length ? state.siteContextMetadata.productionThroughput : [{value:'Low',label:'Low'},{value:'Medium',label:'Medium'},{value:'High',label:'High'}];
         html += '<div><label class="block text-sm font-medium">Production throughput</label><select onchange="state.siteContext.productionThroughput=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
         throughputOpts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+v+'"'+(sc.productionThroughput===v?' selected':'')+'>'+lab+'</option>'; });
@@ -298,6 +408,32 @@
             });
             html += '</div></div>';
           }
+          const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
+          if (ctxForHazard && ctxForHazard.contextOptions && ctxForHazard.contextOptions.length > 0) {
+            html += '<div class="mt-3 rounded border border-slate-200 bg-white p-2"><label class="block text-xs font-medium text-slate-500">Hazard context</label><p class="text-xs text-slate-500 mt-0.5">Describe load/configuration for this hazard.</p>';
+            ctxForHazard.contextOptions.forEach(opt => {
+              const cid = opt.contextId; const val = (r.hazardContext || {})[cid];
+              const esc = (s)=>String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+              if (opt.valueType === 'boolean') {
+                html += '<label class="mt-1 flex cursor-pointer items-center gap-2 text-xs"><input type="checkbox" '+(val?'checked':'')+' onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.checked)"> '+opt.label+'</label>';
+              } else if (opt.valueType === 'choice' && opt.options && opt.options.length) {
+                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+opt.label+'</label>';
+                html += '<select onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1 text-xs">';
+                html += '<option value="">Select...</option>';
+                opt.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
+                html += '</select></div>';
+              } else if (opt.valueType === 'multiSelect' && opt.options && opt.options.length) {
+                html += '<div class="mt-1"><label class="text-xs text-slate-500">'+opt.label+'</label><div class="mt-0.5 flex flex-wrap gap-1">';
+                const selArr = Array.isArray(val) ? val : [];
+                opt.options.forEach(o => {
+                  const ch = selArr.includes(o.value);
+                  html += '<label class="inline-flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-xs '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleHazardContextMulti(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',\''+esc(o.value)+'\')"> '+(o.label||o.value)+'</label>';
+                });
+                html += '</div></div>';
+              }
+            });
+            html += '</div>';
+          }
           html += '</div></div>';
         });
         html += '<div class="flex gap-2"><button onclick="state.step=2;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
@@ -307,38 +443,61 @@
       if (state.step === 4 && state.selectedEquipment) {
         const sc = state.siteContext;
         html += '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
-        html += '<h2 class="text-lg font-semibold">Review and generate</h2>';
+        html += '<h2 class="text-lg font-semibold">Review and generate draft</h2>';
         html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Equipment</dt><dd>'+state.selectedEquipment.name+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>'+sc.cleanroomClass+', '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Hazards</dt><dd>'+state.hazards.length+' configured</dd></dl>';
-        html += '<div class="space-y-3"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
+        html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>'+sc.cleanroomClass+', '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+', Throughput: '+sc.productionThroughput+'</dd>';
+        const ec = state.equipmentControls || {};
+        const ecSet = Object.entries(ec).filter(([,v]) => v !== '' && v !== false).length;
+        if (ecSet) html += '<dt class="mt-2 font-medium text-slate-500">Equipment controls</dt><dd>'+ecSet+' selected</dd>';
+        html += '<dt class="mt-2 font-medium text-slate-500">Hazards configured</dt><dd>'+state.hazards.length+'</dd></dl>';
+        html += '<div class="space-y-4"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
         state.hazards.forEach(h => {
           const r = state.hazardRatings[h.hazardId] || {};
-          html += '<div class="rounded-lg border border-slate-100 bg-slate-50 p-3"><div class="font-medium text-sm">'+h.title+'</div>';
-          html += '<div class="mt-1 text-xs text-slate-600">Severity: '+(r.Severity_label||'—')+', Probability: '+(r.ProbabilityOfOccurrence_label||'—')+', Exposure: '+(r.Exposure_label||'—')+', Detectability: '+(r.Detectability_label||'—')+', Control: '+(r.ControlEffectiveness_label||'—')+'</div>';
-          if (h.ruleId) html += '<div class="mt-1 text-xs text-slate-500"><strong>Rule:</strong> '+h.ruleId+'</div>';
-          if (h.standards && h.standards.length) html += '<div class="mt-0.5 text-xs text-slate-500"><strong>Standards:</strong> '+h.standards.join(', ')+'</div>';
-          if (r.contextualTags_selected && r.contextualTags_selected.length) html += '<div class="mt-0.5 text-xs text-slate-500"><strong>Selected tags:</strong> '+r.contextualTags_selected.join(', ')+'</div>';
+          const fields = [
+            {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
+            {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
+            {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
+            {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
+            {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
+          ];
+          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><div class="font-medium text-sm text-slate-800">'+h.title+'</div>';
+          html += '<p class="mt-0.5 text-xs text-slate-600">'+h.definition.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+          fields.forEach(({key,l,opts}) => {
+            const sel = r[key]||'';
+            const selOpt = opts.find(o=>(o.label||o)===sel);
+            const desc = selOpt ? ((selOpt.help||'')+(selOpt.example?' Example: '+selOpt.example:'')) : '';
+            html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">'+l+':</span> <span class="text-slate-800">'+(sel||'—')+'</span>'+(desc?' <span class="block mt-0.5 text-slate-500 pl-2 border-l-2 border-slate-200">'+desc.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>':'')+'</div>';
+          });
+          if (r.contextualTags_selected && r.contextualTags_selected.length) html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">Contextual tags:</span> <span class="text-slate-800">'+r.contextualTags_selected.join(', ')+'</span></div>';
+          const hc = r.hazardContext || {};
+          const hcEntries = Object.entries(hc).filter(([,v]) => v !== '' && v !== false && !(Array.isArray(v) && v.length === 0));
+          if (hcEntries.length) html += '<div class="mt-2 text-xs"><span class="font-medium text-slate-600">Hazard context:</span> <span class="text-slate-800">'+hcEntries.map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('; ')+'</span></div>';
+          if (h.ruleId) html += '<div class="mt-1 text-xs text-slate-500">Rule: '+h.ruleId+'</div>';
+          if (h.standards && h.standards.length) html += '<div class="mt-0.5 text-xs text-slate-500">Standards: '+h.standards.join(', ')+'</div>';
           html += '</div>';
         });
         html += '</div>';
         html += '<div class="flex gap-2"><button onclick="state.step=3;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate package')+'</button></div></div>';
+        html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate Draft')+'</button></div></div>';
       }
 
       if (state.step === 5 && state.result) {
-        html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm">';
-        html += '<h2 class="text-lg font-semibold text-emerald-800">Package generated</h2>';
-        html += '<p class="text-sm text-slate-600">Fingerprint: <code class="rounded bg-slate-100 px-1 py-0.5 text-xs">'+state.result.fingerprint+'</code></p>';
-        if (state.artifactUrls && Object.keys(state.artifactUrls).length > 0) {
-          html += '<div><h3 class="mb-2 font-medium">Download</h3><div class="flex flex-col gap-2">';
+        const md = state.result.markdownContent || '';
+        const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g,'<br>');
+        html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
+        html += '<h2 class="text-lg font-semibold text-emerald-800 no-print">Draft generated</h2>';
+        html += '<div class="flex flex-wrap gap-2 no-print">';
+        if (state.artifactUrls) {
           Object.entries(state.artifactUrls).forEach(([name, url]) => {
             if (typeof url === 'string' && !url.includes('error'))
-              html += '<a href="'+url+'" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">Download '+(name.endsWith('.json')?'JSON':name.endsWith('.md')?'Markdown report':'CSV')+'</a>';
+              html += '<a href="'+url+'" download target="_blank" rel="noopener noreferrer" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download '+(name.endsWith('.md')?'Markdown':name.endsWith('.json')?'JSON':'CSV')+'</a>';
           });
-          html += '</div></div>';
         }
-        html += '<button onclick="state.step=1;state.result=null;state.artifactUrls=null;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Create another</button></div>';
+        html += '<button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button>';
+        html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
+        html += '</div>';
+        html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate prose-sm max-w-none" id="draft-preview">'+draftHtml+'</div>';
+        html += '<button onclick="state.step=1;state.result=null;state.artifactUrls=null;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
       }
 
       c.innerHTML = html;

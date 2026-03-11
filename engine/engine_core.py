@@ -4,10 +4,12 @@ import os
 import sys
 try:
     from .calculator import compute_hazard_numeric_from_labels
+    from .risk_adjustments import apply_linkage_adjustments
     from .rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
     from .fingerprint import canonicalize_package_for_fingerprint
 except ImportError:
     from calculator import compute_hazard_numeric_from_labels
+    from risk_adjustments import apply_linkage_adjustments
     from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
     from fingerprint import canonicalize_package_for_fingerprint
 
@@ -48,6 +50,8 @@ def run_vector(vector):
     pkg["equipment"] = {"cohort": vector["cohort"], "type": vector["type"], "model": vector.get("model", "")}
     pkg["siteContext"] = vector["siteContext"]
     pkg["controlArchitecture"] = vector["controlArchitecture"]
+    if vector.get("equipmentControls"):
+        pkg["equipmentControls"] = vector["equipmentControls"]
     pkg["rulesetId"] = vector["rulesetId"]
     pkg["hazcatVersion"] = vector["hazcatVersion"]
     pkg["packageTemplateVersion"] = "v1.0"
@@ -65,12 +69,23 @@ def run_vector(vector):
             "ControlEffectiveness_label": h.get("ControlEffectiveness_label") or h.get("ControlEffectiveness")
         }
         numeric = compute_hazard_numeric_from_labels(hazard_labels)
+        # Apply control and hazard context adjustments (per ISO 14971 / FDA QSMR)
+        hazard_for_linkage = {
+            "hazardId": h["hazardId"],
+            "ruleId": catalog.get("ruleId") or h.get("ruleId"),
+            "hazardContext": h.get("hazardContext") or {},
+        }
+        numeric = apply_linkage_adjustments(numeric, hazard_for_linkage, pkg)
+        qual_depth_escalation = numeric.pop("_qualificationDepthEscalation", False)
         # User-selected contextual tags (from vector); catalog has full list
         contextual_tags_selected = h.get("contextualTags", [])
 
+        hazard_context = h.get("hazardContext", {})
         hazard_entry = {
             "hazardId": h["hazardId"],
             "title": catalog.get("title") or h.get("title", ""),
+            "hazardContext": hazard_context if hazard_context else None,
+            "qualificationDepthEscalation": qual_depth_escalation,
             "definition": catalog.get("definition") or h.get("definition", ""),
             "contextualTags": catalog.get("contextualTags", []),
             "contextualTags_selected": contextual_tags_selected,
