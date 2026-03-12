@@ -55,6 +55,13 @@ def run_vector(vector):
     }
     pkg["siteContext"] = vector["siteContext"]
     pkg["controlArchitecture"] = vector["controlArchitecture"]
+    pkg["lifecycle"] = {
+        "vmp": vector.get("vmp", {}) or {},
+        "urs": vector.get("urs", {}) or {},
+        "dq": vector.get("dq", {}) or {},
+        "computerizedValidation": vector.get("computerizedValidation", {}) or {},
+        "requalificationPlan": vector.get("requalificationPlan", {}) or {},
+    }
     if vector.get("equipmentControls"):
         pkg["equipmentControls"] = vector["equipmentControls"]
     pkg["rulesetId"] = vector["rulesetId"]
@@ -128,7 +135,7 @@ def run_vector(vector):
     band = pkg.get("qualificationBand", "Basic")
     has_pq = any(h.get("PQ_list") for h in pkg["hazards"])
     if band == "Full" or (band == "Targeted" and has_pq):
-        pkg["recommendation"] = "Conduct IQ, OQ, and PQ (or targeted PQ as applicable)."
+        pkg["recommendation"] = "Conduct lifecycle package: URS, DQ, IQ, OQ, and PQ (or targeted PQ as applicable)."
     elif band == "Targeted":
         pkg["recommendation"] = "Conduct IQ, OQ, and targeted PQ."
     elif band == "Basic" and has_pq:

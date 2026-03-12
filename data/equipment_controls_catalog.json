@@ -35,6 +35,18 @@
               "label": "HMI exports cycle data",
               "help": "HMI exports cycle data to file (CSV) or provides printouts. Qualification-relevant for data integrity.",
               "valueType": "boolean"
+            },
+            {
+              "controlId": "CTRL_STER_PV_002d",
+              "label": "Part 11 technical controls implemented",
+              "help": "Audit trail, role-based access, and electronic records controls are implemented and periodically reviewed.",
+              "valueType": "boolean"
+            },
+            {
+              "controlId": "CTRL_STER_PV_002e",
+              "label": "Software configuration and patch history maintained",
+              "help": "Configuration baseline and patch/change history are documented for computerized functions.",
+              "valueType": "boolean"
             }
           ]
         },
@@ -142,6 +154,12 @@
               "controlId": "CTRL_STER_PV_013",
               "label": "Calibration / preventive maintenance plan",
               "help": "Documented calibration and PM schedule per 21 CFR 820.72.",
+              "valueType": "boolean"
+            },
+            {
+              "controlId": "CTRL_STER_PV_014",
+              "label": "Event-based requalification trigger procedure",
+              "help": "Procedure defines requalification triggers after move, major repair, process change, or OOT event.",
               "valueType": "boolean"
             }
           ]

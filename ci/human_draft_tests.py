@@ -20,13 +20,24 @@ def find_markdown_for_fingerprint(artifacts_dir, fingerprint):
 
 def check_markdown_contains_required_sections(md_path):
     text = md_path.read_text(encoding='utf8')
-    required = ["Qualification band", "Residual Risk Index", "Installation Qualification", "Operational Qualification", "Performance Qualification", "Traceability appendix"]
+    required = [
+        "Qualification band",
+        "Residual Risk Index",
+        "Validation Master Plan (VMP)",
+        "User Requirements Specification (URS)",
+        "Design Qualification (DQ)",
+        "Installation Qualification (IQ)",
+        "Operational Qualification (OQ)",
+        "Performance Qualification (PQ)",
+        "Requalification plan",
+        "Traceability matrix",
+    ]
     missing = [r for r in required if r not in text]
     return missing
 
 def check_markdown_contains_help_or_example(md_path):
     text = md_path.read_text(encoding='utf8')
-    return "Option help and examples" in text or "example" in text.lower()
+    return "Objective" in text and "Acceptance" in text
 
 def check_perhazard_csv(artifacts_dir, fingerprint):
     base = Path(artifacts_dir)
@@ -79,8 +90,8 @@ def run(artifacts_dir, vectors_path):
         missing_sections = check_markdown_contains_required_sections(md)
         if missing_sections:
             failures.append({"id": vid, "fingerprint": fp, "missing_sections": missing_sections})
-        elif any(h.get("severityOptions") for h in doc.get("hazards", [])) and not check_markdown_contains_help_or_example(md):
-            failures.append({"id": vid, "fingerprint": fp, "error": "markdown missing help/example text (package has severityOptions)"})
+        elif not check_markdown_contains_help_or_example(md):
+            failures.append({"id": vid, "fingerprint": fp, "error": "markdown missing script objective/acceptance structure"})
         elif not check_perhazard_csv(rendered_dir, fp):
             failures.append({"id": vid, "fingerprint": fp, "error": "missing perHazard CSV"})
         else:

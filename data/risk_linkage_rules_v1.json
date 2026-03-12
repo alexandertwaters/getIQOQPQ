@@ -115,6 +115,27 @@
       "appliesToHazardIds": ["H_STER_PV_002"],
       "rationale": "Vacuum pump redundancy reduces air removal failure probability.",
       "adjustment": { "ProbabilityOfOccurrence_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_002d",
+      "whenValue": true,
+      "appliesToHazardIds": ["H_DATA_001"],
+      "rationale": "Part 11 technical controls improve detectability and control effectiveness for data integrity hazards.",
+      "adjustment": { "Detectability_delta": 0.10, "ControlEffectiveness_delta": -0.10 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_002e",
+      "whenValue": true,
+      "appliesToHazardIds": ["H_DATA_001"],
+      "rationale": "Maintained patch/configuration history improves data integrity control and traceability.",
+      "adjustment": { "ControlEffectiveness_delta": -0.06 }
+    },
+    {
+      "controlId": "CTRL_STER_PV_014",
+      "whenValue": true,
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Documented requalification trigger procedure reduces sustained risk after changes.",
+      "adjustment": { "ControlEffectiveness_delta": -0.05 }
     }
   ],
   "hazardContextAdjustments": [
@@ -170,6 +191,29 @@
       "appliesToRulePrefixes": ["R_COLD_"],
       "rationale": "High traffic area increases door-open events and temperature excursion probability.",
       "adjustment": { "ProbabilityOfOccurrence_delta": 0.08 }
+    },
+    {
+      "contextId": "relocated_since_last_qualification",
+      "contextValue": true,
+      "appliesToRulePrefixes": ["R_STER_"],
+      "rationale": "Relocation introduces installation and utility variability requiring deeper qualification.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.08 },
+      "qualificationDepthEscalation": true
+    },
+    {
+      "contextId": "software_patch_applied_since_last_qualification",
+      "contextValue": true,
+      "appliesToHazardIds": ["H_DATA_001"],
+      "rationale": "Software changes can impact validated state and require targeted requalification.",
+      "adjustment": { "ProbabilityOfOccurrence_delta": 0.08, "ControlEffectiveness_delta": 0.05 },
+      "qualificationDepthEscalation": true
+    },
+    {
+      "contextId": "audit_trail_periodic_review",
+      "contextValue": true,
+      "appliesToHazardIds": ["H_DATA_001"],
+      "rationale": "Periodic audit trail review improves early detection of integrity failures.",
+      "adjustment": { "Detectability_delta": 0.08 }
     }
   ]
 }

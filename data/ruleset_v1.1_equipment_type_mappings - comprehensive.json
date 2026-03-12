@@ -84,6 +84,18 @@
             "PQ": [
               {"id":"PQ_CSV_01","title":"PQ cycle CSV/printout verification","params":{}}
             ],
+            "VMP": [
+              {"id":"VMP_CSV_01","title":"Define computerized-system validation scope and deliverables","params":{}}
+            ],
+            "URS": [
+              {"id":"URS_CSV_01","title":"Define electronic records and data integrity user requirements","params":{}}
+            ],
+            "DQ": [
+              {"id":"DQ_CSV_01","title":"Confirm selected software design meets URS and Part 11 controls","params":{}}
+            ],
+            "Requalification": [
+              {"id":"RQ_CSV_01","title":"Trigger targeted requalification after software patch/configuration change","params":{}}
+            ],
             "standards": ["21 CFR Part 11","GAMP 5","21 CFR 820"]
           }
         },
@@ -108,6 +120,18 @@
               {"id":"PQ_STER_02","title":"3 consecutive worst-case cycles with biological indicators","params":{"count":3}},
               {"id":"PQ_STER_03","title":"Chemical indicator verification","params":{}},
               {"id":"PQ_STER_04","title":"Load map validation","params":{}}
+            ],
+            "VMP": [
+              {"id":"VMP_STER_01","title":"Define sterilizer lifecycle validation scope, roles, and timeline","params":{}}
+            ],
+            "URS": [
+              {"id":"URS_STER_01","title":"Capture intended use, CPPs, utility and throughput requirements","params":{}}
+            ],
+            "DQ": [
+              {"id":"DQ_STER_01","title":"Confirm selected sterilizer design meets URS prior to installation","params":{}}
+            ],
+            "Requalification": [
+              {"id":"RQ_STER_01","title":"Define annual and event-driven requalification triggers","params":{}}
             ],
             "standards": ["ISO 17665","ISO 11138","ISO 11137"]
           }

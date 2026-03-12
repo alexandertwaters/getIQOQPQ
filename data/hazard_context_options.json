@@ -63,6 +63,12 @@
               "label": "FAT/SAT available",
               "help": "Factory and site acceptance testing reports available. Reduces installation risk.",
               "valueType": "boolean"
+            },
+            {
+              "contextId": "relocated_since_last_qualification",
+              "label": "Relocated since last qualification",
+              "help": "Equipment has been moved/relocated since prior qualification, increasing requalification need.",
+              "valueType": "boolean"
             }
           ]
         },
@@ -162,6 +168,18 @@
               "contextId": "hmi_exports_data",
               "label": "HMI exports cycle data",
               "help": "HMI exports cycle data to file or printout.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "software_patch_applied_since_last_qualification",
+              "label": "Software patch/configuration change since last qualification",
+              "help": "System patch or configuration change occurred and may require targeted requalification.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "audit_trail_periodic_review",
+              "label": "Periodic audit trail review implemented",
+              "help": "Periodic review of audit trail records and exceptions is implemented.",
               "valueType": "boolean"
             }
           ]

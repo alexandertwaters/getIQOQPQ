@@ -187,6 +187,10 @@ def _build_traceability_matrix(pkg):
     rows = []
     for h in pkg.get("hazards", []):
         hazard_title = h.get("title", "") or h.get("hazardId", "")
+        for tid in h.get("URS_list", []) or []:
+            rows.append({"hazardTitle": hazard_title, "testType": "URS", "testTitle": tid})
+        for tid in h.get("DQ_list", []) or []:
+            rows.append({"hazardTitle": hazard_title, "testType": "DQ", "testTitle": tid})
         for tid in h.get("IQ_list", []) or []:
             rows.append({"hazardTitle": hazard_title, "testType": "IQ", "testTitle": tid})
         for tid in h.get("OQ_list", []) or []:
@@ -202,6 +206,8 @@ def _build_evidence_list(pkg, hmi_used_for_release):
         "IQ checklist signed and dated",
         "OQ test scripts with results and acceptance",
         "PQ cycle logs and BI incubation results",
+        "Training records for protocol executors and reviewers",
+        "Supplier documentation and installation evidence",
     ]
     if hmi_used_for_release:
         base.extend([
@@ -209,6 +215,35 @@ def _build_evidence_list(pkg, hmi_used_for_release):
             "Evidence naming: SITE_EQUIPID_TESTID_YYYYMMDD_HHMM.ext",
         ])
     return base
+
+
+def _build_requalification_plan(pkg):
+    """Build requalification schedule tied to risk band and selected triggers."""
+    lifecycle = pkg.get("lifecycle") or {}
+    rq = lifecycle.get("requalificationPlan") or {}
+    selected = rq.get("baseFrequency", "annual")
+    band = pkg.get("qualificationBand", "Targeted")
+    if selected == "risk_based":
+        frequency = "Annual" if band in ("Targeted", "Full") else "Every 2 years"
+    elif selected == "biennial" and band in ("Targeted", "Full"):
+        frequency = "Annual (elevated by risk band)"
+    elif selected == "biennial":
+        frequency = "Every 2 years"
+    else:
+        frequency = "Annual"
+    triggers = rq.get("triggers") or ["move", "major_repair", "process_change", "oot"]
+    trigger_labels = {
+        "move": "Relocation or move",
+        "major_repair": "Major repair or maintenance affecting function",
+        "process_change": "Process parameter or load pattern change",
+        "oot": "Out-of-tolerance/deviation event",
+        "software_change": "Software/configuration change",
+    }
+    return {
+        "frequency": frequency,
+        "triggers": [trigger_labels.get(t, t) for t in triggers],
+        "rationale": rq.get("rationale", "") or "Risk-based requalification per VMP and process criticality.",
+    }
 
 
 def apply_iqoqpq_mapping(pkg, ruleset_path=None):
@@ -231,6 +266,10 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
         hazard.setdefault("IQ_list", [])
         hazard.setdefault("OQ_list", [])
         hazard.setdefault("PQ_list", [])
+        hazard.setdefault("VMP_list", [])
+        hazard.setdefault("URS_list", [])
+        hazard.setdefault("DQ_list", [])
+        hazard.setdefault("Requalification_list", [])
         for rule in mapping_rules:
             for logic in rule.get("logic", []):
                 if not isinstance(logic, dict) or "if" not in logic or "then" not in logic:
@@ -243,6 +282,14 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
                         hazard["OQ_list"] = _merge_list(hazard["OQ_list"], then["OQ"])
                     if "PQ" in then:
                         hazard["PQ_list"] = _merge_list(hazard["PQ_list"], then["PQ"])
+                    if "VMP" in then:
+                        hazard["VMP_list"] = _merge_list(hazard["VMP_list"], then["VMP"])
+                    if "URS" in then:
+                        hazard["URS_list"] = _merge_list(hazard["URS_list"], then["URS"])
+                    if "DQ" in then:
+                        hazard["DQ_list"] = _merge_list(hazard["DQ_list"], then["DQ"])
+                    if "Requalification" in then:
+                        hazard["Requalification_list"] = _merge_list(hazard["Requalification_list"], then["Requalification"])
 
         # Context escalation: add extra IQ/OQ/PQ when hazard context indicates elevated risk
         # (e.g., tortuous pathway, lumened devices, mixed loads) per FDA QSMR / ISO 14971
@@ -260,11 +307,23 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
 
     iq_checklist = []
     pq_items = []
+    vmp_items = []
+    urs_items = []
+    dq_items = []
+    rq_items = []
     for h in pkg["hazards"]:
         iq_checklist.extend(h.get("IQ_list", []))
         pq_items.extend(h.get("PQ_list", []))
+        vmp_items.extend(h.get("VMP_list", []))
+        urs_items.extend(h.get("URS_list", []))
+        dq_items.extend(h.get("DQ_list", []))
+        rq_items.extend(h.get("Requalification_list", []))
     iq_checklist = list(dict.fromkeys(iq_checklist))
     pq_items = list(dict.fromkeys(pq_items))
+    vmp_items = list(dict.fromkeys(vmp_items))
+    urs_items = list(dict.fromkeys(urs_items))
+    dq_items = list(dict.fromkeys(dq_items))
+    rq_items = list(dict.fromkeys(rq_items))
 
     # STER_PV: use equipment-type-specific IQ checklist from iq_checklists.json
     equipment_type_id = (pkg.get("equipment") or {}).get("equipmentTypeId", "")
@@ -300,6 +359,42 @@ def apply_iqoqpq_mapping(pkg, ruleset_path=None):
         "biologicalIndicatorPlacement": _build_pq_bi_placement(pkg, equipment_type_id),
         "acceptanceCriteria": _build_pq_acceptance_criteria(pkg, equipment_type_id),
     }
+    lifecycle = pkg.get("lifecycle") or {}
+    pkg["VMP"] = {
+        "scope": (lifecycle.get("vmp") or {}).get("scope", ""),
+        "roles": (lifecycle.get("vmp") or {}).get("roles", ""),
+        "timeline": (lifecycle.get("vmp") or {}).get("timeline", ""),
+        "deliverables": (lifecycle.get("vmp") or {}).get("deliverables", ""),
+        "trainingPlan": (lifecycle.get("vmp") or {}).get("trainingPlan", ""),
+        "supplierEvidencePlan": (lifecycle.get("vmp") or {}).get("supplierEvidencePlan", ""),
+        "generatedItems": vmp_items,
+    }
+    pkg["URS"] = {
+        "intendedUse": (lifecycle.get("urs") or {}).get("intendedUse", ""),
+        "criticalProcessParameters": (lifecycle.get("urs") or {}).get("criticalProcessParameters", ""),
+        "environmentNeeds": (lifecycle.get("urs") or {}).get("environmentNeeds", ""),
+        "throughputRationale": (lifecycle.get("urs") or {}).get("throughputRationale", ""),
+        "acceptanceCriteria": (lifecycle.get("urs") or {}).get("acceptanceCriteria", ""),
+        "generatedItems": urs_items,
+    }
+    pkg["DQ"] = {
+        "designSummary": (lifecycle.get("dq") or {}).get("designSummary", ""),
+        "ursAlignment": (lifecycle.get("dq") or {}).get("ursAlignment", ""),
+        "supplierAssessment": (lifecycle.get("dq") or {}).get("supplierAssessment", ""),
+        "openItems": (lifecycle.get("dq") or {}).get("openItems", ""),
+        "generatedItems": dq_items,
+    }
+    computerized = (lifecycle.get("computerizedValidation") or {}).get("computerized", False)
+    pkg["computerizedValidation"] = {
+        "computerized": computerized,
+        "softwareClassification": (lifecycle.get("computerizedValidation") or {}).get("softwareClassification", ""),
+        "part11Controls": (lifecycle.get("computerizedValidation") or {}).get("part11Controls", ""),
+        "dataIntegrityControls": (lifecycle.get("computerizedValidation") or {}).get("dataIntegrityControls", ""),
+        "patchConfigHistory": (lifecycle.get("computerizedValidation") or {}).get("patchConfigHistory", ""),
+    }
+    pkg["Requalification"] = _build_requalification_plan(pkg)
+    if rq_items:
+        pkg["Requalification"]["generatedItems"] = rq_items
 
     # CSV guidance and evidence when HMI used for release (21 CFR Part 11)
     pkg["csvGuidance"] = _build_csv_guidance(hmi_used_for_release)
@@ -313,10 +408,19 @@ def _set_default_iqoqpq(pkg):
     pkg["IQ"] = {"checklist": ["Installation verification per supplier drawing"]}
     pkg["OQ"] = {"tests": []}
     pkg["PQ"] = {"plan": "Default PQ plan", "pqCycles": 3, "worstCaseLoadDefinition": "", "biologicalIndicatorPlacement": "", "acceptanceCriteria": ""}
+    pkg["VMP"] = {"scope": "", "roles": "", "timeline": "", "deliverables": "", "trainingPlan": "", "supplierEvidencePlan": "", "generatedItems": []}
+    pkg["URS"] = {"intendedUse": "", "criticalProcessParameters": "", "environmentNeeds": "", "throughputRationale": "", "acceptanceCriteria": "", "generatedItems": []}
+    pkg["DQ"] = {"designSummary": "", "ursAlignment": "", "supplierAssessment": "", "openItems": "", "generatedItems": []}
+    pkg["computerizedValidation"] = {"computerized": False, "softwareClassification": "", "part11Controls": "", "dataIntegrityControls": "", "patchConfigHistory": ""}
+    pkg["Requalification"] = _build_requalification_plan(pkg)
     for h in pkg["hazards"]:
         h.setdefault("IQ_list", [])
         h.setdefault("OQ_list", [])
         h.setdefault("PQ_list", [])
+        h.setdefault("VMP_list", [])
+        h.setdefault("URS_list", [])
+        h.setdefault("DQ_list", [])
+        h.setdefault("Requalification_list", [])
 
 
 def apply_policy_escalations(pkg):

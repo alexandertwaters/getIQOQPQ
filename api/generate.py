@@ -80,6 +80,11 @@ def _handle_post(payload):
         "rulesetId": payload["rulesetId"],
         "hazcatVersion": payload["hazcatVersion"],
         "hazards": payload["hazards"],
+        "vmp": payload.get("vmp", {}),
+        "urs": payload.get("urs", {}),
+        "dq": payload.get("dq", {}),
+        "computerizedValidation": payload.get("computerizedValidation", {}),
+        "requalificationPlan": payload.get("requalificationPlan", {}),
     }
     if payload.get("equipmentControls"):
         vector["equipmentControls"] = payload["equipmentControls"]

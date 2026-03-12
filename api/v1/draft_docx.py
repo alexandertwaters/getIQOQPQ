@@ -91,7 +91,7 @@ def _markdown_to_docx(markdown_text):
         elif stripped.startswith("- ") or stripped.startswith("* "):
             _add_paragraph_with_inline(doc, stripped[2:].strip(), style="List Bullet")
         elif stripped.startswith("---"):
-            pass  # skip horizontal rules
+            doc.add_paragraph("________________________________________")
         elif stripped.startswith("|") and "|" in stripped[1:]:
             rows, i = _parse_table(lines, i)
             _add_table_with_borders(doc, rows)

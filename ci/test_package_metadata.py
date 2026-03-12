@@ -83,7 +83,7 @@ class TestFingerprintStability(unittest.TestCase):
 
 
 class TestRenderOutput(unittest.TestCase):
-    """Render tests: generated Markdown contains help and example text for at least one hazard."""
+    """Render tests: generated Markdown contains lifecycle and qualification sections."""
 
     def setUp(self):
         from engine.engine_core import run_vector
@@ -105,26 +105,32 @@ class TestRenderOutput(unittest.TestCase):
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir, ignore_errors=True)
 
-    def test_markdown_contains_option_help_or_example(self):
+    def test_markdown_contains_lifecycle_sections(self):
         # fp from pkg may have colon; render writes {fp}.md
         md_files = list(Path(self.tmpdir).glob("*.md"))
         if not md_files:
             self.skipTest("No rendered MD found")
         text = md_files[0].read_text(encoding="utf8")
-        has_help_section = "Option help and examples" in text
-        has_example = "example" in text.lower()
-        self.assertTrue(has_help_section or has_example, "Markdown should contain option help/example text")
+        required = [
+            "Validation Master Plan (VMP)",
+            "User Requirements Specification (URS)",
+            "Design Qualification (DQ)",
+            "Installation Qualification (IQ)",
+            "Operational Qualification (OQ)",
+            "Performance Qualification (PQ)",
+            "Requalification plan",
+        ]
+        for section in required:
+            self.assertIn(section, text)
 
-    def test_markdown_contains_rule_id_and_standards(self):
+    def test_markdown_contains_traceability_and_requalification(self):
         md_files = list(Path(self.tmpdir).glob("*.md"))
         if not md_files:
             self.skipTest("No rendered MD found")
         text = md_files[0].read_text(encoding="utf8")
-        # At least one hazard has ruleId
-        has_rule = "Rule:" in text
-        has_standards = "Standards:" in text
-        self.assertTrue(has_rule, "Markdown should contain 'Rule:'")
-        self.assertTrue(has_standards, "Markdown should contain 'Standards:'")
+        self.assertIn("Traceability matrix", text)
+        self.assertIn("Base frequency", text)
+        self.assertIn("Trigger", text)
 
 
 if __name__ == "__main__":

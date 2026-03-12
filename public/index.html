@@ -6,7 +6,12 @@
   <title>IQ/OQ/PQ Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>@media print{.no-print{display:none !important}#draft-preview{max-height:none !important}}</style>
+  <style>
+    @media print{.no-print{display:none !important}#draft-preview{max-height:none !important}}
+    #draft-preview table { border-collapse: collapse; width: 100%; }
+    #draft-preview th, #draft-preview td { border: 1px solid #334155; padding: 6px; vertical-align: top; }
+    #draft-preview h1, #draft-preview h2, #draft-preview h3 { border-bottom: 2px solid #334155; padding-bottom: 4px; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
   <div id="app" class="mx-auto max-w-2xl px-4 py-12">
@@ -41,6 +46,41 @@
       generating: false,
       result: null,
       artifactUrls: null,
+      lifecycle: {
+        vmp: {
+          scope: '',
+          roles: '',
+          timeline: '',
+          deliverables: '',
+          trainingPlan: '',
+          supplierEvidencePlan: '',
+        },
+        urs: {
+          intendedUse: '',
+          criticalProcessParameters: '',
+          environmentNeeds: '',
+          throughputRationale: '',
+          acceptanceCriteria: '',
+        },
+        dq: {
+          designSummary: '',
+          ursAlignment: '',
+          supplierAssessment: '',
+          openItems: '',
+        },
+        computerizedValidation: {
+          computerized: false,
+          softwareClassification: '',
+          part11Controls: '',
+          dataIntegrityControls: '',
+          patchConfigHistory: '',
+        },
+        requalificationPlan: {
+          baseFrequency: 'annual',
+          triggers: [],
+          rationale: '',
+        },
+      },
     };
 
     function getStepList() {
@@ -54,6 +94,11 @@
       (catalog?.controlCategories || []).forEach((cat, i) => {
         steps.push({ id: 'equipmentControl', idx: i, label: cat.label });
       });
+      steps.push({ id: 'vmp', label: 'Validation master plan' });
+      steps.push({ id: 'urs', label: 'URS' });
+      steps.push({ id: 'dq', label: 'DQ' });
+      steps.push({ id: 'computerizedValidation', label: 'Computerized/GxP' });
+      steps.push({ id: 'requalification', label: 'Requalification' });
       steps.push({ id: 'throughput', label: 'Production throughput' });
       steps.push({ id: 'productContact', label: 'Product contact' });
       steps.push({ id: 'cleanroom', label: 'Cleanroom class' });
@@ -218,6 +263,15 @@
       render();
     }
 
+    function setRequalTrigger(trigger, checked) {
+      const arr = state.lifecycle.requalificationPlan.triggers || [];
+      const idx = arr.indexOf(trigger);
+      if (checked && idx < 0) arr.push(trigger);
+      if (!checked && idx >= 0) arr.splice(idx, 1);
+      state.lifecycle.requalificationPlan.triggers = arr;
+      render();
+    }
+
     function toggleHelp(hazardId, field) {
       const key = hazardId + '.' + field;
       state.expandedHelp = state.expandedHelp === key ? null : key;
@@ -251,6 +305,12 @@
 
     function canGenerate() {
       if (!state.selectedEquipment || !state.catalog.rulesetId || !state.catalog.hazcatVersion) return false;
+      const l = state.lifecycle;
+      if (!l.vmp.scope || !l.vmp.roles || !l.vmp.deliverables) return false;
+      if (!l.urs.intendedUse || !l.urs.criticalProcessParameters || !l.urs.acceptanceCriteria) return false;
+      if (!l.dq.designSummary || !l.dq.ursAlignment) return false;
+      if (!l.requalificationPlan.rationale || !(l.requalificationPlan.triggers || []).length) return false;
+      if (l.computerizedValidation.computerized && !l.computerizedValidation.softwareClassification) return false;
       for (const h of state.hazards) {
         const r = state.hazardRatings[h.hazardId];
         if (!r?.Severity_label || !r?.ProbabilityOfOccurrence_label || !r?.Exposure_label || !r?.Detectability_label || !r?.ControlEffectiveness_label) return false;
@@ -294,6 +354,11 @@
           }),
           rulesetId: state.catalog.rulesetId,
           hazcatVersion: state.catalog.hazcatVersion,
+          vmp: state.lifecycle.vmp,
+          urs: state.lifecycle.urs,
+          dq: state.lifecycle.dq,
+          computerizedValidation: state.lifecycle.computerizedValidation,
+          requalificationPlan: state.lifecycle.requalificationPlan,
         };
         const ec = state.equipmentControls || {};
         const ecFiltered = Object.keys(ec).reduce((o, k) => {
@@ -417,6 +482,83 @@
         return html;
       }
 
+      if (step.id === 'vmp') {
+        const v = state.lifecycle.vmp;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Validation Master Plan (VMP)</h2><p class="text-sm text-slate-500">Define validation scope, roles, timeline, deliverables, and evidence strategy.</p>';
+        html += '<div class="grid gap-3">';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Scope</label><textarea onchange="state.lifecycle.vmp.scope=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.scope)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Roles and responsibilities</label><textarea onchange="state.lifecycle.vmp.roles=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.roles)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Timeline and milestones</label><textarea onchange="state.lifecycle.vmp.timeline=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.timeline)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Deliverables</label><textarea onchange="state.lifecycle.vmp.deliverables=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.deliverables)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Training plan placeholder</label><textarea onchange="state.lifecycle.vmp.trainingPlan=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.trainingPlan)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Supplier evidence placeholder</label><textarea onchange="state.lifecycle.vmp.supplierEvidencePlan=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.supplierEvidencePlan)+'</textarea></div>';
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'urs') {
+        const u = state.lifecycle.urs;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">User Requirements Specification (URS)</h2><p class="text-sm text-slate-500">Capture intended use, CPPs, environment, throughput needs, and acceptance criteria.</p>';
+        html += '<div class="grid gap-3">';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Intended use</label><textarea onchange="state.lifecycle.urs.intendedUse=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.intendedUse)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Critical process parameters (CPPs)</label><textarea onchange="state.lifecycle.urs.criticalProcessParameters=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.criticalProcessParameters)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Environmental needs</label><textarea onchange="state.lifecycle.urs.environmentNeeds=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.environmentNeeds)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Throughput rationale</label><textarea onchange="state.lifecycle.urs.throughputRationale=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.throughputRationale)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Acceptance criteria</label><textarea onchange="state.lifecycle.urs.acceptanceCriteria=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.acceptanceCriteria)+'</textarea></div>';
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'dq') {
+        const d = state.lifecycle.dq;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Design Qualification (DQ)</h2><p class="text-sm text-slate-500">Confirm selected design meets URS prior to installation.</p>';
+        html += '<div class="grid gap-3">';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Design summary</label><textarea onchange="state.lifecycle.dq.designSummary=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.designSummary)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">URS alignment assessment</label><textarea onchange="state.lifecycle.dq.ursAlignment=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.ursAlignment)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Supplier/design evidence</label><textarea onchange="state.lifecycle.dq.supplierAssessment=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.supplierAssessment)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Open items / residual gaps</label><textarea onchange="state.lifecycle.dq.openItems=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.openItems)+'</textarea></div>';
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'computerizedValidation') {
+        const cv = state.lifecycle.computerizedValidation;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Computerized System / GxP</h2><p class="text-sm text-slate-500">Apply risk-based software validation (GAMP5 / 21 CFR Part 11 mindset) where applicable.</p>';
+        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 hover:bg-slate-50"><input type="checkbox" '+(cv.computerized?'checked':'')+' onchange="state.lifecycle.computerizedValidation.computerized=this.checked;render()"> <span class="font-medium">Equipment is computerized / has software that can impact quality</span></label>';
+        html += '<div class="grid gap-3">';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Software classification</label><select onchange="state.lifecycle.computerizedValidation.softwareClassification=this.value;render()" class="mt-1 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="">Select...</option><option value="Category 3"'+(cv.softwareClassification==='Category 3'?' selected':'')+'>Category 3 (non-configurable)</option><option value="Category 4"'+(cv.softwareClassification==='Category 4'?' selected':'')+'>Category 4 (configured)</option><option value="Category 5"'+(cv.softwareClassification==='Category 5'?' selected':'')+'>Category 5 (custom)</option></select></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Part 11 controls</label><textarea onchange="state.lifecycle.computerizedValidation.part11Controls=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.part11Controls)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Data integrity controls</label><textarea onchange="state.lifecycle.computerizedValidation.dataIntegrityControls=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.dataIntegrityControls)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Configuration / patch history approach</label><textarea onchange="state.lifecycle.computerizedValidation.patchConfigHistory=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.patchConfigHistory)+'</textarea></div>';
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'requalification') {
+        const rq = state.lifecycle.requalificationPlan;
+        const has = (t) => (rq.triggers || []).includes(t);
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Requalification strategy</h2><p class="text-sm text-slate-500">Define risk-based cadence and triggers (annual / event-driven).</p>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Base frequency</label><select onchange="state.lifecycle.requalificationPlan.baseFrequency=this.value;render()" class="mt-1 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="annual"'+(rq.baseFrequency==='annual'?' selected':'')+'>Annual</option><option value="biennial"'+(rq.baseFrequency==='biennial'?' selected':'')+'>Every 2 years (risk justified)</option><option value="risk_based"'+(rq.baseFrequency==='risk_based'?' selected':'')+'>Risk-based interval</option></select></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600 mb-2">Requalification triggers</label><div class="flex flex-wrap gap-2">';
+        [
+          ['move', 'Equipment relocation'],
+          ['major_repair', 'Major repair/maintenance'],
+          ['process_change', 'Process parameter change'],
+          ['oot', 'Out-of-tolerance or deviation event'],
+          ['software_change', 'Software/configuration change'],
+        ].forEach(([id, label]) => {
+          html += '<label class="inline-flex cursor-pointer items-center gap-2 rounded border px-3 py-1.5 text-sm '+(has(id)?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(has(id)?'checked':'')+' onchange="setRequalTrigger(\''+id+'\',this.checked)"> '+label+'</label>';
+        });
+        html += '</div></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Risk rationale</label><textarea onchange="state.lifecycle.requalificationPlan.rationale=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(rq.rationale)+'</textarea></div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
       if (step.id === 'productContact') {
         const pcHelp = state.siteContextMetadata.productContact?.help || '';
         let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Product contact</h2>';
@@ -505,6 +647,7 @@
         const ecSet = Object.entries(ec).filter(([,v]) => v !== '' && v !== false).length;
         if (ecSet) html += '<dt class="mt-2 font-medium text-slate-500">Equipment controls</dt><dd>'+ecSet+' selected</dd>';
         html += '<dt class="mt-2 font-medium text-slate-500">Hazards configured</dt><dd>'+state.hazards.length+'</dd></dl>';
+        html += '<div class="rounded border border-slate-200 p-3 text-sm"><div class="font-medium text-slate-600 mb-1">Lifecycle readiness</div><div>VMP/URS/DQ/Requalification captured: <strong>Yes</strong></div><div>Computerized system flagged: <strong>'+(state.lifecycle.computerizedValidation.computerized?'Yes':'No')+'</strong></div></div>';
         html += '<div class="space-y-4"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
         state.hazards.forEach(h => {
           const r = state.hazardRatings[h.hazardId] || {};
@@ -540,7 +683,7 @@
         html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
         html += '</div>';
         html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate prose-sm max-w-none" id="draft-preview">'+draftHtml+'</div>';
-        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.equipmentControlsCatalog=null;state.equipmentMetadata=null;load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
+        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.equipmentControlsCatalog=null;state.equipmentMetadata=null;state.lifecycle={vmp:{scope:\'\',roles:\'\',timeline:\'\',deliverables:\'\',trainingPlan:\'\',supplierEvidencePlan:\'\'},urs:{intendedUse:\'\',criticalProcessParameters:\'\',environmentNeeds:\'\',throughputRationale:\'\',acceptanceCriteria:\'\'},dq:{designSummary:\'\',ursAlignment:\'\',supplierAssessment:\'\',openItems:\'\'},computerizedValidation:{computerized:false,softwareClassification:\'\',part11Controls:\'\',dataIntegrityControls:\'\',patchConfigHistory:\'\'},requalificationPlan:{baseFrequency:\'annual\',triggers:[],rationale:\'\'}};load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
       } else {
         html += renderProgressBar();
         html += renderStepContent();

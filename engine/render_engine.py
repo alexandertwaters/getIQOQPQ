@@ -225,6 +225,11 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
                 oq_tests.append(t)
     ctx["OQ"] = {"tests": oq_tests}
     ctx["PQ"] = pkg.get("PQ", {})
+    ctx["VMP"] = pkg.get("VMP", {})
+    ctx["URS"] = pkg.get("URS", {})
+    ctx["DQ"] = pkg.get("DQ", {})
+    ctx["computerizedValidation"] = pkg.get("computerizedValidation", {})
+    ctx["Requalification"] = pkg.get("Requalification", {})
     ctx["csvGuidance"] = pkg.get("csvGuidance", [])
     ctx["evidenceList"] = pkg.get("evidenceList", [])
     ctx["traceabilityMatrix"] = pkg.get("traceabilityMatrix", [])

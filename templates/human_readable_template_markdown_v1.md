@@ -25,6 +25,63 @@
 
 ---
 
+# Validation Master Plan (VMP)
+
+| Topic | Details |
+|------|---------|
+| Scope | {{ VMP.scope if VMP.scope else "To be completed by site." }} |
+| Roles and responsibilities | {{ VMP.roles if VMP.roles else "Engineering, Validation, QA, Operations." }} |
+| Timeline | {{ VMP.timeline if VMP.timeline else "To be defined in project plan." }} |
+| Deliverables | {{ VMP.deliverables if VMP.deliverables else "VMP, URS, DQ, IQ/OQ/PQ protocols, reports, traceability matrix." }} |
+| Training plan | {{ VMP.trainingPlan if VMP.trainingPlan else "Training records required before protocol execution." }} |
+| Supplier evidence plan | {{ VMP.supplierEvidencePlan if VMP.supplierEvidencePlan else "Collect FAT/SAT, calibration, manuals, software baseline." }} |
+
+{% if VMP.generatedItems %}
+**Generated VMP focus items**
+{% for item in VMP.generatedItems %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+---
+
+# User Requirements Specification (URS)
+
+| Requirement area | Details |
+|------------------|---------|
+| Intended use | {{ URS.intendedUse if URS.intendedUse else "Define intended sterilization use and process context." }} |
+| Critical process parameters | {{ URS.criticalProcessParameters if URS.criticalProcessParameters else "Define temperature, pressure, dwell, load limits, and alarms." }} |
+| Environmental needs | {{ URS.environmentNeeds if URS.environmentNeeds else "Define utilities, cleanroom/environment constraints, and monitoring." }} |
+| Throughput rationale | {{ URS.throughputRationale if URS.throughputRationale else "Define throughput and cycle/day expectations." }} |
+| Acceptance criteria | {{ URS.acceptanceCriteria if URS.acceptanceCriteria else "Define measurable acceptance criteria for IQ/OQ/PQ." }} |
+
+{% if URS.generatedItems %}
+**Generated URS focus items**
+{% for item in URS.generatedItems %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+---
+
+# Design Qualification (DQ)
+
+| DQ element | Details |
+|------------|---------|
+| Design summary | {{ DQ.designSummary if DQ.designSummary else "Document chosen equipment design and key features." }} |
+| URS alignment | {{ DQ.ursAlignment if DQ.ursAlignment else "Document design-to-URS conformance prior to installation." }} |
+| Supplier/design evidence | {{ DQ.supplierAssessment if DQ.supplierAssessment else "Capture supplier docs, drawings, software baseline, FAT/SAT." }} |
+| Open items | {{ DQ.openItems if DQ.openItems else "Track residual design gaps and mitigation actions." }} |
+
+{% if DQ.generatedItems %}
+**Generated DQ focus items**
+{% for item in DQ.generatedItems %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+---
+
 # Risk / FMEA summary
 
 Concise risk overview. Hazard names and scores below; escalation noted when applied.
@@ -162,6 +219,14 @@ Test scripts below. Each test is listed once; group execution by procedure where
 
 # Computerized system verification guidance
 
+| Computerized system item | Value |
+|--------------------------|-------|
+| Computerized / software impacts quality | {% if computerizedValidation.computerized %}Yes{% else %}No{% endif %} |
+| Software classification | {{ computerizedValidation.softwareClassification if computerizedValidation.softwareClassification else "Not specified" }} |
+| Part 11 controls | {{ computerizedValidation.part11Controls if computerizedValidation.part11Controls else "Document audit trail, access control, and e-record controls as applicable." }} |
+| Data integrity controls | {{ computerizedValidation.dataIntegrityControls if computerizedValidation.dataIntegrityControls else "Document backup/restore, reconciliation, and review controls." }} |
+| Patch/configuration history | {{ computerizedValidation.patchConfigHistory if computerizedValidation.patchConfigHistory else "Maintain change history and validated-state assessment." }} |
+
 {% if csvGuidance %}
 {% for item in csvGuidance %}
 - {{ item }}
@@ -180,6 +245,35 @@ None applicable.
 {% endfor %}
 {% else %}
 None listed.
+{% endif %}
+
+---
+
+# Requalification plan
+
+| Item | Details |
+|------|---------|
+| Base frequency | {{ Requalification.frequency if Requalification.frequency else "Annual" }} |
+| Rationale | {{ Requalification.rationale if Requalification.rationale else "Risk and process criticality based." }} |
+
+| Trigger | Included |
+|---------|----------|
+{% if Requalification.triggers %}
+{% for trig in Requalification.triggers %}
+| {{ trig }} | Yes |
+{% endfor %}
+{% else %}
+| Relocation or move | Yes |
+| Major repair or maintenance affecting function | Yes |
+| Process parameter or load pattern change | Yes |
+| Out-of-tolerance/deviation event | Yes |
+{% endif %}
+
+{% if Requalification.generatedItems %}
+**Generated requalification focus items**
+{% for item in Requalification.generatedItems %}
+- {{ item }}
+{% endfor %}
 {% endif %}
 
 ---
