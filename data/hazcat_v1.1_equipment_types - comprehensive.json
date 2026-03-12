@@ -111,6 +111,206 @@
           },
           "ruleId": "R_STER_PV_002",
           "standards": ["ISO 11140-4", "ISO 17665", "21 CFR 820"]
+        },
+        {
+          "hazardId": "H_STER_PV_003",
+          "title": "Sensor drift or inaccurate temperature/pressure measurement",
+          "definition": "Calibration drift, sensor malfunction, or incorrect placement causes inaccurate cycle monitoring and potential under-processing.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Inaccurate monitoring leads to nonsterile product release.","example":"Sensor drift undetected; loads released without adequate sterilization."},
+            {"label":"Major","help":"Lot rejection or recall due to monitoring uncertainty.","example":"Multiple loads require reprocessing."},
+            {"label":"Moderate","help":"Rework or extended hold pending verification.","example":"Cycles held for manual verification."},
+            {"label":"Minor","help":"Minor delay; redundant sensors caught drift.","example":"Secondary sensor triggered investigation."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Drift within tolerance; no product at risk."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Sensor drift observed often.","example":"Calibration failures recurring."},
+            {"label":"Occasional","help":"Several times per year.","example":"Intermittent calibration excursions."},
+            {"label":"Remote","help":"Unlikely with calibrated sensors.","example":"NIST-traceable calibration program in place."},
+            {"label":"Extremely remote","help":"Very unlikely given redundancy.","example":"Multiple independent sensors and routine calibration."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All cycles affected until detected.","example":"Single-point monitoring with no redundancy."},
+            {"label":"Frequent","help":"Most cycles potentially affected.","example":"Calibration intervals too long."},
+            {"label":"Intermittent","help":"Some sensors or cycles affected.","example":"Periodic calibration catches drift."},
+            {"label":"Rare","help":"Exceptional cases only.","example":"Redundant sensors and short calibration intervals."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Calibration and verification detect drift promptly.","example":"Routine calibration and cycle-to-cycle trending."},
+            {"label":"Moderate detectability","help":"Periodic calibration detects drift.","example":"Annual or semi-annual calibration."},
+            {"label":"Low detectability","help":"May go undetected until failure.","example":"No routine calibration or trending."},
+            {"label":"None","help":"No detection mechanism.","example":"Uncalibrated sensors used for release."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"NIST-traceable calibration and preventive maintenance minimize risk.","example":"Calibrated sensors, documented PM, redundant verification."},
+            {"label":"Effective","help":"Controls reduce risk.","example":"Calibration schedule and periodic verification."},
+            {"label":"Partially effective","help":"Controls inconsistent.","example":"Manual calibration; gaps in documentation."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No calibration or sensor verification."}
+          ],
+          "contextualTags": [
+            "Calibration schedule documented",
+            "NIST traceable",
+            "Redundant sensors"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_PV_003",
+          "standards": ["ISO 17665", "21 CFR 820.72", "ISO 13485"]
+        },
+        {
+          "hazardId": "H_STER_PV_004",
+          "title": "Residual moisture or condensate on product",
+          "definition": "Inadequate drying or condensate carryover leaves moisture on sterilized product, compromising packaging integrity or microbial ingress.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Wet product released; packaging breach; patient harm.","example":"Implantable device in wet pouch; contamination."},
+            {"label":"Major","help":"Lot rejection or packaging failure.","example":"Moisture detected in release inspection."},
+            {"label":"Moderate","help":"Rework or extended drying required.","example":"Loads reprocessed for drying."},
+            {"label":"Minor","help":"Minor delay; drying cycle extended.","example":"Single load held for re-dry."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Drying adequate; no product impact."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Residual moisture observed often.","example":"Inadequate dry time for load type."},
+            {"label":"Occasional","help":"Several times per year.","example":"Load-configuration-dependent moisture."},
+            {"label":"Remote","help":"Unlikely with validated drying.","example":"Validated dry phase for worst-case loads."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Automated drying with moisture sensors."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All loads at risk.","example":"Drying cycle not validated."},
+            {"label":"Frequent","help":"Most loads affected.","example":"Dense or porous loads trap moisture."},
+            {"label":"Intermittent","help":"Some load types affected.","example":"Specific packaging configurations."},
+            {"label":"Rare","help":"Exceptional loads only.","example":"Validated drying for all load types."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Visual or moisture checks detect residual.","example":"Per-load visual inspection; moisture strips."},
+            {"label":"Moderate detectability","help":"Periodic inspection catches issues.","example":"Sampling for moisture."},
+            {"label":"Low detectability","help":"May go undetected.","example":"No routine moisture verification."},
+            {"label":"None","help":"No detection mechanism.","example":"No inspection for residual moisture."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Validated dry phase and inspection reduce risk.","example":"Validated drying; visual inspection per load."},
+            {"label":"Effective","help":"Controls reduce risk.","example":"Drying cycle and periodic verification."},
+            {"label":"Partially effective","help":"Controls inconsistent.","example":"Manual drying; variable load configurations."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No drying validation or moisture checks."}
+          ],
+          "contextualTags": [
+            "Load type porous",
+            "Load density high",
+            "Drying cycle validated"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Moderate",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Intermittent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_STER_PV_004",
+          "standards": ["ISO 17665", "ISO 11607", "21 CFR 820"]
+        },
+        {
+          "hazardId": "H_STER_PV_005",
+          "title": "Operator burn or steam release injury",
+          "definition": "Personnel exposed to steam, hot surfaces, or pressure release during cycle operation, loading, or maintenance.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Severe burn or fatality.","example":"Steam release during door opening."},
+            {"label":"Major","help":"Serious injury requiring medical attention.","example":"Second-degree burn from hot surface."},
+            {"label":"Moderate","help":"Minor burn or injury.","example":"First-degree burn; lost-time incident."},
+            {"label":"Minor","help":"Near-miss or minor discomfort.","example":"Hot surface contact; no injury."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"Adequate PPE and interlocks."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Exposure risk high.","example":"Frequent door-open during cycle."},
+            {"label":"Occasional","help":"Several times per year.","example":"Bypass of interlocks or improper procedure."},
+            {"label":"Remote","help":"Unlikely with safety controls.","example":"Interlocks and PPE in place."},
+            {"label":"Extremely remote","help":"Very unlikely given controls.","example":"Door interlocks, pressure relief, documented SOPs."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"Operators exposed every cycle.","example":"Manual door operation without interlocks."},
+            {"label":"Frequent","help":"Exposure during most operations.","example":"High throughput; frequent loading."},
+            {"label":"Intermittent","help":"Maintenance or occasional exposure.","example":"Maintenance access only."},
+            {"label":"Rare","help":"Exceptional circumstances.","example":"Interlocked door; cycle completion required."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Near-miss reporting and safety audits.","example":"Near-miss program; safety reviews."},
+            {"label":"Moderate detectability","help":"Incident reporting.","example":"Reported injuries only."},
+            {"label":"Low detectability","help":"Incidents underreported.","example":"No formal reporting."},
+            {"label":"None","help":"No detection mechanism.","example":"No safety program."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Interlocks, PPE, and training minimize risk.","example":"Door interlocks, pressure relief, PPE, training."},
+            {"label":"Effective","help":"Controls reduce risk.","example":"Interlocks and SOPs in place."},
+            {"label":"Partially effective","help":"Controls inconsistent.","example":"Some interlocks; variable training."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No interlocks; no PPE requirement."}
+          ],
+          "contextualTags": [
+            "Door interlocks",
+            "Pressure relief",
+            "PPE documented"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Very effective"
+          },
+          "ruleId": "R_STER_PV_005",
+          "standards": ["ISO 17665", "21 CFR 820.30", "ISO 13485", "OSHA"]
+        },
+        {
+          "hazardId": "H_DATA_001",
+          "title": "Data integrity failure for HMI/cycle records",
+          "definition": "Cycle data export, printout, or electronic records are incorrect, altered, or lost; used for release decisions per 21 CFR Part 11 and FDA expectations.",
+          "severityOptions": [
+            {"label":"Catastrophic","help":"Incorrect data leads to nonsterile release or regulatory finding.","example":"Tampered cycle records; product released without verification."},
+            {"label":"Major","help":"Recall or regulatory finding.","example":"Data integrity audit failure."},
+            {"label":"Moderate","help":"Rework, hold, or remediation.","example":"Records cannot support release; investigation required."},
+            {"label":"Minor","help":"Minor documentation gap.","example":"Backup recovery required."},
+            {"label":"Negligible","help":"No meaningful impact.","example":"HMI not used for release."}
+          ],
+          "probabilityOptions": [
+            {"label":"Frequent","help":"Data issues occur often.","example":"Export failures; tampering possible."},
+            {"label":"Occasional","help":"Several times per year.","example":"Intermittent export or backup failures."},
+            {"label":"Remote","help":"Unlikely with Part 11 controls.","example":"Audit trail, access control, backup in place."},
+            {"label":"Extremely remote","help":"Very unlikely given CSV validation.","example":"Full CSV validation; checksums; backup verified."}
+          ],
+          "exposureOptions": [
+            {"label":"Continuous","help":"All release decisions rely on HMI data.","example":"HMI used for every release."},
+            {"label":"Frequent","help":"Most releases rely on HMI.","example":"Primary release data from HMI."},
+            {"label":"Intermittent","help":"Some releases from HMI.","example":"Secondary verification from HMI."},
+            {"label":"Rare","help":"HMI not used for release.","example":"Release from paper or other system."}
+          ],
+          "detectabilityOptions": [
+            {"label":"High detectability","help":"Audit trail and checksums detect tampering.","example":"Electronic audit trail; export integrity checks."},
+            {"label":"Moderate detectability","help":"Periodic reconciliation detects issues.","example":"Printout vs export comparison."},
+            {"label":"Low detectability","help":"May go undetected.","example":"No reconciliation or tamper checks."},
+            {"label":"None","help":"No detection mechanism.","example":"No audit trail; manual records only."}
+          ],
+          "controlEffectivenessOptions": [
+            {"label":"Very effective","help":"Part 11 controls and CSV validation.","example":"Access control, audit trail, backup/restore verified."},
+            {"label":"Effective","help":"Controls reduce risk.","example":"User roles; periodic backup."},
+            {"label":"Partially effective","help":"Controls inconsistent.","example":"Manual backup; no formal CSV."},
+            {"label":"Ineffective","help":"No effective controls.","example":"No access control; no backup."}
+          ],
+          "contextualTags": [
+            "HMI used for release",
+            "Export/printout",
+            "21 CFR Part 11"
+          ],
+          "quickDefaults": {
+            "defaultSeverity": "Major",
+            "defaultProbability": "Remote",
+            "defaultExposure": "Frequent",
+            "defaultDetectability": "Moderate detectability",
+            "defaultControlEffectiveness": "Effective"
+          },
+          "ruleId": "R_DATA_001",
+          "standards": ["21 CFR Part 11", "21 CFR 820", "ISO 13485", "GAMP 5"]
         }
       ]
     },

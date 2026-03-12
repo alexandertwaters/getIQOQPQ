@@ -77,20 +77,20 @@
   "productionThroughput": [
     {
       "value": "Low",
-      "label": "Low",
-      "help": "Infrequent use; few runs per week or month. Risk-based qualification may emphasize initial validation with reduced revalidation frequency.",
+      "label": "Low (<10 cycles/day)",
+      "help": "Infrequent use; few cycles per week or month. Example: 1–2 loads/day for sterilization support. Risk-based qualification may emphasize initial validation with reduced requalification frequency. Per 21 CFR 820.70 and ISO 14971.",
       "typicalUse": "Pilot lines, R&D, low-volume products"
     },
     {
       "value": "Medium",
-      "label": "Medium",
-      "help": "Regular use; multiple runs per week. Standard qualification depth and revalidation intervals apply per 21 CFR 820.75 and ISO 13485.",
+      "label": "Medium (10–100 cycles/day)",
+      "help": "Regular use; multiple cycles per week. Standard qualification depth and requalification intervals apply per 21 CFR 820.75 and ISO 13485.",
       "typicalUse": "Standard production lines"
     },
     {
       "value": "High",
-      "label": "High",
-      "help": "High-frequency or continuous use; daily or multi-shift operation. May require enhanced monitoring, SPC, and shorter revalidation intervals.",
+      "label": "High (>100 cycles/day)",
+      "help": "High-frequency or continuous use; daily or multi-shift operation. May require enhanced monitoring, SPC, and shorter requalification intervals.",
       "typicalUse": "High-volume production, continuous processes"
     }
   ]

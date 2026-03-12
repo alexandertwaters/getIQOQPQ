@@ -26,6 +26,15 @@
 
 ---
 
+## Risk / FMEA summary
+
+| Hazard | Severity | Prob. | Raw | Adj | Residual | Escalated | Escalation |
+|--------|----------|-------|-----|-----|----------|-----------|------------|
+{% for h in hazards %}| {{ h.hazardId }} | {{ h.Severity_label }} | {{ h.ProbabilityOfOccurrence_label }} | {{ h.RawRisk }} | {{ h.AdjustedRisk }} | {{ h.ResidualRisk }} | {% if h.EscalatedResidualRiskForMapping %}{{ h.EscalatedResidualRiskForMapping }}{% else %}—{% endif %} | {% if h.escalationReason %}{{ h.escalationReason }}{% else %}—{% endif %} |
+{% endfor %}
+
+---
+
 ## Impact assessment (per hazard)
 
 {% for h in hazards %}
@@ -118,7 +127,18 @@
 
 ## Installation Qualification (IQ) — Checklist
 
-{% if IQ.checklist %}
+{% if IQ.evidenceNamingConvention %}
+**Evidence naming convention**: `{{ IQ.evidenceNamingConvention }}`  
+{% if IQ.evidenceNamingHelp %}{{ IQ.evidenceNamingHelp }}{% endif %}
+{% endif %}
+
+{% if IQ.checklistItems %}
+| ItemID | Category | Description | Expected | Measured | EvidenceFileName | Result | Owner | SignoffDate |
+|--------|----------|-------------|----------|----------|------------------|--------|-------|-------------|
+{% for it in IQ.checklistItems %}
+| {{ it.itemId }} | {{ it.category }} | {{ it.description }} | {{ it.expected }} | | {{ it.evidenceFileName }} | | | |
+{% endfor %}
+{% elif IQ.checklist %}
 {% for item in IQ.checklist %}
 - [ ] {{ item }}
 {% endfor %}
@@ -161,6 +181,39 @@ No OQ tests generated.
 **Biological indicator placement**: {{ PQ.biologicalIndicatorPlacement }}
 
 **Acceptance criteria**: {{ PQ.acceptanceCriteria }}
+
+{% if PQ.biologicalIndicatorPlacement and equipment.equipmentTypeId in ['STER_PV_AUT', 'STER_GRAV_AUT'] %}
+#### BI placement matrix (template)
+
+| Cycle | BI_ID | Location | Placement description | Incubation result | Date |
+|-------|-------|----------|------------------------|-------------------|------|
+| 1 | 1 | | | | |
+| 1 | 2 | | | | |
+| 1 | 3 | | | | |
+| 1 | 4 | | | | |
+| 1 | 5 | | | | |
+| 1 | 6 | | | | |
+| 1 | 7 | | | | |
+| 1 | 8 | | | | |
+| 1 | 9 | | | | |
+| 1 | 10 | | | | |
+| 1 | 11 | | | | |
+| 1 | 12 | | | | |
+| 2 | 1–12 | (repeat per cycle) | | | |
+| 3 | 1–12 | (repeat per cycle) | | | |
+{% endif %}
+
+---
+
+## Traceability matrix
+
+| Hazard | Test type | Test ID | ruleId |
+|--------|-----------|---------|--------|
+{% for row in traceabilityMatrix %}| {{ row.hazardId }} | {{ row.testType }} | {{ row.testId }} | {{ row.ruleId }} |
+{% endfor %}
+{% if not traceabilityMatrix %}
+No traceability data.
+{% endif %}
 
 ---
 

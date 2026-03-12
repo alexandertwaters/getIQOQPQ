@@ -7,6 +7,7 @@
       "id": "UTV-001-STER-PV-BASIC",
       "input": {
         "equipmentId": "E-STER-PV-001",
+        "equipmentTypeId": "STER_PV_AUT",
         "cohort": "Sterilization",
         "type": "Pre-Vacuum Steam Sterilizer",
         "siteContext": {"cleanroomClass": "ISO 7", "utilities": ["Steam","Electricity"], "productContact": true, "productionThroughput": "Medium"},

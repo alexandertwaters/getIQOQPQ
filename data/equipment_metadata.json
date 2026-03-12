@@ -30,14 +30,16 @@
       "cohort": "Sterilization",
       "defaultUtilities": ["Steam","Vacuum","Electricity","Compressed Air"],
       "utilityDescriptors": {
-        "Steam": "Primary sterilant; requires steam quality and condensate control.",
-        "Vacuum": "Pre-vacuum pump and leak testing required for air removal.",
+        "Steam": "Primary sterilant; requires steam quality and condensate control per ISO 17665.",
+        "Vacuum": "Pre-vacuum pump and leak testing required for air removal per ISO 11140-4.",
         "Electricity": "Power for controls, heaters, and pumps; consider UPS for critical cycles.",
-        "Compressed Air": "Actuation and pneumatic valves; instrument-quality air recommended."
+        "Compressed Air": "Actuation and pneumatic valves; instrument-quality air recommended.",
+        "Instrument Air": "Optional: clean, dry air for pneumatic instruments per supplier spec.",
+        "Cooling Water": "Optional: cooling for water-ring vacuum pump where applicable per supplier spec."
       },
       "typicalCleanroomClass": "ISO 7",
       "productContactLikelihood": "High",
-      "notes": "Requires Bowie-Dick, thermocouple mapping, BI program; WFI only if integrated aeration sampling is present."
+      "notes": "Requires Bowie-Dick, thermocouple mapping, BI program per FDA and ISO 17665. IQ documents steam pressure/flow, vacuum capacity, electrical supply, drain system per 21 CFR 820.70."
     },
     {
       "equipmentTypeId": "STER_GRAV_AUT",

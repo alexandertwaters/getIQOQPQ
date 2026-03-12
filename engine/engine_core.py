@@ -121,8 +121,8 @@ def run_vector(vector):
     pkg["fingerprint"] = fingerprint
 
     apply_iqoqpq_mapping(pkg)
-    pkg["csvGuidance"] = []
-    pkg["evidenceList"] = []
+    pkg.setdefault("csvGuidance", [])
+    pkg.setdefault("evidenceList", [])
     pkg["traceability"] = {"hazardRules": [h.get("ruleId","") for h in pkg["hazards"]]}
 
     band = pkg.get("qualificationBand", "Basic")

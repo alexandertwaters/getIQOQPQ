@@ -23,6 +23,18 @@
               "label": "Integrated software",
               "help": "Equipment has built-in or integrated software for cycle control, data logging, or reporting.",
               "valueType": "boolean"
+            },
+            {
+              "controlId": "CTRL_STER_PV_002b",
+              "label": "HMI used for release decisions",
+              "help": "Cycle data from HMI export or printout used for product release. Triggers CSV scope per 21 CFR Part 11.",
+              "valueType": "boolean"
+            },
+            {
+              "controlId": "CTRL_STER_PV_002c",
+              "label": "HMI exports cycle data",
+              "help": "HMI exports cycle data to file (CSV) or provides printouts. Qualification-relevant for data integrity.",
+              "valueType": "boolean"
             }
           ]
         },

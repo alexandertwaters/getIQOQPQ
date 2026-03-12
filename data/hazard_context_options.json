@@ -14,7 +14,7 @@
             {
               "contextId": "load_type",
               "label": "Load types run",
-              "help": "Product and packaging configurations that affect steam penetration.",
+              "help": "Product and packaging configurations that affect steam penetration. Per ISO 17665 and FDA guidance.",
               "valueType": "multiSelect",
               "options": [
                 {"value": "pouches", "label": "Pouches", "help": "Peel pouches or flexible pouches."},
@@ -45,6 +45,24 @@
                 {"value": "medium", "label": "Medium", "help": "Standard loading."},
                 {"value": "high", "label": "High", "help": "Dense loading; higher cold-spot risk."}
               ]
+            },
+            {
+              "contextId": "thermocouple_mapping_available",
+              "label": "Thermocouple mapping available",
+              "help": "Mapping performed for cold-spot identification. Qualification-relevant per ISO 17665.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "bi_program",
+              "label": "Biological indicator program",
+              "help": "BI placement and readout per ISO 11138. Qualification-relevant.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "fat_sat_available",
+              "label": "FAT/SAT available",
+              "help": "Factory and site acceptance testing reports available. Reduces installation risk.",
+              "valueType": "boolean"
             }
           ]
         },
@@ -55,13 +73,96 @@
             {
               "contextId": "load_type",
               "label": "Load types (air removal sensitivity)",
-              "help": "Load types that affect air removal.",
+              "help": "Load types that affect air removal per ISO 11140-4.",
               "valueType": "multiSelect",
               "options": [
                 {"value": "porous", "label": "Porous loads", "help": "Higher air removal challenge."},
                 {"value": "lumened", "label": "Lumened devices", "help": "Long lumens challenge air removal."},
                 {"value": "solid", "label": "Solid loads", "help": "Lower air removal challenge."}
               ]
+            },
+            {
+              "contextId": "bowie_dick_testing",
+              "label": "Bowie-Dick / air removal testing",
+              "help": "Routine Bowie-Dick or equivalent per ISO 11140-4. Qualification-relevant.",
+              "valueType": "boolean"
+            }
+          ]
+        },
+        {
+          "hazardId": "H_STER_PV_003",
+          "title": "Sensor drift or inaccurate temperature/pressure measurement",
+          "contextOptions": [
+            {
+              "contextId": "calibration_schedule",
+              "label": "Calibration schedule documented",
+              "help": "NIST-traceable calibration per 21 CFR 820.72. Qualification-relevant.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "redundant_sensors",
+              "label": "Redundant sensors",
+              "help": "Multiple independent sensors for critical parameters.",
+              "valueType": "boolean"
+            }
+          ]
+        },
+        {
+          "hazardId": "H_STER_PV_004",
+          "title": "Residual moisture or condensate on product",
+          "contextOptions": [
+            {
+              "contextId": "load_type",
+              "label": "Load types (moisture retention)",
+              "help": "Load types that trap moisture.",
+              "valueType": "multiSelect",
+              "options": [
+                {"value": "porous", "label": "Porous loads", "help": "Porous items retain moisture."},
+                {"value": "lumened", "label": "Lumened devices", "help": "Lumens trap condensate."},
+                {"value": "solid", "label": "Solid loads", "help": "Lower moisture retention risk."}
+              ]
+            },
+            {
+              "contextId": "drying_cycle_validated",
+              "label": "Drying cycle validated",
+              "help": "Post-sterilization dry phase validated for worst-case loads.",
+              "valueType": "boolean"
+            }
+          ]
+        },
+        {
+          "hazardId": "H_STER_PV_005",
+          "title": "Operator burn or steam release injury",
+          "contextOptions": [
+            {
+              "contextId": "door_interlocks",
+              "label": "Door interlocks present",
+              "help": "Interlocks prevent door opening during cycle.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "ppe_documented",
+              "label": "PPE requirements documented",
+              "help": "Documented PPE (e.g., heat-resistant gloves) for loading/unloading.",
+              "valueType": "boolean"
+            }
+          ]
+        },
+        {
+          "hazardId": "H_DATA_001",
+          "title": "Data integrity failure for HMI/cycle records",
+          "contextOptions": [
+            {
+              "contextId": "hmi_used_for_release",
+              "label": "HMI used for release decisions",
+              "help": "Cycle data from HMI/export used for product release. Triggers CSV scope per 21 CFR Part 11.",
+              "valueType": "boolean"
+            },
+            {
+              "contextId": "hmi_exports_data",
+              "label": "HMI exports cycle data",
+              "help": "HMI exports cycle data to file or printout.",
+              "valueType": "boolean"
             }
           ]
         }

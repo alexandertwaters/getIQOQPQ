@@ -1,0 +1,56 @@
+{
+  "version": "iq_checklists_v1",
+  "generatedAt": "2026-03-11T12:00:00Z",
+  "description": "Equipment-type-specific IQ checklists for qualification-relevant verification. Per ISO 17665, 21 CFR 820.70, FDA IQ guidance. ItemIDs are illustrative; engine may map to ruleset IDs.",
+  "equipmentTypes": [
+    {
+      "equipmentTypeId": "STER_PV_AUT",
+      "equipmentType": "Pre-Vacuum Steam Sterilizer",
+      "cohort": "Sterilization",
+      "standards": ["ISO 17665", "ISO 11140-4", "21 CFR 820"],
+      "evidenceNamingConvention": "SITE_EQUIPID_TESTID_YYYYMMDD_HHMM.ext",
+      "evidenceNamingHelp": "Example: SITE_STERILIZER01_IQ_MECH01_20260309_1430.pdf",
+      "categories": [
+        {"categoryId": "mechanical", "label": "Mechanical", "order": 1},
+        {"categoryId": "utilities", "label": "Utilities", "order": 2},
+        {"categoryId": "sensors", "label": "Sensors", "order": 3},
+        {"categoryId": "safety", "label": "Safety", "order": 4},
+        {"categoryId": "hmi", "label": "HMI & Data", "order": 5},
+        {"categoryId": "documentation", "label": "Documentation", "order": 6},
+        {"categoryId": "site", "label": "Site & Environment", "order": 7},
+        {"categoryId": "calibration", "label": "Calibration & Tools", "order": 8},
+        {"categoryId": "training", "label": "Training & Traceability", "order": 9},
+        {"categoryId": "review", "label": "Review", "order": 10}
+      ],
+      "items": [
+        {"itemId": "IQ_MECH_01", "categoryId": "mechanical", "description": "Equipment received per specification; no damage", "expected": "Equipment matches PO/specification; no shipping damage; serial number recorded", "evidenceFileName": "IQ_MECH01"},
+        {"itemId": "IQ_MECH_02", "categoryId": "mechanical", "description": "Equipment installed per supplier DQ; correct orientation", "expected": "Installation per manufacturer instructions; leveling and seismic anchoring per spec; chamber orientation correct", "evidenceFileName": "IQ_MECH02"},
+        {"itemId": "IQ_UTIL_01", "categoryId": "utilities", "description": "Steam supply verified", "expected": "Steam pressure, purity, dryness per supplier spec; condensate traps verified; pipe sizing and insulation documented", "evidenceFileName": "IQ_UTIL01"},
+        {"itemId": "IQ_UTIL_02", "categoryId": "utilities", "description": "Vacuum source verified", "expected": "Vacuum pump capacity and leak rate per spec; water-ring pump cooling (if applicable)", "evidenceFileName": "IQ_UTIL02"},
+        {"itemId": "IQ_UTIL_03", "categoryId": "utilities", "description": "Electrical supply verified", "expected": "Voltage, amperage, phase per spec; grounding verified; UPS/backup if critical cycles", "evidenceFileName": "IQ_UTIL03"},
+        {"itemId": "IQ_UTIL_04", "categoryId": "utilities", "description": "Instrument/compressed air (if applicable)", "expected": "Pressure and quality per spec; dryer/filter verified where used", "evidenceFileName": "IQ_UTIL04"},
+        {"itemId": "IQ_UTIL_05", "categoryId": "utilities", "description": "Cooling water (if applicable)", "expected": "Flow, temperature, quality per supplier spec", "evidenceFileName": "IQ_UTIL05"},
+        {"itemId": "IQ_UTIL_06", "categoryId": "utilities", "description": "Drain system verified", "expected": "Drain capacity, temperature tolerance, routing per spec", "evidenceFileName": "IQ_UTIL06"},
+        {"itemId": "IQ_SENS_01", "categoryId": "sensors", "description": "Temperature sensors verified", "expected": "Sensor specs per drawings; placement verified; NIST-traceable calibration certs available", "evidenceFileName": "IQ_SENS01"},
+        {"itemId": "IQ_SENS_02", "categoryId": "sensors", "description": "Pressure sensors verified", "expected": "Pressure sensor specs per drawings; calibration certs available", "evidenceFileName": "IQ_SENS02"},
+        {"itemId": "IQ_SENS_03", "categoryId": "sensors", "description": "Vacuum sensors verified", "expected": "Vacuum gauge specs and calibration per supplier", "evidenceFileName": "IQ_SENS03"},
+        {"itemId": "IQ_SAF_01", "categoryId": "safety", "description": "Door interlocks verified", "expected": "Door cannot open during cycle; interlock bypass procedure documented", "evidenceFileName": "IQ_SAF01"},
+        {"itemId": "IQ_SAF_02", "categoryId": "safety", "description": "Pressure relief and alarms verified", "expected": "Pressure relief valve present; over-temperature and over-pressure alarms functional", "evidenceFileName": "IQ_SAF02"},
+        {"itemId": "IQ_SAF_03", "categoryId": "safety", "description": "Emergency stop verified", "expected": "Emergency stop functional per manufacturer", "evidenceFileName": "IQ_SAF03"},
+        {"itemId": "IQ_HMI_01", "categoryId": "hmi", "description": "HMI displays verified", "expected": "HMI screens per spec; cycle parameters visible; alarm display functional", "evidenceFileName": "IQ_HMI01"},
+        {"itemId": "IQ_HMI_02", "categoryId": "hmi", "description": "Cycle selection and programs", "expected": "All cycle programs available per spec; program selection verified", "evidenceFileName": "IQ_HMI02"},
+        {"itemId": "IQ_HMI_03", "categoryId": "hmi", "description": "Data logging and export", "expected": "Data logging capability; export to file and/or printout functional; audit trail enabled if Part 11", "evidenceFileName": "IQ_HMI03"},
+        {"itemId": "IQ_HMI_04", "categoryId": "hmi", "description": "Audit trail (if HMI used for release)", "expected": "Audit trail enabled; tamper-evident per 21 CFR Part 11", "evidenceFileName": "IQ_HMI04", "conditional": "hmiUsedForRelease"},
+        {"itemId": "IQ_HMI_05", "categoryId": "hmi", "description": "Backup and restore (if HMI used for release)", "expected": "Backup/restore procedure documented; tested per CSV", "evidenceFileName": "IQ_HMI05", "conditional": "hmiUsedForRelease"},
+        {"itemId": "IQ_DOC_01", "categoryId": "documentation", "description": "Manuals, drawings, calibration certs", "expected": "Supplier manuals, P&IDs, electrical drawings; calibration certs for critical sensors", "evidenceFileName": "IQ_DOC01"},
+        {"itemId": "IQ_DOC_02", "categoryId": "documentation", "description": "SOPs and calibration schedule", "expected": "SOPs drafted for operation, loading, Bowie-Dick, BI; calibration schedule established", "evidenceFileName": "IQ_DOC02"},
+        {"itemId": "IQ_SITE_01", "categoryId": "site", "description": "Spare parts list", "expected": "Critical spare parts identified; list documented", "evidenceFileName": "IQ_SITE01"},
+        {"itemId": "IQ_SITE_02", "categoryId": "site", "description": "Room conditions", "expected": "Adequate clearance, ventilation; utilities connections labeled and traceable", "evidenceFileName": "IQ_SITE02"},
+        {"itemId": "IQ_CAL_01", "categoryId": "calibration", "description": "Thermocouples and gauges calibrated", "expected": "NIST-traceable calibration for TCs, pressure gauges used in qualification; within cal", "evidenceFileName": "IQ_CAL01"},
+        {"itemId": "IQ_TRAIN_01", "categoryId": "training", "description": "Operator training", "expected": "Operators trained on SOPs; training records on file", "evidenceFileName": "IQ_TRAIN01"},
+        {"itemId": "IQ_TRACE_01", "categoryId": "training", "description": "Equipment traceability", "expected": "Equipment ID, serial, location traceable to asset registry", "evidenceFileName": "IQ_TRACE01"},
+        {"itemId": "IQ_REV_01", "categoryId": "review", "description": "FAT/SAT and supplier communications", "expected": "FAT/SAT reports reviewed; deviations closed; supplier escalation path documented", "evidenceFileName": "IQ_REV01"}
+      ]
+    }
+  ]
+}

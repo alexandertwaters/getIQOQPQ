@@ -465,6 +465,77 @@
     },
     {
       "match": {
+        "testId": "CSV export integrity"
+      },
+      "human": {
+        "title": "CSV/export integrity verification",
+        "objective": "Verify that cycle data exported from HMI is complete, unaltered, and readable; checksums or hash verification where applicable.",
+        "setup": "Access to HMI export function; SHA256 or equivalent checksum tool if applicable; test cycle data.",
+        "steps": [
+          "Export cycle data from HMI to file (CSV or equivalent) per procedure.",
+          "Verify file is readable and contains expected fields (cycle ID, temperature, pressure, time, etc.).",
+          "If applicable, compute checksum (e.g., SHA256) and document for tamper verification."
+        ],
+        "dataToRecord": "Export file, checksum if performed, field verification checklist.",
+        "acceptanceCriteria": "Export completes successfully; file structure and content match expected format; checksum documented."
+      }
+    },
+    {
+      "match": {
+        "testId": "printout vs export"
+      },
+      "human": {
+        "title": "Printout versus export data match",
+        "objective": "Verify that printed cycle data matches exported electronic data; no transcription or truncation errors.",
+        "setup": "Run representative cycle; obtain both printed output and electronic export.",
+        "steps": [
+          "Run sterilization cycle and collect printed cycle record.",
+          "Export cycle data to file per procedure.",
+          "Compare printed record to exported data for key parameters (cycle ID, temperatures, times, pass/fail).",
+          "Document any discrepancies."
+        ],
+        "dataToRecord": "Printed record scan, export file, comparison checklist, discrepancy log.",
+        "acceptanceCriteria": "Printed record and export match for all critical parameters; no unauthorized differences."
+      }
+    },
+    {
+      "match": {
+        "testId": "CSV backup restore"
+      },
+      "human": {
+        "title": "Backup and restore verification",
+        "objective": "Verify that cycle data can be backed up and restored without loss or alteration.",
+        "setup": "Backup/restore procedure; test dataset; backup media.",
+        "steps": [
+          "Execute backup procedure per documented SOP.",
+          "Perform controlled restore to test environment.",
+          "Compare restored data to original for integrity and completeness.",
+          "Document backup/restore logs and verification results."
+        ],
+        "dataToRecord": "Backup logs, restore logs, data comparison results.",
+        "acceptanceCriteria": "Backup completes successfully; restored data matches original; procedure documented and repeatable."
+      }
+    },
+    {
+      "match": {
+        "testId": "HMI functions and data export"
+      },
+      "human": {
+        "title": "HMI functions and cycle data export verification",
+        "objective": "Verify HMI cycle run, display, and data export functions operate correctly.",
+        "setup": "Access to HMI; ability to run non-product cycle; export and printout capability.",
+        "steps": [
+          "Run representative cycle and verify HMI displays cycle parameters in real time.",
+          "Verify cycle completion and pass/fail status display.",
+          "Export cycle data to file and verify export completes.",
+          "Obtain printout and verify content matches display."
+        ],
+        "dataToRecord": "Cycle log, export file, printout, verification checklist.",
+        "acceptanceCriteria": "HMI displays cycle correctly; export and printout produce accurate, complete records."
+      }
+    },
+    {
+      "match": {
         "testId": "audit trail integrity test"
       },
       "human": {

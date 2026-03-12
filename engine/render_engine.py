@@ -169,9 +169,16 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "PQ_tests": expanded["PQ_tests"],
             "hazardContext": h.get("hazardContext", {}),
             "qualificationDepthEscalation": h.get("qualificationDepthEscalation", False),
+            "escalationReason": h.get("escalationReason", ""),
         })
     ctx["hazards"] = hazards_ctx
-    ctx["IQ"] = {"checklist": pkg.get("IQ", {}).get("checklist", [])}
+    iq = pkg.get("IQ", {})
+    ctx["IQ"] = {
+        "checklist": iq.get("checklist", []),
+        "checklistItems": iq.get("checklistItems", []),
+        "evidenceNamingConvention": iq.get("evidenceNamingConvention", ""),
+        "evidenceNamingHelp": iq.get("evidenceNamingHelp", ""),
+    }
     oq_tests = []
     for h in sorted(hazards_ctx, key=lambda x: x["hazardId"]):
         for t in h["OQ_tests"]:
@@ -180,6 +187,7 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     ctx["PQ"] = pkg.get("PQ", {})
     ctx["csvGuidance"] = pkg.get("csvGuidance", [])
     ctx["evidenceList"] = pkg.get("evidenceList", [])
+    ctx["traceabilityMatrix"] = pkg.get("traceabilityMatrix", [])
     ctx["executedRuleIds_comma"] = ", ".join([r for r in pkg.get("traceability", {}).get("hazardRules", []) if r])
 
     template = Template(template_md)
@@ -197,6 +205,41 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
         if "," in s or '"' in s or "\n" in s:
             return '"' + s.replace('"', '""') + '"'
         return s
+
+    # IQ checklist CSV (structured items when present)
+    iq_items = pkg.get("IQ", {}).get("checklistItems", [])
+    if iq_items:
+        iq_csv_path = os.path.join(outdir, f"{safe_fp}.IQ_checklist.csv")
+        with open(iq_csv_path, 'w', encoding='utf8', newline='') as iqf:
+            iqf.write("ItemID,Category,Description,Expected,Measured,EvidenceFileName,Result,Owner,SignoffDate\n")
+            for it in iq_items:
+                row = [
+                    it.get("itemId", ""),
+                    it.get("category", ""),
+                    it.get("description", ""),
+                    it.get("expected", ""),
+                    "",
+                    it.get("evidenceFileName", ""),
+                    "",
+                    "",
+                    "",
+                ]
+                iqf.write(",".join(_csv_escape(x) for x in row) + "\n")
+        print("IQ checklist CSV written to", iq_csv_path)
+
+    # PQ worksheet CSV (BI placement template for sterilizers)
+    pq = pkg.get("PQ", {})
+    eq_id = pkg.get("equipment", {}).get("equipmentTypeId", "")
+    if eq_id in ("STER_PV_AUT", "STER_GRAV_AUT") and pq.get("biologicalIndicatorPlacement"):
+        pq_csv_path = os.path.join(outdir, f"{safe_fp}.PQ_worksheet.csv")
+        with open(pq_csv_path, 'w', encoding='utf8', newline='') as pqf:
+            pqf.write("Cycle,BI_ID,Location,Placement_Description,Incubation_Result,Incubation_Date,Reviewed\n")
+            for cyc in range(1, 4):
+                for bi in range(1, 13):
+                    pqf.write(f"{cyc},{bi},,,,,\n")
+            pqf.write("\nBI Incubation Log:\n")
+            pqf.write("BI_ID,Cycle_Date,Incubation_Start,Incubation_End,Result,Reviewer\n")
+        print("PQ worksheet CSV written to", pq_csv_path)
 
     csv_path = os.path.join(outdir, f"{safe_fp}.perHazard.csv")
     with open(csv_path, 'w', encoding='utf8', newline='') as cf:

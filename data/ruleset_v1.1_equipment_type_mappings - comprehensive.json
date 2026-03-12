@@ -67,6 +67,27 @@
       "trigger": "after R_SCORE_ISO14971_V1_1",
       "logic": [
         {
+          "if": "hazard.ruleId startsWith 'R_DATA_001' and qualificationBand in ['Targeted','Full']",
+          "then": {
+            "IQ": [
+              {"id":"IQ_HMI_01","title":"HMI data logging and export verification","params":{}},
+              {"id":"IQ_HMI_02","title":"Audit trail enabled and tamper-evident","params":{}},
+              {"id":"IQ_HMI_03","title":"Backup and restore procedure documented","params":{}}
+            ],
+            "OQ": [
+              {"id":"OQ_CSV_01","title":"CSV export integrity","params":{}},
+              {"id":"OQ_CSV_02","title":"Printout vs export","params":{}},
+              {"id":"OQ_CSV_03","title":"Audit trail integrity test","params":{}},
+              {"id":"OQ_CSV_04","title":"CSV backup restore","params":{}},
+              {"id":"OQ_CSV_05","title":"HMI functions and data export","params":{}}
+            ],
+            "PQ": [
+              {"id":"PQ_CSV_01","title":"PQ cycle CSV/printout verification","params":{}}
+            ],
+            "standards": ["21 CFR Part 11","GAMP 5","21 CFR 820"]
+          }
+        },
+        {
           "if": "hazard.ruleId startsWith 'R_STER_PV' and qualificationBand in ['Targeted','Full']",
           "then": {
             "IQ": [
