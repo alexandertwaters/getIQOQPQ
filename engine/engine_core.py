@@ -126,12 +126,15 @@ def run_vector(vector):
     pkg["traceability"] = {"hazardRules": [h.get("ruleId","") for h in pkg["hazards"]]}
 
     band = pkg.get("qualificationBand", "Basic")
-    if band == "Basic":
-        pkg["recommendation"] = "Conduct IQ and OQ."
+    has_pq = any(h.get("PQ_list") for h in pkg["hazards"])
+    if band == "Full" or (band == "Targeted" and has_pq):
+        pkg["recommendation"] = "Conduct IQ, OQ, and PQ (or targeted PQ as applicable)."
     elif band == "Targeted":
         pkg["recommendation"] = "Conduct IQ, OQ, and targeted PQ."
-    elif band == "Full":
-        pkg["recommendation"] = "Conduct IQ, OQ, and PQ."
+    elif band == "Basic" and has_pq:
+        pkg["recommendation"] = "Conduct IQ, OQ, and PQ as indicated in advisory tests below."
+    elif band == "Basic":
+        pkg["recommendation"] = "Conduct IQ and OQ."
     else:
         pkg["recommendation"] = "Conduct IQ and OQ."
 

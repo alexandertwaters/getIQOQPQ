@@ -183,18 +183,16 @@ def _build_csv_guidance(hmi_used_for_release):
 
 
 def _build_traceability_matrix(pkg):
-    """Build traceability matrix: Hazard | Control | Test ID | Acceptance."""
+    """Build traceability matrix with human-readable hazard title and test title (no codes)."""
     rows = []
     for h in pkg.get("hazards", []):
-        hazard_id = h.get("hazardId", "")
-        title = h.get("title", "")
-        rule_id = h.get("ruleId", "")
+        hazard_title = h.get("title", "") or h.get("hazardId", "")
         for tid in h.get("IQ_list", []) or []:
-            rows.append({"hazardId": hazard_id, "hazardTitle": title, "testType": "IQ", "testId": tid, "ruleId": rule_id})
+            rows.append({"hazardTitle": hazard_title, "testType": "IQ", "testTitle": tid})
         for tid in h.get("OQ_list", []) or []:
-            rows.append({"hazardId": hazard_id, "hazardTitle": title, "testType": "OQ", "testId": tid, "ruleId": rule_id})
+            rows.append({"hazardTitle": hazard_title, "testType": "OQ", "testTitle": tid})
         for tid in h.get("PQ_list", []) or []:
-            rows.append({"hazardId": hazard_id, "hazardTitle": title, "testType": "PQ", "testId": tid, "ruleId": rule_id})
+            rows.append({"hazardTitle": hazard_title, "testType": "PQ", "testTitle": tid})
     return rows
 
 

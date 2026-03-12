@@ -1,14 +1,78 @@
 # api/v1/draft_docx.py - POST /api/v1/draft-docx - convert markdown to DOCX
 import io
 import json
+import re
 from http.server import BaseHTTPRequestHandler
 from docx import Document
-from docx.shared import Pt
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+
+def _strip_html(s):
+    """Remove raw HTML tags so they don't appear in output."""
+    if not s:
+        return s
+    return re.sub(r"<[^>]+>", "", s)
+
+
+def _add_paragraph_with_inline(doc, text, style=None):
+    """Add a paragraph, converting **bold** to bold runs. Strips HTML."""
+    text = _strip_html(text or "")
+    p = doc.add_paragraph(style=style)
+    pos = 0
+    while True:
+        m = re.search(r"\*\*([^*]+)\*\*", text[pos:])
+        if not m:
+            if pos < len(text):
+                p.add_run(text[pos:])
+            break
+        start, end = m.start() + pos, m.end() + pos
+        if start > pos:
+            p.add_run(text[pos:start])
+        run = p.add_run(m.group(1))
+        run.bold = True
+        pos = end
+    return p
+
+
+def _parse_table(lines, start_i):
+    """Parse a markdown table starting at start_i. Returns (list of cell rows, next line index)."""
+    rows = []
+    i = start_i
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            break
+        # Skip separator line |---|---|
+        if re.match(r"^\|[\s\-:]+\|", stripped):
+            i += 1
+            continue
+        cells = [c.strip() for c in stripped.split("|") if c.strip() != ""]
+        if not cells:
+            i += 1
+            continue
+        rows.append(cells)
+        i += 1
+    return rows, i
+
+
+def _add_table_with_borders(doc, rows):
+    """Add a Word table with the given rows and enable all borders."""
+    if not rows:
+        return
+    ncols = max(len(r) for r in rows)
+    table = doc.add_table(rows=len(rows), cols=ncols)
+    table.style = "Table Grid"
+    for ri, row in enumerate(rows):
+        for ci, cell_text in enumerate(row):
+            if ci >= ncols:
+                break
+            cell = table.rows[ri].cells[ci]
+            cell.text = _strip_html(cell_text or "").replace("**", "").strip()
+    return table
 
 
 def _markdown_to_docx(markdown_text):
-    """Convert markdown to a simple docx. Handles # ## ### headers and paragraphs."""
+    """Convert markdown to docx. Handles # ## ### headers, **bold**, tables, lists, horizontal rules."""
     doc = Document()
     lines = (markdown_text or "").split("\n")
     i = 0
@@ -19,20 +83,21 @@ def _markdown_to_docx(markdown_text):
             i += 1
             continue
         if stripped.startswith("### "):
-            p = doc.add_paragraph(stripped[4:].strip())
-            p.style = "Heading 3"
+            _add_paragraph_with_inline(doc, stripped[4:].strip(), style="Heading 3")
         elif stripped.startswith("## "):
-            p = doc.add_paragraph(stripped[3:].strip())
-            p.style = "Heading 2"
+            _add_paragraph_with_inline(doc, stripped[3:].strip(), style="Heading 2")
         elif stripped.startswith("# "):
-            p = doc.add_paragraph(stripped[2:].strip())
-            p.style = "Heading 1"
+            _add_paragraph_with_inline(doc, stripped[2:].strip(), style="Heading 1")
         elif stripped.startswith("- ") or stripped.startswith("* "):
-            p = doc.add_paragraph(stripped[2:].strip(), style="List Bullet")
+            _add_paragraph_with_inline(doc, stripped[2:].strip(), style="List Bullet")
         elif stripped.startswith("---"):
             pass  # skip horizontal rules
+        elif stripped.startswith("|") and "|" in stripped[1:]:
+            rows, i = _parse_table(lines, i)
+            _add_table_with_borders(doc, rows)
+            continue
         else:
-            doc.add_paragraph(stripped)
+            _add_paragraph_with_inline(doc, stripped)
         i += 1
     return doc
 

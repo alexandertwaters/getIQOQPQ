@@ -57,6 +57,40 @@ def load_template(path):
     with open(path, 'r', encoding='utf8') as f:
         return f.read()
 
+
+def _build_iq_test_scripts_table(checklist_items):
+    """Build representative IQ test script rows (Category | Objective | Setup | Steps | Data to record | Acceptance) from checklist items."""
+    if not checklist_items:
+        return []
+    by_cat = {}
+    for it in checklist_items:
+        cat = it.get("category", "Other")
+        if cat not in by_cat:
+            by_cat[cat] = []
+        by_cat[cat].append(it)
+    rows = []
+    for cat, items in sorted(by_cat.items()):
+        first = items[0]
+        desc = first.get("description", "")
+        expected = first.get("expected", "")
+        objective = f"Verify {desc}" if desc else "Verify installation per specification."
+        setup = "Equipment installed; drawings and supplier documentation available; tools and calibrated instruments per procedure."
+        steps = "1. Review specification and drawings. 2. Verify item per expected criteria. 3. Record results and evidence."
+        if len(items) > 1:
+            steps = "1. Review specification and drawings. 2. Verify each item in this category per expected criteria. 3. Record results and evidence."
+        data = "Checklist result (Pass/Fail), measured values if applicable, evidence file reference."
+        acceptance = expected if expected else "Conforms to supplier specification and site requirements."
+        rows.append({
+            "category": cat,
+            "objective": objective,
+            "setup": setup,
+            "steps": steps,
+            "dataToRecord": data,
+            "acceptanceCriteria": acceptance,
+        })
+    return rows
+
+
 def build_langmap(langmap_doc):
     m = {}
     default = None
@@ -148,19 +182,19 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "detectabilityOptions": h.get("detectabilityOptions", []),
             "controlEffectivenessOptions": h.get("controlEffectivenessOptions", []),
             "Severity_label": h.get("Severity_label", ""),
-            "Severity_value": f"{h.get('Severity', 0.0):.12f}" if h.get("Severity") is not None else "N/A",
-            "ProbabilityOfOccurrence_value": f"{h.get('ProbabilityOfOccurrence', 0.0):.12f}" if h.get("ProbabilityOfOccurrence") is not None else "N/A",
+            "Severity_value": f"{h.get('Severity', 0.0):.2f}" if h.get("Severity") is not None else "—",
+            "ProbabilityOfOccurrence_value": f"{h.get('ProbabilityOfOccurrence', 0.0):.2f}" if h.get("ProbabilityOfOccurrence") is not None else "—",
             "ProbabilityOfOccurrence_label": h.get("ProbabilityOfOccurrence_label", ""),
-            "Exposure_value": f"{h.get('Exposure', 0.0):.12f}" if h.get("Exposure") is not None else "N/A",
+            "Exposure_value": f"{h.get('Exposure', 0.0):.2f}" if h.get("Exposure") is not None else "—",
             "Exposure_label": h.get("Exposure_label", ""),
-            "Detectability_value": f"{h.get('Detectability', 0.0):.12f}" if h.get("Detectability") is not None else "N/A",
+            "Detectability_value": f"{h.get('Detectability', 0.0):.2f}" if h.get("Detectability") is not None else "—",
             "Detectability_label": h.get("Detectability_label", ""),
-            "ControlEffectiveness_value": f"{h.get('ControlEffectiveness', 0.0):.12f}" if h.get("ControlEffectiveness") is not None else "N/A",
+            "ControlEffectiveness_value": f"{h.get('ControlEffectiveness', 0.0):.2f}" if h.get("ControlEffectiveness") is not None else "—",
             "ControlEffectiveness_label": h.get("ControlEffectiveness_label", ""),
-            "RawRisk": f"{h.get('RawRisk',0.0):.3f}",
-            "AdjustedRisk": f"{h.get('AdjustedRisk',0.0):.3f}",
-            "ResidualRisk": f"{h.get('ResidualRisk',0.0):.3f}",
-            "EscalatedResidualRiskForMapping": f"{h.get('EscalatedResidualRiskForMapping',0.0):.3f}" if h.get("EscalatedResidualRiskForMapping") is not None else None,
+            "RawRisk": f"{h.get('RawRisk', 0.0):.2f}",
+            "AdjustedRisk": f"{h.get('AdjustedRisk', 0.0):.2f}",
+            "ResidualRisk": f"{h.get('ResidualRisk', 0.0):.2f}",
+            "EscalatedResidualRiskForMapping": f"{h.get('EscalatedResidualRiskForMapping', 0.0):.2f}" if h.get("EscalatedResidualRiskForMapping") is not None else None,
             "IQ_list": [t.get("title", "") for t in expanded["IQ_tests"]],
             "OQ_list": [t.get("title", "") for t in expanded["OQ_tests"]],
             "PQ_list": [t.get("title", "") for t in expanded["PQ_tests"]],
@@ -178,11 +212,17 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
         "checklistItems": iq.get("checklistItems", []),
         "evidenceNamingConvention": iq.get("evidenceNamingConvention", ""),
         "evidenceNamingHelp": iq.get("evidenceNamingHelp", ""),
+        "testScripts": _build_iq_test_scripts_table(iq.get("checklistItems", [])) or ([{"category": "Installation", "objective": "Verify equipment installed per specification.", "setup": "Drawings and supplier documentation available.", "steps": "1. Review spec and drawings. 2. Verify each item. 3. Record results.", "dataToRecord": "Pass/Fail, evidence reference.", "acceptanceCriteria": "Conforms to supplier and site requirements."}] if iq.get("checklist") else []),
     }
+    # Deduplicate OQ tests by title so same test appears once
+    oq_seen = {}
     oq_tests = []
     for h in sorted(hazards_ctx, key=lambda x: x["hazardId"]):
         for t in h["OQ_tests"]:
-            oq_tests.append(t)
+            title = t.get("title", "") or ""
+            if title and title not in oq_seen:
+                oq_seen[title] = t
+                oq_tests.append(t)
     ctx["OQ"] = {"tests": oq_tests}
     ctx["PQ"] = pkg.get("PQ", {})
     ctx["csvGuidance"] = pkg.get("csvGuidance", [])

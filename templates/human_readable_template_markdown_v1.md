@@ -1,11 +1,10 @@
-<div align="center">
-
 # Installation Qualification, Operational Qualification, Performance Qualification
 
-</div>
+---
 
-**Cohort**: {{ equipment.cohort }}
-**Equipment**: {{ equipment.type }}
+**Cohort:** {{ equipment.cohort }}
+
+**Equipment:** {{ equipment.type }}
 
 {% if equipmentControlsFormatted and equipmentControlsFormatted | length > 0 %}
 **Equipment controls**
@@ -16,177 +15,98 @@
 
 ---
 
-## Executive summary
+# Executive summary
 
-**Qualification band**: {{ qualificationBand }}
+**Qualification band:** {{ qualificationBand }}
 
-**Residual Risk Index**: {{ ResidualRiskIndex }}
+**Residual Risk Index:** {{ ResidualRiskIndex }}
 
-**Recommendation**: {{ recommendation }}
-
----
-
-## Risk / FMEA summary
-
-| Hazard | Severity | Prob. | Raw | Adj | Residual | Escalated | Escalation |
-|--------|----------|-------|-----|-----|----------|-----------|------------|
-{% for h in hazards %}| {{ h.hazardId }} | {{ h.Severity_label }} | {{ h.ProbabilityOfOccurrence_label }} | {{ h.RawRisk }} | {{ h.AdjustedRisk }} | {{ h.ResidualRisk }} | {% if h.EscalatedResidualRiskForMapping %}{{ h.EscalatedResidualRiskForMapping }}{% else %}—{% endif %} | {% if h.escalationReason %}{{ h.escalationReason }}{% else %}—{% endif %} |
-{% endfor %}
+**Recommendation:** {{ recommendation }}
 
 ---
 
-## Impact assessment (per hazard)
+# Risk / FMEA summary
 
-{% for h in hazards %}
-### {{ h.title }}
+Concise risk overview. Hazard names and scores below; escalation noted when applied.
 
-{{ h.definition }}
-
-| Selected labels | Value |
-|-----------------|-------|
-| Severity | {{ h.Severity_label }} ({{ h.Severity_value | default('N/A') }}) |
-| Probability of occurrence | {{ h.ProbabilityOfOccurrence_label }} |
-| Exposure | {{ h.Exposure_label }} |
-| Detectability | {{ h.Detectability_label }} |
-| Control effectiveness | {{ h.ControlEffectiveness_label }} |
-
-{% if h.hazardContext %}
-**Hazard Modifiers**
-{% for k, v in h.hazardContext.items() %}
-{% if v is not none and v != false and v != '' %}
-- {{ k }}: {% if v is sequence and v is not string %}{{ v | join(', ') }}{% else %}{{ v }}{% endif %}
-{% endif %}
+| Hazard | Severity | Probability | Exposure | Detectability | Control | Raw | Adj. | Residual | Escalated | Escalation note |
+|--------|----------|-------------|----------|---------------|---------|-----|------|----------|-----------|-----------------|
+{% for h in hazards %}| {{ h.title }} | {{ h.Severity_label }} ({{ h.Severity_value }}) | {{ h.ProbabilityOfOccurrence_label }} ({{ h.ProbabilityOfOccurrence_value }}) | {{ h.Exposure_label }} ({{ h.Exposure_value }}) | {{ h.Detectability_label }} ({{ h.Detectability_value }}) | {{ h.ControlEffectiveness_label }} ({{ h.ControlEffectiveness_value }}) | {{ h.RawRisk }} | {{ h.AdjustedRisk }} | {{ h.ResidualRisk }} | {% if h.EscalatedResidualRiskForMapping %}{{ h.EscalatedResidualRiskForMapping }}{% else %}—{% endif %} | {% if h.escalationReason %}{{ h.escalationReason }}{% else %}—{% endif %} |
 {% endfor %}
-{% endif %}
-
-**Relevant Standards**: {{ h.standards_comma }}
-
-{% if h.qualificationDepthEscalation %}
-*Qualification depth escalation: Yes (challenging load/context; extra OQ/PQ items added)*
-{% endif %}
-
-#### Option annotations (help and examples)
-{% for opt in (h.severityOptions or []) %}
-{% if opt.label == h.Severity_label %}
-- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
-
-{% endif %}
-{% endfor %}
-{% for opt in (h.probabilityOptions or []) %}
-{% if opt.label == h.ProbabilityOfOccurrence_label %}
-- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
-
-{% endif %}
-{% endfor %}
-{% for opt in (h.exposureOptions or []) %}
-{% if opt.label == h.Exposure_label %}
-- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
-
-{% endif %}
-{% endfor %}
-{% for opt in (h.detectabilityOptions or []) %}
-{% if opt.label == h.Detectability_label %}
-- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
-
-{% endif %}
-{% endfor %}
-{% for opt in (h.controlEffectivenessOptions or []) %}
-{% if opt.label == h.ControlEffectiveness_label %}
-- *{{ opt.label }}*: {{ opt.help | default('') }}{% if opt.example %} Example: {{ opt.example }}{% endif %}
-
-{% endif %}
-{% endfor %}
-
-#### Numeric values and formula
-
-- Severity = {{ h.Severity_value | default('N/A') }}
-- Probability = {{ h.ProbabilityOfOccurrence_value | default('N/A') }}
-- Exposure = {{ h.Exposure_value | default('N/A') }}
-- Detectability = {{ h.Detectability_value | default('N/A') }}
-- Control effectiveness = {{ h.ControlEffectiveness_value | default('N/A') }}
-
-*Raw Risk = Severity × Probability of Occurrence*
-
-*Adjusted Risk = Raw Risk × Exposure × (1 − Detectability)*
-
-*Residual Risk = Adjusted Risk × Control Effectiveness*
-
-- Raw Risk = {{ h.RawRisk }}
-- Adjusted Risk = {{ h.AdjustedRisk }}
-- Residual Risk = {{ h.ResidualRisk }}
-{% if h.EscalatedResidualRiskForMapping %}- Escalated (for mapping) = {{ h.EscalatedResidualRiskForMapping }}{% endif %}
-
-#### Advisory Qualification
-
-- **IQ items**: {% if h.IQ_list %}{{ h.IQ_list | join('; ') }}{% else %}None applicable{% endif %}
-- **OQ tests**: {% if h.OQ_list %}{{ h.OQ_list | join('; ') }}{% else %}None applicable{% endif %}
-- **PQ items**: {% if h.PQ_list %}{{ h.PQ_list | join('; ') }}{% else %}None applicable{% endif %}
 
 ---
-{% endfor %}
 
-## Installation Qualification (IQ) — Checklist
+# Installation Qualification (IQ)
 
-{% if IQ.evidenceNamingConvention %}
-**Evidence naming convention**: `{{ IQ.evidenceNamingConvention }}`  
-{% if IQ.evidenceNamingHelp %}{{ IQ.evidenceNamingHelp }}{% endif %}
-{% endif %}
+## IQ checklist
 
+| Category | Description | Expected | Measured | Result | Owner | Signoff |
+|----------|-------------|----------|----------|--------|-------|---------|
 {% if IQ.checklistItems %}
-| ItemID | Category | Description | Expected | Measured | EvidenceFileName | Result | Owner | SignoffDate |
-|--------|----------|-------------|----------|----------|------------------|--------|-------|-------------|
 {% for it in IQ.checklistItems %}
-| {{ it.itemId }} | {{ it.category }} | {{ it.description }} | {{ it.expected }} | | {{ it.evidenceFileName }} | | | |
+| {{ it.category }} | {{ it.description }} | {{ it.expected }} | | | | |
 {% endfor %}
 {% elif IQ.checklist %}
 {% for item in IQ.checklist %}
-- [ ] {{ item }}
+| — | {{ item }} | Per specification | | | | |
 {% endfor %}
 {% else %}
-- Installation verification per supplier drawing
+| — | Installation verification per supplier drawing | Per specification | | | | |
 {% endif %}
 
-## Operational Qualification (OQ) — Test scripts
+## IQ test scripts (representative)
 
-{% if OQ.tests %}
+Representative objectives, setup, steps, data to record, and acceptance criteria. Adapt to site procedures.
+
+| Area | Objective | Setup | Steps | Data to record | Acceptance |
+|------|-----------|-------|-------|----------------|------------|
+{% for row in IQ.testScripts %}
+| {{ row.category }} | {{ row.objective }} | {{ row.setup }} | {{ row.steps }} | {{ row.dataToRecord }} | {{ row.acceptanceCriteria }} |
+{% endfor %}
+{% if not IQ.testScripts %}
+| Installation | Verify equipment installed per specification | Drawings and supplier docs available | 1. Review spec and drawings. 2. Verify each item. 3. Record results | Pass/Fail, evidence reference | Conforms to supplier and site requirements |
+{% endif %}
+
+---
+
+# Operational Qualification (OQ)
+
+Test scripts below. Each test is listed once; group execution by procedure where applicable.
+
+| Test | Objective | Setup | Steps | Data to record | Acceptance |
+|------|-----------|-------|-------|----------------|------------|
 {% for t in OQ.tests %}
-### {{ t.title }}
-
-**Objective**: {{ t.objective }}
-
-**Setup**: {{ t.setup }}
-
-**Steps**:
-{% for step in t.steps %}
-1. {{ step }}
+| {{ t.title }} | {{ t.objective }} | {{ t.setup }} | {% for step in t.steps %}{{ step }}{% if not loop.last %}; {% endif %}{% endfor %} | {{ t.dataToRecord }} | {{ t.acceptanceCriteria }} |
 {% endfor %}
-
-**Data to record**: {{ t.dataToRecord }}
-
-**Acceptance criteria**: {{ t.acceptanceCriteria }}
-
-{% endfor %}
-{% else %}
-No OQ tests generated.
+{% if not OQ.tests %}
+| — | No OQ tests generated | — | — | — | — |
 {% endif %}
 
-## Performance Qualification (PQ) — Plan
+---
 
-**PQ plan summary**: {{ PQ.plan }}
+# Performance Qualification (PQ)
 
-**Number of PQ cycles**: {{ PQ.pqCycles }}
+**PQ plan summary:** {{ PQ.plan }}
 
-**Worst‑case load definition**: {{ PQ.worstCaseLoadDefinition }}
+**Number of PQ cycles:** {{ PQ.pqCycles }}
 
-**Biological indicator placement**: {{ PQ.biologicalIndicatorPlacement }}
+**Worst-case load definition:** {{ PQ.worstCaseLoadDefinition }}
 
-**Acceptance criteria**: {{ PQ.acceptanceCriteria }}
+**Biological indicator placement:** {{ PQ.biologicalIndicatorPlacement }}
+
+**Acceptance criteria:** {{ PQ.acceptanceCriteria }}
+
+## PQ test script (representative)
+
+| Objective | Setup | Steps | Data to record | Acceptance |
+|-----------|-------|-------|----------------|------------|
+| Demonstrate sterilization under worst-case load using biological indicators | BIs at worst-case locations; load per validated configuration | 1. Place BIs per placement plan. 2. Run cycle per validated parameters. 3. Retrieve BIs and incubate per manufacturer. 4. Record results | Cycle log; BI placement; incubation results; BI lot | All BIs no growth; cycle parameters within OQ limits |
 
 {% if PQ.biologicalIndicatorPlacement and equipment.equipmentTypeId in ['STER_PV_AUT', 'STER_GRAV_AUT'] %}
-#### BI placement matrix (template)
+## BI placement matrix (template)
 
-| Cycle | BI_ID | Location | Placement description | Incubation result | Date |
-|-------|-------|----------|------------------------|-------------------|------|
+| Cycle | BI number | Location | Placement description | Incubation result | Date |
+|-------|-----------|----------|------------------------|-------------------|------|
 | 1 | 1 | | | | |
 | 1 | 2 | | | | |
 | 1 | 3 | | | | |
@@ -199,56 +119,79 @@ No OQ tests generated.
 | 1 | 10 | | | | |
 | 1 | 11 | | | | |
 | 1 | 12 | | | | |
-| 2 | 1–12 | (repeat per cycle) | | | |
-| 3 | 1–12 | (repeat per cycle) | | | |
+| 2 | 1 | | | | |
+| 2 | 2 | | | | |
+| 2 | 3 | | | | |
+| 2 | 4 | | | | |
+| 2 | 5 | | | | |
+| 2 | 6 | | | | |
+| 2 | 7 | | | | |
+| 2 | 8 | | | | |
+| 2 | 9 | | | | |
+| 2 | 10 | | | | |
+| 2 | 11 | | | | |
+| 2 | 12 | | | | |
+| 3 | 1 | | | | |
+| 3 | 2 | | | | |
+| 3 | 3 | | | | |
+| 3 | 4 | | | | |
+| 3 | 5 | | | | |
+| 3 | 6 | | | | |
+| 3 | 7 | | | | |
+| 3 | 8 | | | | |
+| 3 | 9 | | | | |
+| 3 | 10 | | | | |
+| 3 | 11 | | | | |
+| 3 | 12 | | | | |
 {% endif %}
 
 ---
 
-## Traceability matrix
+# Traceability matrix
 
-| Hazard | Test type | Test ID | ruleId |
-|--------|-----------|---------|--------|
-{% for row in traceabilityMatrix %}| {{ row.hazardId }} | {{ row.testType }} | {{ row.testId }} | {{ row.ruleId }} |
+| Hazard | Test type | Test |
+|--------|-----------|------|
+{% for row in traceabilityMatrix %}
+| {{ row.hazardTitle }} | {{ row.testType }} | {{ row.testTitle }} |
 {% endfor %}
 {% if not traceabilityMatrix %}
-No traceability data.
+| — | — | No traceability data |
 {% endif %}
 
 ---
 
-## Computerized system verification guidance
+# Computerized system verification guidance
 
 {% if csvGuidance %}
 {% for item in csvGuidance %}
 - {{ item }}
 {% endfor %}
 {% else %}
-None applicable
+None applicable.
 {% endif %}
 
 ---
 
-## Evidence list
+# Evidence list
 
 {% if evidenceList %}
 {% for item in evidenceList %}
 - {{ item }}
 {% endfor %}
 {% else %}
-None listed
+None listed.
 {% endif %}
 
 ---
 
-## Signatures
+# Signatures
 
-**Prepared by**: ____________________  **Date**: __________
+**Prepared by:** ____________________  **Date:** __________
 
-**Reviewed by**: ____________________  **Date**: __________
+**Reviewed by:** ____________________  **Date:** __________
 
-**Approved by**: ____________________  **Date**: __________
+**Approved by:** ____________________  **Date:** __________
 
 ---
 
-*Advisory note: This draft is advisory. Final protocols, acceptance criteria, and approvals must be completed in your QMS.*
+Advisory note: This draft is advisory. Final protocols, acceptance criteria, and approvals must be completed in your QMS.
