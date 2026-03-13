@@ -161,9 +161,9 @@
         const [metaRes, ctrlRes, ursRes, frsRes, trsRes] = await Promise.all([
           fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId),
           fetchJson(API + '/equipment-controls?equipmentTypeId=' + equipmentTypeId).catch(() => null),
-          fetchJson(API + '/urs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ requirements: [] })),
-          fetchJson(API + '/frs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ functions: [] })),
-          fetchJson(API + '/trs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ tests: [] })),
+          fetchJson(API + '/requirements-library?kind=urs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ requirements: [] })),
+          fetchJson(API + '/requirements-library?kind=frs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ functions: [] })),
+          fetchJson(API + '/requirements-library?kind=trs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ tests: [] })),
         ]);
         state.equipmentMetadata = metaRes;
         const em = metaRes.equipmentMetadata;
