@@ -133,5 +133,60 @@ class TestRenderOutput(unittest.TestCase):
         self.assertIn("Trigger", text)
 
 
+class TestVModelOutput(unittest.TestCase):
+    """Pure V-model output tests for separate docs and traceability."""
+
+    def test_vmodel_generates_separate_docs_and_traceability(self):
+        from engine.engine_core import run_vector
+        from engine.render_engine import render_markdown
+
+        vector = {
+            "cohort": "Sterilization",
+            "type": "Pre-Vacuum Steam Sterilizer",
+            "equipmentTypeId": "STER_PV_AUT",
+            "model": "E-STER-PV-001",
+            "siteContext": {
+                "cleanroomClass": "ISO 7",
+                "utilities": ["Steam", "Electricity"],
+                "productContact": True,
+                "productionThroughput": "Medium",
+            },
+            "controlArchitecture": "PLC or SCADA",
+            "rulesetId": "ruleset_v1.1",
+            "hazcatVersion": "hazcat_v1.1",
+            "hazards": [],
+            "vmp": {"scope": "Sterilizer lifecycle qualification", "roles": "Validation/QA/Engineering", "deliverables": "VMP, URS, FRS, TRS, IQ/OQ/PQ"},
+            "urs": {"intendedUse": "Sterilize wrapped and porous loads", "criticalProcessParameters": "temperature, pressure, exposure time", "acceptanceCriteria": "All runs pass criteria"},
+            "computerizedValidation": {"computerized": True, "softwareClassification": "Category 4"},
+            "requalificationPlan": {"baseFrequency": "annual", "triggers": ["move", "major_repair"], "rationale": "Critical process equipment"},
+            "vmodel": {"ursIds": ["URS_STER_PV_001", "URS_STER_PV_002"], "frsIds": [], "trsIds": []},
+        }
+        pkg = run_vector(vector)
+        self.assertEqual(pkg.get("qualificationBand"), "VModel")
+
+        tmpdir = tempfile.mkdtemp()
+        try:
+            pkg_path = Path(tmpdir) / "pkg.json"
+            with open(pkg_path, "w", encoding="utf8") as f:
+                json.dump(pkg, f, indent=2)
+            template = _REPO / "templates" / "human_readable_template_markdown_v1.md"
+            langmap = _REPO / "rules" / "hazard_to_language_map_v1 - comprehensive.json"
+            render_markdown(str(pkg_path), str(template), str(langmap), tmpdir)
+            files = {p.name for p in Path(tmpdir).glob("*")}
+            fp = pkg["fingerprint"].replace(":", "_")
+            self.assertIn(f"{fp}.md", files)
+            self.assertIn(f"{fp}.VMP.md", files)
+            self.assertIn(f"{fp}.URS.md", files)
+            self.assertIn(f"{fp}.FRS.md", files)
+            self.assertIn(f"{fp}.TRS.md", files)
+            self.assertIn(f"{fp}.IQ.md", files)
+            self.assertIn(f"{fp}.OQ.md", files)
+            self.assertIn(f"{fp}.PQ.md", files)
+            self.assertIn(f"{fp}.traceability.csv", files)
+        finally:
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,77 @@
+{
+  "version": "trs_library_v1",
+  "generatedAt": "2026-03-09T00:00:00Z",
+  "description": "Technical requirement and verification library mapped to IQ/OQ/PQ phases.",
+  "tests": [
+    {
+      "trsId": "TRS_STER_PV_IQ_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "IQ",
+      "title": "Installation and utility verification",
+      "objective": "Verify installation per manufacturer and utility readiness.",
+      "acceptanceCriteria": "Installation records complete and utility values meet specification.",
+      "verifiesFRS": ["FRS_STER_PV_003"],
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
+    },
+    {
+      "trsId": "TRS_STER_PV_IQ_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "IQ",
+      "title": "Labeling, safety, and calibration status",
+      "objective": "Verify labeling, safety features, and calibration baseline.",
+      "acceptanceCriteria": "All labels/safety features present; calibration records current.",
+      "verifiesFRS": ["FRS_STER_PV_002"],
+      "regulatoryTags": ["FDA QMSR"]
+    },
+    {
+      "trsId": "TRS_STER_PV_OQ_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "OQ",
+      "title": "Operating range challenge",
+      "objective": "Demonstrate cycle execution across min/nominal/max operating ranges.",
+      "acceptanceCriteria": "All CPP values remain within approved limits.",
+      "verifiesFRS": ["FRS_STER_PV_001", "FRS_STER_PV_002"],
+      "regulatoryTags": ["ISO 17665", "FDA QMSR"]
+    },
+    {
+      "trsId": "TRS_STER_PV_OQ_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "OQ",
+      "title": "Alarm and interlock verification",
+      "objective": "Verify alarm detection, annunciation, and interlock response.",
+      "acceptanceCriteria": "All alarms/interlocks activate and recover per specification.",
+      "verifiesFRS": ["FRS_STER_PV_002"],
+      "regulatoryTags": ["FDA QMSR"]
+    },
+    {
+      "trsId": "TRS_STER_PV_OQ_003",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "OQ",
+      "title": "Electronic record and audit trail verification",
+      "objective": "Verify secure access, audit trail behavior, and record retrieval.",
+      "acceptanceCriteria": "Part 11 controls operate as intended; records are complete/retrievable.",
+      "verifiesFRS": ["FRS_STER_PV_004"],
+      "regulatoryTags": ["21 CFR Part 11"]
+    },
+    {
+      "trsId": "TRS_STER_PV_PQ_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "PQ",
+      "title": "Representative production performance",
+      "objective": "Demonstrate consistent sterilization performance under representative production conditions.",
+      "acceptanceCriteria": "All planned runs meet acceptance criteria with no critical deviations.",
+      "verifiesFRS": ["FRS_STER_PV_001", "FRS_STER_PV_005"],
+      "regulatoryTags": ["ISO 17665", "FDA QMSR"]
+    },
+    {
+      "trsId": "TRS_STER_PV_PQ_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "verificationPhase": "PQ",
+      "title": "Worst-case load challenge with monitoring",
+      "objective": "Verify process capability on worst-case load and throughput profile.",
+      "acceptanceCriteria": "Worst-case runs pass acceptance criteria and statistical monitoring thresholds.",
+      "verifiesFRS": ["FRS_STER_PV_005"],
+      "regulatoryTags": ["ISO 17665"]
+    }
+  ]
+}

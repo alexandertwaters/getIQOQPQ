@@ -1,0 +1,52 @@
+{
+  "version": "urs_library_v1",
+  "generatedAt": "2026-03-09T00:00:00Z",
+  "description": "User Requirement Specification library for V-model protocol generation.",
+  "requirements": [
+    {
+      "ursId": "URS_STER_PV_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "cohort": "Sterilization",
+      "title": "Sterilization cycle intended use",
+      "statement": "Equipment shall sterilize defined load families using validated pre-vacuum steam cycles.",
+      "criticality": "critical",
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016", "ISO 17665"]
+    },
+    {
+      "ursId": "URS_STER_PV_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "cohort": "Sterilization",
+      "title": "Critical process parameter control",
+      "statement": "Equipment shall monitor and control temperature, pressure, and exposure time within validated limits.",
+      "criticality": "critical",
+      "regulatoryTags": ["FDA QMSR", "ISO 17665"]
+    },
+    {
+      "ursId": "URS_STER_PV_003",
+      "equipmentTypeId": "STER_PV_AUT",
+      "cohort": "Sterilization",
+      "title": "Utility and environment suitability",
+      "statement": "Equipment shall operate with qualified utilities and the defined installation environment.",
+      "criticality": "major",
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
+    },
+    {
+      "ursId": "URS_STER_PV_004",
+      "equipmentTypeId": "STER_PV_AUT",
+      "cohort": "Sterilization",
+      "title": "Data integrity for electronic records",
+      "statement": "When electronic records are used, the system shall support secure access, audit trail, and retrievable records.",
+      "criticality": "critical",
+      "regulatoryTags": ["21 CFR Part 11", "FDA QMSR"]
+    },
+    {
+      "ursId": "URS_STER_PV_005",
+      "equipmentTypeId": "STER_PV_AUT",
+      "cohort": "Sterilization",
+      "title": "Throughput and capacity",
+      "statement": "Equipment shall support planned production throughput while maintaining validated state.",
+      "criticality": "major",
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
+    }
+  ]
+}

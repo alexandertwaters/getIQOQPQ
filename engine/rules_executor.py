@@ -246,6 +246,172 @@ def _build_requalification_plan(pkg):
     }
 
 
+def _load_json_file(path):
+    if not os.path.isabs(path):
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(base, path)
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def apply_vmodel_mapping(pkg):
+    """Resolve URS->FRS->TRS and derive IQ/OQ/PQ sections for pure V-model mode."""
+    equipment_type_id = (pkg.get("equipment") or {}).get("equipmentTypeId", "")
+    sel = (pkg.get("lifecycle") or {}).get("vmodel") or {}
+    urs_ids = list(dict.fromkeys(sel.get("ursIds") or []))
+    frs_ids = list(dict.fromkeys(sel.get("frsIds") or []))
+    trs_ids = list(dict.fromkeys(sel.get("trsIds") or []))
+
+    urs_doc = _load_json_file("data/urs_library_v1.json")
+    frs_doc = _load_json_file("data/frs_library_v1.json")
+    trs_doc = _load_json_file("data/trs_library_v1.json")
+    map_doc = _load_json_file("data/requirements_traceability_map_v1.json")
+
+    urs_rows = [r for r in urs_doc.get("requirements", []) if r.get("equipmentTypeId") == equipment_type_id]
+    frs_rows = [r for r in frs_doc.get("functions", []) if r.get("equipmentTypeId") == equipment_type_id]
+    trs_rows = [r for r in trs_doc.get("tests", []) if r.get("equipmentTypeId") == equipment_type_id]
+    urs_map = {r.get("ursId"): r for r in urs_rows}
+    frs_map = {r.get("frsId"): r for r in frs_rows}
+    trs_map = {r.get("trsId"): r for r in trs_rows}
+
+    if not urs_ids:
+        urs_ids = [r.get("ursId") for r in urs_rows if r.get("criticality") == "critical"]
+    if not frs_ids:
+        frs_ids = [
+            f.get("frsId")
+            for f in frs_rows
+            if any(u in urs_ids for u in (f.get("derivedFromURS") or []))
+        ]
+    if not trs_ids:
+        trs_ids = [
+            t.get("trsId")
+            for t in trs_rows
+            if any(f in frs_ids for f in (t.get("verifiesFRS") or []))
+        ]
+
+    selected_urs = [urs_map[u] for u in urs_ids if u in urs_map]
+    selected_frs = [frs_map[f] for f in frs_ids if f in frs_map]
+    selected_trs = [trs_map[t] for t in trs_ids if t in trs_map]
+
+    def _trs_phase(phase):
+        return [t for t in selected_trs if (t.get("verificationPhase") or "").upper() == phase]
+
+    iq_trs = _trs_phase("IQ")
+    oq_trs = _trs_phase("OQ")
+    pq_trs = _trs_phase("PQ")
+
+    lifecycle = pkg.get("lifecycle") or {}
+    pkg["VMP"] = {
+        "scope": (lifecycle.get("vmp") or {}).get("scope", ""),
+        "roles": (lifecycle.get("vmp") or {}).get("roles", ""),
+        "timeline": (lifecycle.get("vmp") or {}).get("timeline", ""),
+        "deliverables": (lifecycle.get("vmp") or {}).get("deliverables", ""),
+        "trainingPlan": (lifecycle.get("vmp") or {}).get("trainingPlan", ""),
+        "supplierEvidencePlan": (lifecycle.get("vmp") or {}).get("supplierEvidencePlan", ""),
+    }
+    pkg["URS"] = {
+        "intendedUse": (lifecycle.get("urs") or {}).get("intendedUse", ""),
+        "criticalProcessParameters": (lifecycle.get("urs") or {}).get("criticalProcessParameters", ""),
+        "environmentNeeds": (lifecycle.get("urs") or {}).get("environmentNeeds", ""),
+        "throughputRationale": (lifecycle.get("urs") or {}).get("throughputRationale", ""),
+        "acceptanceCriteria": (lifecycle.get("urs") or {}).get("acceptanceCriteria", ""),
+        "requirements": selected_urs,
+    }
+    pkg["FRS"] = {"functions": selected_frs}
+    pkg["TRS"] = {"tests": selected_trs}
+    pkg["IQ"] = {
+        "checklist": [t.get("title", "") for t in iq_trs],
+        "testScripts": [
+            {
+                "title": t.get("title", ""),
+                "objective": t.get("objective", ""),
+                "setup": "Equipment installed and prerequisites complete.",
+                "steps": "Execute protocol steps per approved method.",
+                "dataToRecord": "Observed values, evidence references, and deviations.",
+                "acceptanceCriteria": t.get("acceptanceCriteria", ""),
+            }
+            for t in iq_trs
+        ],
+    }
+    pkg["OQ"] = {
+        "tests": [
+            {
+                "title": t.get("title", ""),
+                "objective": t.get("objective", ""),
+                "setup": "Calibrated instruments and approved SOP available.",
+                "steps": ["Execute test at defined ranges and challenge conditions."],
+                "dataToRecord": "Range values, alarm/interlock outcomes, evidence references.",
+                "acceptanceCriteria": t.get("acceptanceCriteria", ""),
+            }
+            for t in oq_trs
+        ]
+    }
+    prefs = (lifecycle.get("protocolPreferences") or {})
+    pkg["PQ"] = {
+        "plan": "Representative production and worst-case challenge execution.",
+        "pqCycles": int(prefs.get("pqRunCount") or 3),
+        "worstCaseLoadDefinition": "Worst-case load profile from selected TRS coverage.",
+        "biologicalIndicatorPlacement": "Define BI locations per approved load map where applicable.",
+        "acceptanceCriteria": "; ".join([t.get("acceptanceCriteria", "") for t in pq_trs if t.get("acceptanceCriteria")]) or "Meets approved PQ acceptance criteria.",
+        "tests": [
+            {
+                "title": t.get("title", ""),
+                "objective": t.get("objective", ""),
+                "setup": "Production-representative operators, materials, and approved batch records.",
+                "steps": ["Execute representative and worst-case runs."],
+                "dataToRecord": "Run records, trend statistics, deviations, and evidence links.",
+                "acceptanceCriteria": t.get("acceptanceCriteria", ""),
+            }
+            for t in pq_trs
+        ],
+    }
+    pkg["computerizedValidation"] = lifecycle.get("computerizedValidation") or {}
+    pkg["Requalification"] = _build_requalification_plan(pkg)
+    pkg["csvGuidance"] = _build_csv_guidance(bool((pkg.get("computerizedValidation") or {}).get("computerized")))
+    pkg["evidenceList"] = _build_evidence_list(pkg, bool((pkg.get("computerizedValidation") or {}).get("computerized")))
+
+    trace_rows = []
+    map_rows = [m for m in map_doc.get("mappings", []) if m.get("equipmentTypeId") == equipment_type_id]
+    for m in map_rows:
+        if m.get("ursId") not in urs_ids:
+            continue
+        urs_title = urs_map.get(m.get("ursId"), {}).get("title", m.get("ursId"))
+        for fid in m.get("frsIds", []):
+            if fid in frs_ids:
+                trace_rows.append({
+                    "ursId": m.get("ursId"),
+                    "ursTitle": urs_title,
+                    "frsId": fid,
+                    "frsTitle": frs_map.get(fid, {}).get("title", fid),
+                    "trsId": "",
+                    "trsTitle": "",
+                    "protocolPhase": "",
+                    "protocolTest": "",
+                })
+        for tid in m.get("trsIds", []):
+            if tid in trs_ids:
+                t = trs_map.get(tid, {})
+                trace_rows.append({
+                    "ursId": m.get("ursId"),
+                    "ursTitle": urs_title,
+                    "frsId": ", ".join([f for f in m.get("frsIds", []) if f in frs_ids]),
+                    "frsTitle": ", ".join([frs_map.get(f, {}).get("title", f) for f in m.get("frsIds", []) if f in frs_ids]),
+                    "trsId": tid,
+                    "trsTitle": t.get("title", tid),
+                    "protocolPhase": t.get("verificationPhase", ""),
+                    "protocolTest": t.get("title", tid),
+                })
+    pkg["traceabilityMatrix"] = trace_rows
+    pkg["traceability"] = {"hazardRules": []}
+
+    # Deterministic, V-model-specific recommendation and metadata.
+    pkg["qualificationBand"] = "VModel"
+    pkg["ResidualRiskIndex"] = 0.0
+    pkg["recommendation"] = "Generate V-model documents: VMP, URS, FRS, TRS, and IQ/OQ/PQ protocols."
+
+
 def apply_iqoqpq_mapping(pkg, ruleset_path=None):
     """Apply ruleset mapping rules to populate hazard IQ_list, OQ_list, PQ_list and package IQ, OQ, PQ."""
     path = ruleset_path or _resolve_ruleset_path(pkg.get("rulesetId", ""))

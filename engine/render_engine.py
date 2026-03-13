@@ -58,6 +58,42 @@ def load_template(path):
         return f.read()
 
 
+def _render_vmodel_documents(pkg, ctx, outdir, safe_fp):
+    """Render separate V-model documents for VMP/URS/FRS/TRS/IQ/OQ/PQ and bundle index."""
+    base = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    doc_templates = {
+        "VMP": base / "templates" / "vmp_template_markdown_v1.md",
+        "URS": base / "templates" / "urs_template_markdown_v1.md",
+        "FRS": base / "templates" / "frs_template_markdown_v1.md",
+        "TRS": base / "templates" / "trs_template_markdown_v1.md",
+        "IQ": base / "templates" / "iq_template_markdown_v1.md",
+        "OQ": base / "templates" / "oq_template_markdown_v1.md",
+        "PQ": base / "templates" / "pq_template_markdown_v1.md",
+    }
+    generated_files = []
+    for key, tpath in doc_templates.items():
+        if not tpath.exists():
+            continue
+        t = Template(load_template(str(tpath)))
+        md = t.render(**ctx)
+        out_md = Path(outdir) / f"{safe_fp}.{key}.md"
+        out_md.write_text(md, encoding="utf8")
+        generated_files.append(out_md.name)
+
+    bundle = [
+        "# V-model Draft Package",
+        "",
+        f"**Equipment:** {ctx.get('equipment', {}).get('type', '')}",
+        "",
+        "Generated documents:",
+    ]
+    for fn in generated_files:
+        bundle.append(f"- {fn}")
+    bundle.append("")
+    bundle.append("Use the artifact downloads to open each protocol document.")
+    (Path(outdir) / f"{safe_fp}.md").write_text("\n".join(bundle), encoding="utf8")
+
+
 def _build_iq_test_scripts_table(checklist_items):
     """Build representative IQ test script rows (Category | Objective | Setup | Steps | Data to record | Acceptance) from checklist items."""
     if not checklist_items:
@@ -227,6 +263,8 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     ctx["PQ"] = pkg.get("PQ", {})
     ctx["VMP"] = pkg.get("VMP", {})
     ctx["URS"] = pkg.get("URS", {})
+    ctx["FRS"] = pkg.get("FRS", {})
+    ctx["TRS"] = pkg.get("TRS", {})
     ctx["DQ"] = pkg.get("DQ", {})
     ctx["computerizedValidation"] = pkg.get("computerizedValidation", {})
     ctx["Requalification"] = pkg.get("Requalification", {})
@@ -235,15 +273,18 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     ctx["traceabilityMatrix"] = pkg.get("traceabilityMatrix", [])
     ctx["executedRuleIds_comma"] = ", ".join([r for r in pkg.get("traceability", {}).get("hazardRules", []) if r])
 
-    template = Template(template_md)
-    md = template.render(**ctx)
-
     os.makedirs(outdir, exist_ok=True)
     fp = pkg.get("fingerprint", "package")
     safe_fp = fp.replace(":", "_")
-    out_md = os.path.join(outdir, f"{safe_fp}.md")
-    with open(out_md, 'w', encoding='utf8') as of:
-        of.write(md)
+    if pkg.get("qualificationBand") == "VModel":
+        _render_vmodel_documents(pkg, ctx, outdir, safe_fp)
+        out_md = os.path.join(outdir, f"{safe_fp}.md")
+    else:
+        template = Template(template_md)
+        md = template.render(**ctx)
+        out_md = os.path.join(outdir, f"{safe_fp}.md")
+        with open(out_md, 'w', encoding='utf8') as of:
+            of.write(md)
 
     def _csv_escape(val):
         s = str(val).replace("\n", " ").replace("\r", " ")
@@ -321,6 +362,25 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
                 "; ".join(stds) if stds else "",
             ]
             cf.write(",".join(_csv_escape(x) for x in row) + "\n")
+
+    # V-model traceability CSV
+    trace_rows = pkg.get("traceabilityMatrix", [])
+    if trace_rows:
+        trace_csv = os.path.join(outdir, f"{safe_fp}.traceability.csv")
+        with open(trace_csv, "w", encoding="utf8", newline="") as tf:
+            tf.write("URS_ID,URS_Title,FRS_ID,FRS_Title,TRS_ID,TRS_Title,Protocol_Phase,Protocol_Test\n")
+            for r in trace_rows:
+                row = [
+                    r.get("ursId", ""),
+                    r.get("ursTitle", ""),
+                    r.get("frsId", ""),
+                    r.get("frsTitle", ""),
+                    r.get("trsId", ""),
+                    r.get("trsTitle", ""),
+                    r.get("protocolPhase", ""),
+                    r.get("protocolTest", ""),
+                ]
+                tf.write(",".join(_csv_escape(x) for x in row) + "\n")
 
     print("Rendered markdown to", out_md)
     print("Per-hazard CSV written to", csv_path)

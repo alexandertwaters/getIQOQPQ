@@ -64,7 +64,7 @@ def _handle_post(payload):
 
     required = [
         "equipmentId", "cohort", "type", "siteContext",
-        "controlArchitecture", "hazards", "rulesetId", "hazcatVersion",
+        "controlArchitecture", "rulesetId", "hazcatVersion",
     ]
     for k in required:
         if k not in payload:
@@ -79,12 +79,12 @@ def _handle_post(payload):
         "controlArchitecture": payload["controlArchitecture"],
         "rulesetId": payload["rulesetId"],
         "hazcatVersion": payload["hazcatVersion"],
-        "hazards": payload["hazards"],
+        "hazards": payload.get("hazards", []),
         "vmp": payload.get("vmp", {}),
         "urs": payload.get("urs", {}),
-        "dq": payload.get("dq", {}),
         "computerizedValidation": payload.get("computerizedValidation", {}),
         "requalificationPlan": payload.get("requalificationPlan", {}),
+        "vmodel": payload.get("vmodel", {}),
     }
     if payload.get("equipmentControls"):
         vector["equipmentControls"] = payload["equipmentControls"]
@@ -134,11 +134,16 @@ def _handle_post(payload):
 
     markdown_content = None
     if rendered_dir.exists():
-        for f in rendered_dir.iterdir():
-            if f.suffix == ".md":
-                with open(f, "r", encoding="utf-8") as mf:
-                    markdown_content = mf.read()
-                break
+        preferred = rendered_dir / f"{safe_name}.md"
+        if preferred.exists():
+            with open(preferred, "r", encoding="utf-8") as mf:
+                markdown_content = mf.read()
+        else:
+            for f in rendered_dir.iterdir():
+                if f.suffix == ".md":
+                    with open(f, "r", encoding="utf-8") as mf:
+                        markdown_content = mf.read()
+                    break
 
     return 200, {
         "fingerprint": fingerprint,
@@ -151,6 +156,7 @@ def _handle_post(payload):
             "qualificationBand": pkg.get("qualificationBand"),
             "ruleIds": list(dict.fromkeys(h.get("ruleId", "") for h in pkg.get("hazards", []) if h.get("ruleId"))),
             "standards": sorted(set(s for h in pkg.get("hazards", []) for s in h.get("standards", []))),
+            "renderedFiles": sorted([p.name for p in rendered_dir.iterdir()]) if rendered_dir.exists() else [],
         },
     }
 

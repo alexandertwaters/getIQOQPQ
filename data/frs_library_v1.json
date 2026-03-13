@@ -1,0 +1,47 @@
+{
+  "version": "frs_library_v1",
+  "generatedAt": "2026-03-09T00:00:00Z",
+  "description": "Functional Requirement Specification library derived from URS requirements.",
+  "functions": [
+    {
+      "frsId": "FRS_STER_PV_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "title": "Cycle recipe management",
+      "functionalRequirement": "System provides controlled cycle recipes with approved setpoints.",
+      "derivedFromURS": ["URS_STER_PV_001", "URS_STER_PV_002"],
+      "regulatoryTags": ["ISO 17665", "FDA QMSR"]
+    },
+    {
+      "frsId": "FRS_STER_PV_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "title": "Alarm and interlock handling",
+      "functionalRequirement": "System shall detect out-of-limit conditions and enforce alarms/interlocks.",
+      "derivedFromURS": ["URS_STER_PV_002"],
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
+    },
+    {
+      "frsId": "FRS_STER_PV_003",
+      "equipmentTypeId": "STER_PV_AUT",
+      "title": "Utility condition monitoring",
+      "functionalRequirement": "System shall verify required utility conditions before and during cycle execution.",
+      "derivedFromURS": ["URS_STER_PV_003"],
+      "regulatoryTags": ["FDA QMSR"]
+    },
+    {
+      "frsId": "FRS_STER_PV_004",
+      "equipmentTypeId": "STER_PV_AUT",
+      "title": "Electronic records and audit trail",
+      "functionalRequirement": "System shall maintain attributable, legible, contemporaneous, original, and accurate records with audit trail.",
+      "derivedFromURS": ["URS_STER_PV_004"],
+      "regulatoryTags": ["21 CFR Part 11"]
+    },
+    {
+      "frsId": "FRS_STER_PV_005",
+      "equipmentTypeId": "STER_PV_AUT",
+      "title": "Load throughput execution",
+      "functionalRequirement": "System shall process load schedule at selected throughput with no loss of control.",
+      "derivedFromURS": ["URS_STER_PV_005"],
+      "regulatoryTags": ["FDA QMSR"]
+    }
+  ]
+}

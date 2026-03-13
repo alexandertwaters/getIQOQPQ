@@ -20,6 +20,9 @@
     { "source": "/api/v1/site-context", "destination": "/api/v1/site_context" },
     { "source": "/api/v1/contextual-tag-descriptors", "destination": "/api/v1/contextual_tag_descriptors" },
     { "source": "/api/v1/equipment-controls", "destination": "/api/v1/equipment_controls" },
+    { "source": "/api/v1/urs-library", "destination": "/api/v1/urs_library" },
+    { "source": "/api/v1/frs-library", "destination": "/api/v1/frs_library" },
+    { "source": "/api/v1/trs-library", "destination": "/api/v1/trs_library" },
     { "source": "/api/v1/hazard-context-options", "destination": "/api/v1/hazard_context_options" },
     { "source": "/api/v1/draft-docx", "destination": "/api/v1/draft_docx" }
   ],

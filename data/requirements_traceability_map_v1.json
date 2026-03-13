@@ -1,0 +1,42 @@
+{
+  "version": "requirements_traceability_map_v1",
+  "generatedAt": "2026-03-09T00:00:00Z",
+  "description": "End-to-end traceability map for URS->FRS->TRS and verification phase output.",
+  "mappings": [
+    {
+      "mappingId": "MAP_STER_PV_001",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_001",
+      "frsIds": ["FRS_STER_PV_001"],
+      "trsIds": ["TRS_STER_PV_OQ_001", "TRS_STER_PV_PQ_001"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_002",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_002",
+      "frsIds": ["FRS_STER_PV_001", "FRS_STER_PV_002"],
+      "trsIds": ["TRS_STER_PV_IQ_002", "TRS_STER_PV_OQ_001", "TRS_STER_PV_OQ_002"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_003",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_003",
+      "frsIds": ["FRS_STER_PV_003"],
+      "trsIds": ["TRS_STER_PV_IQ_001"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_004",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_004",
+      "frsIds": ["FRS_STER_PV_004"],
+      "trsIds": ["TRS_STER_PV_OQ_003"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_005",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_005",
+      "frsIds": ["FRS_STER_PV_005"],
+      "trsIds": ["TRS_STER_PV_PQ_001", "TRS_STER_PV_PQ_002"]
+    }
+  ]
+}

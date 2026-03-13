@@ -2,15 +2,16 @@
 import json
 import os
 import sys
+import hashlib
 try:
     from .calculator import compute_hazard_numeric_from_labels
     from .risk_adjustments import apply_linkage_adjustments
-    from .rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
+    from .rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping, apply_vmodel_mapping
     from .fingerprint import canonicalize_package_for_fingerprint
 except ImportError:
     from calculator import compute_hazard_numeric_from_labels
     from risk_adjustments import apply_linkage_adjustments
-    from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping
+    from rules_executor import apply_policy_escalations, compute_residual_risk_index_and_band, apply_iqoqpq_mapping, apply_vmodel_mapping
     from fingerprint import canonicalize_package_for_fingerprint
 
 _HAZCAT_CACHE = {}
@@ -46,6 +47,9 @@ def _find_hazard_in_catalog(hazcat, hazard_id):
     return {}
 
 def run_vector(vector):
+    if (vector.get("vmodel") or {}).get("ursIds"):
+        return run_vmodel_vector(vector)
+
     pkg = {}
     pkg["equipment"] = {
         "cohort": vector["cohort"],
@@ -58,9 +62,10 @@ def run_vector(vector):
     pkg["lifecycle"] = {
         "vmp": vector.get("vmp", {}) or {},
         "urs": vector.get("urs", {}) or {},
-        "dq": vector.get("dq", {}) or {},
         "computerizedValidation": vector.get("computerizedValidation", {}) or {},
         "requalificationPlan": vector.get("requalificationPlan", {}) or {},
+        "protocolPreferences": ((vector.get("vmodel") or {}).get("protocolPreferences") or {}),
+        "vmodel": vector.get("vmodel", {}) or {},
     }
     if vector.get("equipmentControls"):
         pkg["equipmentControls"] = vector["equipmentControls"]
@@ -145,6 +150,51 @@ def run_vector(vector):
     else:
         pkg["recommendation"] = "Conduct IQ and OQ."
 
+    return pkg
+
+
+def run_vmodel_vector(vector):
+    pkg = {}
+    pkg["equipment"] = {
+        "cohort": vector["cohort"],
+        "type": vector["type"],
+        "model": vector.get("model", ""),
+        "equipmentTypeId": vector.get("equipmentTypeId", ""),
+    }
+    pkg["siteContext"] = vector["siteContext"]
+    pkg["controlArchitecture"] = vector["controlArchitecture"]
+    if vector.get("equipmentControls"):
+        pkg["equipmentControls"] = vector["equipmentControls"]
+    pkg["rulesetId"] = vector["rulesetId"]
+    pkg["hazcatVersion"] = vector["hazcatVersion"]
+    pkg["packageTemplateVersion"] = "v2.0-vmodel"
+    pkg["hazards"] = []
+    pkg["lifecycle"] = {
+        "vmp": vector.get("vmp", {}) or {},
+        "urs": vector.get("urs", {}) or {},
+        "computerizedValidation": vector.get("computerizedValidation", {}) or {},
+        "requalificationPlan": vector.get("requalificationPlan", {}) or {},
+        "protocolPreferences": ((vector.get("vmodel") or {}).get("protocolPreferences") or {}),
+        "vmodel": vector.get("vmodel", {}) or {},
+    }
+    apply_vmodel_mapping(pkg)
+
+    fp_src = json.dumps(
+        {
+            "equipmentTypeId": pkg["equipment"].get("equipmentTypeId"),
+            "cohort": pkg["equipment"].get("cohort"),
+            "siteContext": pkg.get("siteContext", {}),
+            "equipmentControls": pkg.get("equipmentControls", {}),
+            "ursIds": [r.get("ursId", "") for r in (pkg.get("URS", {}).get("requirements", []) or [])],
+            "frsIds": [r.get("frsId", "") for r in (pkg.get("FRS", {}).get("functions", []) or [])],
+            "trsIds": [r.get("trsId", "") for r in (pkg.get("TRS", {}).get("tests", []) or [])],
+            "rulesetId": pkg.get("rulesetId"),
+            "hazcatVersion": pkg.get("hazcatVersion"),
+            "templateVersion": pkg.get("packageTemplateVersion"),
+        },
+        sort_keys=True,
+    )
+    pkg["fingerprint"] = "sha256:" + hashlib.sha256(fp_src.encode("utf-8")).hexdigest()
     return pkg
 
 def main():

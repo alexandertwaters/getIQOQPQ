@@ -40,6 +40,8 @@
       equipmentControlsCatalog: null,
       hazardContextOptions: null,
       hazardRatings: {},
+      vmodelCatalog: { urs: [], frs: [], trs: [] },
+      vmodelSelection: { ursIds: [], frsIds: [], trsIds: [] },
       catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
       siteContextMetadata: { cleanroomClasses: [], productContact: {}, productionThroughput: [] },
       equipmentMetadata: null,
@@ -62,12 +64,6 @@
           throughputRationale: '',
           acceptanceCriteria: '',
         },
-        dq: {
-          designSummary: '',
-          ursAlignment: '',
-          supplierAssessment: '',
-          openItems: '',
-        },
         computerizedValidation: {
           computerized: false,
           softwareClassification: '',
@@ -79,6 +75,11 @@
           baseFrequency: 'annual',
           triggers: [],
           rationale: '',
+        },
+        protocolPreferences: {
+          pqRunCount: 3,
+          sampleSize: 30,
+          evidencePlaceholders: '',
         },
       },
     };
@@ -95,16 +96,15 @@
         steps.push({ id: 'equipmentControl', idx: i, label: cat.label });
       });
       steps.push({ id: 'vmp', label: 'Validation master plan' });
-      steps.push({ id: 'urs', label: 'URS' });
-      steps.push({ id: 'dq', label: 'DQ' });
+      steps.push({ id: 'urs', label: 'URS selection' });
+      steps.push({ id: 'frs', label: 'FRS selection' });
+      steps.push({ id: 'trs', label: 'TRS selection' });
+      steps.push({ id: 'protocolPreferences', label: 'Protocol preferences' });
       steps.push({ id: 'computerizedValidation', label: 'Computerized/GxP' });
       steps.push({ id: 'requalification', label: 'Requalification' });
       steps.push({ id: 'throughput', label: 'Production throughput' });
       steps.push({ id: 'productContact', label: 'Product contact' });
       steps.push({ id: 'cleanroom', label: 'Cleanroom class' });
-      (state.hazards || []).forEach((h, i) => {
-        steps.push({ id: 'hazard', idx: i, label: h.title });
-      });
       steps.push({ id: 'review', label: 'Review & Generate Draft' });
       return steps;
     }
@@ -158,15 +158,28 @@
 
     async function loadEquipmentMetadata(equipmentTypeId) {
       try {
-        const [metaRes, ctrlRes] = await Promise.all([
+        const [metaRes, ctrlRes, ursRes, frsRes, trsRes] = await Promise.all([
           fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId),
           fetchJson(API + '/equipment-controls?equipmentTypeId=' + equipmentTypeId).catch(() => null),
+          fetchJson(API + '/urs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ requirements: [] })),
+          fetchJson(API + '/frs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ functions: [] })),
+          fetchJson(API + '/trs-library?equipmentTypeId=' + equipmentTypeId).catch(() => ({ tests: [] })),
         ]);
         state.equipmentMetadata = metaRes;
         const em = metaRes.equipmentMetadata;
         if (em?.defaultUtilities?.length) state.siteContext.utilities = [...em.defaultUtilities];
         else state.siteContext.utilities = state.siteContext.utilities.length ? state.siteContext.utilities : ['Electricity'];
         state.equipmentControlsCatalog = ctrlRes;
+        state.vmodelCatalog = {
+          urs: ursRes.requirements || [],
+          frs: frsRes.functions || [],
+          trs: trsRes.tests || [],
+        };
+        state.vmodelSelection = {
+          ursIds: (ursRes.requirements || []).filter(r => r.criticality === 'critical').map(r => r.ursId),
+          frsIds: [],
+          trsIds: [],
+        };
         state.equipmentControls = {};
         (ctrlRes?.controlCategories || []).forEach(cat => {
           (cat.controls || []).forEach(ctrl => {
@@ -177,6 +190,8 @@
       } catch (e) {
         state.equipmentMetadata = null;
         state.equipmentControlsCatalog = null;
+        state.vmodelCatalog = { urs: [], frs: [], trs: [] };
+        state.vmodelSelection = { ursIds: [], frsIds: [], trsIds: [] };
         state.equipmentControls = {};
         if (!state.siteContext.utilities.length) state.siteContext.utilities = ['Electricity'];
       }
@@ -224,7 +239,7 @@
       if (!state.selectedEquipment) return;
       state.loading = true;
       render();
-      await loadHazards();
+      await loadEquipmentMetadata(state.selectedEquipment.id);
       state.loading = false;
       state.flowStep = 2;
       render();
@@ -272,6 +287,27 @@
       render();
     }
 
+    function toggleReq(kind, id, checked) {
+      const sel = state.vmodelSelection[kind] || [];
+      const idx = sel.indexOf(id);
+      if (checked && idx < 0) sel.push(id);
+      if (!checked && idx >= 0) sel.splice(idx, 1);
+      state.vmodelSelection[kind] = sel;
+      if (kind === 'ursIds') {
+        const derivedFrs = state.vmodelCatalog.frs
+          .filter(f => (f.derivedFromURS || []).some(u => sel.includes(u)))
+          .map(f => f.frsId);
+        state.vmodelSelection.frsIds = Array.from(new Set([...(state.vmodelSelection.frsIds || []), ...derivedFrs]));
+      }
+      if (kind === 'frsIds') {
+        const derivedTrs = state.vmodelCatalog.trs
+          .filter(t => (t.verifiesFRS || []).some(f => (state.vmodelSelection.frsIds || []).includes(f)))
+          .map(t => t.trsId);
+        state.vmodelSelection.trsIds = Array.from(new Set([...(state.vmodelSelection.trsIds || []), ...derivedTrs]));
+      }
+      render();
+    }
+
     function toggleHelp(hazardId, field) {
       const key = hazardId + '.' + field;
       state.expandedHelp = state.expandedHelp === key ? null : key;
@@ -308,13 +344,11 @@
       const l = state.lifecycle;
       if (!l.vmp.scope || !l.vmp.roles || !l.vmp.deliverables) return false;
       if (!l.urs.intendedUse || !l.urs.criticalProcessParameters || !l.urs.acceptanceCriteria) return false;
-      if (!l.dq.designSummary || !l.dq.ursAlignment) return false;
       if (!l.requalificationPlan.rationale || !(l.requalificationPlan.triggers || []).length) return false;
       if (l.computerizedValidation.computerized && !l.computerizedValidation.softwareClassification) return false;
-      for (const h of state.hazards) {
-        const r = state.hazardRatings[h.hazardId];
-        if (!r?.Severity_label || !r?.ProbabilityOfOccurrence_label || !r?.Exposure_label || !r?.Detectability_label || !r?.ControlEffectiveness_label) return false;
-      }
+      if (!(state.vmodelSelection.ursIds || []).length) return false;
+      if (!(state.vmodelSelection.frsIds || []).length) return false;
+      if (!(state.vmodelSelection.trsIds || []).length) return false;
       return true;
     }
 
@@ -335,30 +369,19 @@
             cleanroomClass: state.cleanroomNotApplicable ? NAR_CLEANROOM : sc.cleanroomClass,
           },
           controlArchitecture: 'PLC or SCADA',
-          hazards: state.hazards.map(h => {
-            const r = state.hazardRatings[h.hazardId] || {};
-            const hc = r.hazardContext || {};
-            const hcFiltered = Object.keys(hc).reduce((o, k) => {
-              const v = hc[k];
-              if (v !== '' && v !== false && !(Array.isArray(v) && v.length === 0)) o[k] = v;
-              return o;
-            }, {});
-            return {
-              hazardId: h.hazardId,
-              title: h.title,
-              definition: h.definition,
-              hazardContext: Object.keys(hcFiltered).length ? hcFiltered : undefined,
-              ruleId: h.ruleId || '',
-              ...r,
-            };
-          }),
+          hazards: [],
           rulesetId: state.catalog.rulesetId,
           hazcatVersion: state.catalog.hazcatVersion,
           vmp: state.lifecycle.vmp,
           urs: state.lifecycle.urs,
-          dq: state.lifecycle.dq,
           computerizedValidation: state.lifecycle.computerizedValidation,
           requalificationPlan: state.lifecycle.requalificationPlan,
+          vmodel: {
+            ursIds: state.vmodelSelection.ursIds || [],
+            frsIds: state.vmodelSelection.frsIds || [],
+            trsIds: state.vmodelSelection.trsIds || [],
+            protocolPreferences: state.lifecycle.protocolPreferences,
+          },
         };
         const ec = state.equipmentControls || {};
         const ecFiltered = Object.keys(ec).reduce((o, k) => {
@@ -499,26 +522,58 @@
 
       if (step.id === 'urs') {
         const u = state.lifecycle.urs;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">User Requirements Specification (URS)</h2><p class="text-sm text-slate-500">Capture intended use, CPPs, environment, throughput needs, and acceptance criteria.</p>';
+        const selected = state.vmodelSelection.ursIds || [];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">User Requirements Specification (URS)</h2><p class="text-sm text-slate-500">Capture intended use and select applicable URS requirements.</p>';
         html += '<div class="grid gap-3">';
         html += '<div><label class="block text-sm font-medium text-slate-600">Intended use</label><textarea onchange="state.lifecycle.urs.intendedUse=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.intendedUse)+'</textarea></div>';
         html += '<div><label class="block text-sm font-medium text-slate-600">Critical process parameters (CPPs)</label><textarea onchange="state.lifecycle.urs.criticalProcessParameters=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.criticalProcessParameters)+'</textarea></div>';
         html += '<div><label class="block text-sm font-medium text-slate-600">Environmental needs</label><textarea onchange="state.lifecycle.urs.environmentNeeds=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.environmentNeeds)+'</textarea></div>';
         html += '<div><label class="block text-sm font-medium text-slate-600">Throughput rationale</label><textarea onchange="state.lifecycle.urs.throughputRationale=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.throughputRationale)+'</textarea></div>';
         html += '<div><label class="block text-sm font-medium text-slate-600">Acceptance criteria</label><textarea onchange="state.lifecycle.urs.acceptanceCriteria=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.acceptanceCriteria)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600 mb-2">Select applicable URS requirements</label>';
+        (state.vmodelCatalog.urs || []).forEach(req => {
+          const ch = selected.includes(req.ursId);
+          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'ursIds\',\''+esc(req.ursId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong><br><span class="text-slate-600">'+req.statement+'</span></span></label>';
+        });
+        html += '</div>';
         html += '</div>';
         html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
         return html;
       }
 
-      if (step.id === 'dq') {
-        const d = state.lifecycle.dq;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Design Qualification (DQ)</h2><p class="text-sm text-slate-500">Confirm selected design meets URS prior to installation.</p>';
+      if (step.id === 'frs') {
+        const selected = state.vmodelSelection.frsIds || [];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Functional Requirement Specification (FRS)</h2><p class="text-sm text-slate-500">Review auto-derived FRS and adjust selections as needed.</p>';
+        html += '<div>';
+        (state.vmodelCatalog.frs || []).forEach(req => {
+          const ch = selected.includes(req.frsId);
+          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'frsIds\',\''+esc(req.frsId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong><br><span class="text-slate-600">'+req.functionalRequirement+'</span></span></label>';
+        });
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'trs') {
+        const selected = state.vmodelSelection.trsIds || [];
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Technical Requirement Specification (TRS)</h2><p class="text-sm text-slate-500">Select TRS checks to build IQ/OQ/PQ protocol drafts.</p>';
+        html += '<div>';
+        (state.vmodelCatalog.trs || []).forEach(req => {
+          const ch = selected.includes(req.trsId);
+          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'trsIds\',\''+esc(req.trsId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong> <span class="text-xs text-slate-500">('+req.verificationPhase+')</span><br><span class="text-slate-600">'+req.objective+'</span></span></label>';
+        });
+        html += '</div>';
+        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
+        return html;
+      }
+
+      if (step.id === 'protocolPreferences') {
+        const p = state.lifecycle.protocolPreferences;
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Protocol preferences</h2><p class="text-sm text-slate-500">Set default PQ run count, sample size, and evidence placeholders.</p>';
         html += '<div class="grid gap-3">';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Design summary</label><textarea onchange="state.lifecycle.dq.designSummary=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.designSummary)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">URS alignment assessment</label><textarea onchange="state.lifecycle.dq.ursAlignment=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.ursAlignment)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Supplier/design evidence</label><textarea onchange="state.lifecycle.dq.supplierAssessment=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.supplierAssessment)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Open items / residual gaps</label><textarea onchange="state.lifecycle.dq.openItems=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(d.openItems)+'</textarea></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">PQ run count</label><input type="number" min="1" max="10" value="'+(p.pqRunCount||3)+'" onchange="state.lifecycle.protocolPreferences.pqRunCount=parseInt(this.value||3,10);render()" class="mt-1 w-full max-w-xs rounded border border-slate-200 px-3 py-2"></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Default sample size</label><input type="number" min="1" max="500" value="'+(p.sampleSize||30)+'" onchange="state.lifecycle.protocolPreferences.sampleSize=parseInt(this.value||30,10);render()" class="mt-1 w-full max-w-xs rounded border border-slate-200 px-3 py-2"></div>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Evidence placeholders</label><textarea onchange="state.lifecycle.protocolPreferences.evidencePlaceholders=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(p.evidencePlaceholders||'')+'</textarea></div>';
         html += '</div>';
         html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
         return html;
@@ -646,15 +701,10 @@
         const ec = state.equipmentControls || {};
         const ecSet = Object.entries(ec).filter(([,v]) => v !== '' && v !== false).length;
         if (ecSet) html += '<dt class="mt-2 font-medium text-slate-500">Equipment controls</dt><dd>'+ecSet+' selected</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Hazards configured</dt><dd>'+state.hazards.length+'</dd></dl>';
-        html += '<div class="rounded border border-slate-200 p-3 text-sm"><div class="font-medium text-slate-600 mb-1">Lifecycle readiness</div><div>VMP/URS/DQ/Requalification captured: <strong>Yes</strong></div><div>Computerized system flagged: <strong>'+(state.lifecycle.computerizedValidation.computerized?'Yes':'No')+'</strong></div></div>';
-        html += '<div class="space-y-4"><h3 class="text-sm font-medium text-slate-600">Per-hazard summary</h3>';
-        state.hazards.forEach(h => {
-          const r = state.hazardRatings[h.hazardId] || {};
-          html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><div class="font-medium text-sm">'+h.title+'</div>';
-          html += '<div class="mt-1 text-xs text-slate-600">'+r.Severity_label+' / '+r.ProbabilityOfOccurrence_label+' / '+r.Exposure_label+' / '+r.Detectability_label+' / '+r.ControlEffectiveness_label+'</div></div>';
-        });
-        html += '</div>';
+        html += '<dt class="mt-2 font-medium text-slate-500">URS selected</dt><dd>'+(state.vmodelSelection.ursIds||[]).length+'</dd>';
+        html += '<dt class="mt-2 font-medium text-slate-500">FRS selected</dt><dd>'+(state.vmodelSelection.frsIds||[]).length+'</dd>';
+        html += '<dt class="mt-2 font-medium text-slate-500">TRS selected</dt><dd>'+(state.vmodelSelection.trsIds||[]).length+'</dd></dl>';
+        html += '<div class="rounded border border-slate-200 p-3 text-sm"><div class="font-medium text-slate-600 mb-1">V-model readiness</div><div>VMP/URS/FRS/TRS/Requalification captured: <strong>Yes</strong></div><div>Computerized system flagged: <strong>'+(state.lifecycle.computerizedValidation.computerized?'Yes':'No')+'</strong></div></div>';
         html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
         html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate Draft')+'</button></div></div>';
         return html;
@@ -682,8 +732,18 @@
         html += '<button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button>';
         html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
         html += '</div>';
-        html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate prose-sm max-w-none" id="draft-preview">'+draftHtml+'</div>';
-        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.equipmentControlsCatalog=null;state.equipmentMetadata=null;state.lifecycle={vmp:{scope:\'\',roles:\'\',timeline:\'\',deliverables:\'\',trainingPlan:\'\',supplierEvidencePlan:\'\'},urs:{intendedUse:\'\',criticalProcessParameters:\'\',environmentNeeds:\'\',throughputRationale:\'\',acceptanceCriteria:\'\'},dq:{designSummary:\'\',ursAlignment:\'\',supplierAssessment:\'\',openItems:\'\'},computerizedValidation:{computerized:false,softwareClassification:\'\',part11Controls:\'\',dataIntegrityControls:\'\',patchConfigHistory:\'\'},requalificationPlan:{baseFrequency:\'annual\',triggers:[],rationale:\'\'}};load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
+        const files = state.artifactUrls || {};
+        const fileNames = Object.keys(files);
+        if (fileNames.length) {
+          html += '<div class="rounded border border-slate-200 bg-white p-3 no-print"><div class="mb-2 text-sm font-medium text-slate-700">Generated documents</div><div class="flex flex-wrap gap-2">';
+          fileNames.filter(n => n.endsWith('.md') || n.endsWith('.csv') || n.endsWith('.json')).forEach(n => {
+            const u = files[n];
+            if (typeof u === 'string') html += '<a class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" target="_blank" href="'+u+'">'+n+'</a>';
+          });
+          html += '</div></div>';
+        }
+        html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate max-w-none" id="draft-preview">'+draftHtml+'</div>';
+        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.vmodelCatalog={urs:[],frs:[],trs:[]};state.vmodelSelection={ursIds:[],frsIds:[],trsIds:[]};state.equipmentControlsCatalog=null;state.equipmentMetadata=null;state.lifecycle={vmp:{scope:\'\',roles:\'\',timeline:\'\',deliverables:\'\',trainingPlan:\'\',supplierEvidencePlan:\'\'},urs:{intendedUse:\'\',criticalProcessParameters:\'\',environmentNeeds:\'\',throughputRationale:\'\',acceptanceCriteria:\'\'},computerizedValidation:{computerized:false,softwareClassification:\'\',part11Controls:\'\',dataIntegrityControls:\'\',patchConfigHistory:\'\'},requalificationPlan:{baseFrequency:\'annual\',triggers:[],rationale:\'\'},protocolPreferences:{pqRunCount:3,sampleSize:30,evidencePlaceholders:\'\'}};load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
       } else {
         html += renderProgressBar();
         html += renderStepContent();
