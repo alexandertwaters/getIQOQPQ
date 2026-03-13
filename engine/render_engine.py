@@ -218,25 +218,40 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
             "escalationReason": h.get("escalationReason", ""),
         })
     ctx["hazards"] = hazards_ctx
+    is_vmodel = pkg.get("qualificationBand") == "VModel"
     iq = pkg.get("IQ", {})
-    ctx["IQ"] = {
-        "checklist": iq.get("checklist", []),
-        "checklistItems": iq.get("checklistItems", []),
-        "evidenceNamingConvention": iq.get("evidenceNamingConvention", ""),
-        "evidenceNamingHelp": iq.get("evidenceNamingHelp", ""),
-        "testScripts": _build_iq_test_scripts_table(iq.get("checklistItems", [])) or ([{"category": "Installation", "objective": "Verify equipment installed per specification.", "setup": "Drawings and supplier documentation available.", "steps": "1. Review spec and drawings. 2. Verify each item. 3. Record results.", "dataToRecord": "Pass/Fail, evidence reference.", "acceptanceCriteria": "Conforms to supplier and site requirements."}] if iq.get("checklist") else []),
-    }
-    # Deduplicate OQ tests by title so same test appears once
-    oq_seen = {}
-    oq_tests = []
-    for h in sorted(hazards_ctx, key=lambda x: x["hazardId"]):
-        for t in h["OQ_tests"]:
-            title = t.get("title", "") or ""
-            if title and title not in oq_seen:
-                oq_seen[title] = t
-                oq_tests.append(t)
-    ctx["OQ"] = {"tests": oq_tests}
-    ctx["PQ"] = pkg.get("PQ", {})
+    if is_vmodel:
+        ctx["IQ"] = {
+            "purpose": iq.get("purpose", ""),
+            "prerequisites": iq.get("prerequisites", ""),
+            "executionNotes": iq.get("executionNotes", ""),
+            "checklist": iq.get("checklist", []),
+            "checklistItems": iq.get("checklistItems", []),
+            "evidenceNamingConvention": iq.get("evidenceNamingConvention", ""),
+            "evidenceNamingHelp": iq.get("evidenceNamingHelp", ""),
+            "testScripts": iq.get("testScripts", []),
+        }
+        ctx["OQ"] = pkg.get("OQ", {"tests": []})
+        ctx["PQ"] = pkg.get("PQ", {})
+    else:
+        ctx["IQ"] = {
+            "checklist": iq.get("checklist", []),
+            "checklistItems": iq.get("checklistItems", []),
+            "evidenceNamingConvention": iq.get("evidenceNamingConvention", ""),
+            "evidenceNamingHelp": iq.get("evidenceNamingHelp", ""),
+            "testScripts": _build_iq_test_scripts_table(iq.get("checklistItems", [])) or ([{"category": "Installation", "objective": "Verify equipment installed per specification.", "setup": "Drawings and supplier documentation available.", "steps": "1. Review spec and drawings. 2. Verify each item. 3. Record results.", "dataToRecord": "Pass/Fail, evidence reference.", "acceptanceCriteria": "Conforms to supplier and site requirements."}] if iq.get("checklist") else []),
+        }
+        # Deduplicate OQ tests by title so same test appears once
+        oq_seen = {}
+        oq_tests = []
+        for h in sorted(hazards_ctx, key=lambda x: x["hazardId"]):
+            for t in h["OQ_tests"]:
+                title = t.get("title", "") or ""
+                if title and title not in oq_seen:
+                    oq_seen[title] = t
+                    oq_tests.append(t)
+        ctx["OQ"] = {"tests": oq_tests}
+        ctx["PQ"] = pkg.get("PQ", {})
     ctx["VMP"] = pkg.get("VMP", {})
     ctx["URS"] = pkg.get("URS", {})
     ctx["FRS"] = pkg.get("FRS", {})
@@ -252,7 +267,7 @@ def render_markdown(pkg_path, template_md_path, langmap_path, outdir):
     os.makedirs(outdir, exist_ok=True)
     fp = pkg.get("fingerprint", "package")
     safe_fp = fp.replace(":", "_")
-    if pkg.get("qualificationBand") == "VModel":
+    if is_vmodel:
         _render_vmodel_single_document(ctx, outdir, safe_fp)
         out_md = os.path.join(outdir, f"{safe_fp}.md")
     else:
