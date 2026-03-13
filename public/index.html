@@ -300,17 +300,7 @@
         const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g, '<br>');
         html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
         html += '<h2 class="text-lg font-semibold text-emerald-800 no-print">Draft generated</h2>';
-        html += '<div class="flex flex-wrap gap-2 no-print"><button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button><button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button></div>';
-        const files = state.artifactUrls || {};
-        const names = Object.keys(files);
-        if (names.length) {
-          html += '<div class="rounded border border-slate-200 bg-white p-3 no-print"><div class="mb-2 text-sm font-medium text-slate-700">Generated documents</div><div class="flex flex-wrap gap-2">';
-          names.filter(n => n.endsWith('.md') || n.endsWith('.csv') || n.endsWith('.json')).forEach(n => {
-            const url = files[n];
-            if (typeof url === 'string') html += '<a class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" target="_blank" href="' + url + '">' + n + '</a>';
-          });
-          html += '</div></div>';
-        }
+        html += '<div class="flex flex-wrap gap-2 no-print"><button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button></div>';
         html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate max-w-none" id="draft-preview">' + draftHtml + '</div>';
         html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.vmodelCatalog={urs:[],frs:[],trs:[]};state.vmodelSelection={ursIds:[],frsIds:[],trsIds:[]};state.ui={ursQuery:\'\',frsQuery:\'\',trsQuery:\'\',showAdvancedURS:false,showAdvancedFRS:false,showAdvancedTRS:false};render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button>';
         html += '</div>';

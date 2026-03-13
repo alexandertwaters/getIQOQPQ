@@ -134,9 +134,9 @@ class TestRenderOutput(unittest.TestCase):
 
 
 class TestVModelOutput(unittest.TestCase):
-    """Pure V-model output tests for separate docs and traceability."""
+    """Pure V-model output tests for single comprehensive doc and traceability."""
 
-    def test_vmodel_generates_separate_docs_and_traceability(self):
+    def test_vmodel_generates_single_doc_and_traceability(self):
         from engine.engine_core import run_vector
         from engine.render_engine import render_markdown
 
@@ -175,14 +175,16 @@ class TestVModelOutput(unittest.TestCase):
             files = {p.name for p in Path(tmpdir).glob("*")}
             fp = pkg["fingerprint"].replace(":", "_")
             self.assertIn(f"{fp}.md", files)
-            self.assertIn(f"{fp}.VMP.md", files)
-            self.assertIn(f"{fp}.URS.md", files)
-            self.assertIn(f"{fp}.FRS.md", files)
-            self.assertIn(f"{fp}.TRS.md", files)
-            self.assertIn(f"{fp}.IQ.md", files)
-            self.assertIn(f"{fp}.OQ.md", files)
-            self.assertIn(f"{fp}.PQ.md", files)
             self.assertIn(f"{fp}.traceability.csv", files)
+            text = (Path(tmpdir) / f"{fp}.md").read_text(encoding="utf8")
+            self.assertIn("Validation Master Plan (VMP)", text)
+            self.assertIn("User Requirements Specification (URS)", text)
+            self.assertIn("Functional Requirements Specification (FRS)", text)
+            self.assertIn("Technical Requirements Specification (TRS)", text)
+            self.assertIn("Installation Qualification (IQ) Protocol", text)
+            self.assertIn("Operational Qualification (OQ) Protocol", text)
+            self.assertIn("Performance Qualification (PQ) Protocol", text)
+            self.assertIn("Traceability Matrix", text)
         finally:
             import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)

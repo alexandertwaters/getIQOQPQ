@@ -303,28 +303,102 @@ def apply_vmodel_mapping(pkg):
     pq_trs = _trs_phase("PQ")
 
     lifecycle = pkg.get("lifecycle") or {}
+    vmp_in = lifecycle.get("vmp") or {}
+    urs_in = lifecycle.get("urs") or {}
     pkg["VMP"] = {
-        "scope": (lifecycle.get("vmp") or {}).get("scope", ""),
-        "roles": (lifecycle.get("vmp") or {}).get("roles", ""),
-        "timeline": (lifecycle.get("vmp") or {}).get("timeline", ""),
-        "deliverables": (lifecycle.get("vmp") or {}).get("deliverables", ""),
-        "trainingPlan": (lifecycle.get("vmp") or {}).get("trainingPlan", ""),
-        "supplierEvidencePlan": (lifecycle.get("vmp") or {}).get("supplierEvidencePlan", ""),
+        "scope": vmp_in.get("scope", ""),
+        "objective": vmp_in.get("objective", ""),
+        "roles": vmp_in.get("roles", ""),
+        "qualificationStrategy": vmp_in.get("qualificationStrategy", ""),
+        "timeline": vmp_in.get("timeline", ""),
+        "deliverables": vmp_in.get("deliverables", ""),
+        "trainingPlan": vmp_in.get("trainingPlan", ""),
+        "supplierEvidencePlan": vmp_in.get("supplierEvidencePlan", ""),
     }
+
+    frs_to_oq = {}
+    frs_to_pq = {}
+    for t in oq_trs:
+        for fid in (t.get("verifiesFRS") or []):
+            frs_to_oq.setdefault(fid, []).append(t)
+    for t in pq_trs:
+        for fid in (t.get("verifiesFRS") or []):
+            frs_to_pq.setdefault(fid, []).append(t)
+
+    def _is_ctq_from_urs_ids(ids):
+        for uid in ids:
+            u = urs_map.get(uid) or {}
+            if (u.get("criticality") or "").lower() == "critical":
+                return True
+        return False
+
+    urs_rows = []
+    for u in selected_urs:
+        uid = u.get("ursId", "")
+        related_frs = [f for f in selected_frs if uid in (f.get("derivedFromURS") or [])]
+        related_pq = []
+        for f in related_frs:
+            related_pq.extend(frs_to_pq.get(f.get("frsId", ""), []))
+        related_pq = list({t.get("trsId", ""): t for t in related_pq if t.get("trsId")}.values())
+        urs_rows.append({
+            "itemId": uid,
+            "requirement": u.get("statement") or u.get("title", ""),
+            "rationale": u.get("rationale") or "Supports intended use, patient safety, and regulatory compliance.",
+            "acceptanceCriteria": u.get("acceptanceCriteria") or ("; ".join([t.get("acceptanceCriteria", "") for t in related_pq if t.get("acceptanceCriteria")]) or "Defined in mapped PQ protocol."),
+            "testMethod": "; ".join([f"{t.get('trsId', '')}: {t.get('title', '')}" for t in related_pq]) or "Mapped PQ protocol execution.",
+            "ctq": "Yes" if (u.get("criticality") or "").lower() == "critical" else "No",
+            "responsible": u.get("responsible") or "Validation / QA",
+        })
+
+    frs_rows = []
+    for f in selected_frs:
+        fid = f.get("frsId", "")
+        oq_for_frs = frs_to_oq.get(fid, [])
+        ctq = "Yes" if _is_ctq_from_urs_ids(f.get("derivedFromURS") or []) else "No"
+        frs_rows.append({
+            "itemId": fid,
+            "requirement": f.get("functionalRequirement") or f.get("title", ""),
+            "rationale": f.get("rationale") or "Defines required equipment behavior to satisfy URS.",
+            "acceptanceCriteria": f.get("acceptanceCriteria") or ("; ".join([t.get("acceptanceCriteria", "") for t in oq_for_frs if t.get("acceptanceCriteria")]) or "Defined in mapped OQ protocol."),
+            "testMethod": "; ".join([f"{t.get('trsId', '')}: {t.get('title', '')}" for t in oq_for_frs]) or "Mapped OQ protocol execution.",
+            "ctq": ctq,
+            "responsible": f.get("responsible") or "Validation / Engineering",
+        })
+
+    trs_rows = []
+    for t in selected_trs:
+        phase = (t.get("verificationPhase") or "").upper()
+        ctq = "Yes" if _is_ctq_from_urs_ids([uid for f in selected_frs if f.get("frsId") in (t.get("verifiesFRS") or []) for uid in (f.get("derivedFromURS") or [])]) else "No"
+        default_resp = "Engineering / Validation" if phase == "IQ" else ("Validation / Automation" if phase == "OQ" else "Validation / QA / Operations")
+        trs_rows.append({
+            "itemId": t.get("trsId", ""),
+            "requirement": t.get("objective") or t.get("title", ""),
+            "rationale": t.get("rationale") or "Provides executable verification of technical requirements.",
+            "acceptanceCriteria": t.get("acceptanceCriteria", ""),
+            "testMethod": f"{phase} protocol execution",
+            "ctq": ctq,
+            "responsible": t.get("responsible") or default_resp,
+        })
+
     pkg["URS"] = {
-        "intendedUse": (lifecycle.get("urs") or {}).get("intendedUse", ""),
-        "criticalProcessParameters": (lifecycle.get("urs") or {}).get("criticalProcessParameters", ""),
-        "environmentNeeds": (lifecycle.get("urs") or {}).get("environmentNeeds", ""),
-        "throughputRationale": (lifecycle.get("urs") or {}).get("throughputRationale", ""),
-        "acceptanceCriteria": (lifecycle.get("urs") or {}).get("acceptanceCriteria", ""),
+        "intendedUse": urs_in.get("intendedUse", ""),
+        "criticalProcessParameters": urs_in.get("criticalProcessParameters", ""),
+        "environmentNeeds": urs_in.get("environmentNeeds", ""),
+        "throughputRationale": urs_in.get("throughputRationale", ""),
+        "acceptanceCriteria": urs_in.get("acceptanceCriteria", ""),
         "requirements": selected_urs,
+        "tableRows": urs_rows,
     }
-    pkg["FRS"] = {"functions": selected_frs}
-    pkg["TRS"] = {"tests": selected_trs}
+    pkg["FRS"] = {"functions": selected_frs, "tableRows": frs_rows}
+    pkg["TRS"] = {"tests": selected_trs, "tableRows": trs_rows}
     pkg["IQ"] = {
+        "purpose": "Verify installation, utilities, baseline configuration, and documented readiness for operation.",
+        "prerequisites": "Approved IQ protocol, calibrated tools, installation complete, and required documentation available.",
+        "executionNotes": "Execute in order, attach objective evidence, and manage deviations per QMS.",
         "checklist": [t.get("title", "") for t in iq_trs],
         "testScripts": [
             {
+                "testId": t.get("trsId", ""),
                 "title": t.get("title", ""),
                 "objective": t.get("objective", ""),
                 "setup": "Equipment installed and prerequisites complete.",
@@ -336,8 +410,12 @@ def apply_vmodel_mapping(pkg):
         ],
     }
     pkg["OQ"] = {
+        "purpose": "Verify functional operation across intended operating ranges, alarms, interlocks, and challenge conditions.",
+        "prerequisites": "IQ complete, approved procedures available, and calibrated challenge instruments ready.",
+        "executionNotes": "Document each run and challenge condition with objective evidence and pass/fail outcomes.",
         "tests": [
             {
+                "testId": t.get("trsId", ""),
                 "title": t.get("title", ""),
                 "objective": t.get("objective", ""),
                 "setup": "Calibrated instruments and approved SOP available.",
@@ -350,6 +428,9 @@ def apply_vmodel_mapping(pkg):
     }
     prefs = (lifecycle.get("protocolPreferences") or {})
     pkg["PQ"] = {
+        "purpose": "Verify repeatable process performance under representative and worst-case production conditions.",
+        "prerequisites": "OQ complete, approved loads and acceptance criteria, trained operators, and required materials available.",
+        "executionNotes": "Execute planned runs with full data capture and deviation handling per approved protocol.",
         "plan": "Representative production and worst-case challenge execution.",
         "pqCycles": int(prefs.get("pqRunCount") or 3),
         "worstCaseLoadDefinition": "Worst-case load profile from selected TRS coverage.",
@@ -357,6 +438,7 @@ def apply_vmodel_mapping(pkg):
         "acceptanceCriteria": "; ".join([t.get("acceptanceCriteria", "") for t in pq_trs if t.get("acceptanceCriteria")]) or "Meets approved PQ acceptance criteria.",
         "tests": [
             {
+                "testId": t.get("trsId", ""),
                 "title": t.get("title", ""),
                 "objective": t.get("objective", ""),
                 "setup": "Production-representative operators, materials, and approved batch records.",
@@ -373,36 +455,56 @@ def apply_vmodel_mapping(pkg):
     pkg["evidenceList"] = _build_evidence_list(pkg, bool((pkg.get("computerizedValidation") or {}).get("computerized")))
 
     trace_rows = []
-    map_rows = [m for m in map_doc.get("mappings", []) if m.get("equipmentTypeId") == equipment_type_id]
-    for m in map_rows:
-        if m.get("ursId") not in urs_ids:
+    for t in iq_trs:
+        trace_rows.append({
+            "sourceType": "TRS",
+            "sourceId": t.get("trsId", ""),
+            "sourceTitle": t.get("title", ""),
+            "targetProtocol": "IQ",
+            "targetTest": t.get("title", ""),
+        })
+    for f in selected_frs:
+        oq_for_frs = frs_to_oq.get(f.get("frsId", ""), [])
+        if not oq_for_frs:
+            trace_rows.append({
+                "sourceType": "FRS",
+                "sourceId": f.get("frsId", ""),
+                "sourceTitle": f.get("title", ""),
+                "targetProtocol": "OQ",
+                "targetTest": "No mapped OQ test",
+            })
             continue
-        urs_title = urs_map.get(m.get("ursId"), {}).get("title", m.get("ursId"))
-        for fid in m.get("frsIds", []):
-            if fid in frs_ids:
-                trace_rows.append({
-                    "ursId": m.get("ursId"),
-                    "ursTitle": urs_title,
-                    "frsId": fid,
-                    "frsTitle": frs_map.get(fid, {}).get("title", fid),
-                    "trsId": "",
-                    "trsTitle": "",
-                    "protocolPhase": "",
-                    "protocolTest": "",
-                })
-        for tid in m.get("trsIds", []):
-            if tid in trs_ids:
-                t = trs_map.get(tid, {})
-                trace_rows.append({
-                    "ursId": m.get("ursId"),
-                    "ursTitle": urs_title,
-                    "frsId": ", ".join([f for f in m.get("frsIds", []) if f in frs_ids]),
-                    "frsTitle": ", ".join([frs_map.get(f, {}).get("title", f) for f in m.get("frsIds", []) if f in frs_ids]),
-                    "trsId": tid,
-                    "trsTitle": t.get("title", tid),
-                    "protocolPhase": t.get("verificationPhase", ""),
-                    "protocolTest": t.get("title", tid),
-                })
+        for t in oq_for_frs:
+            trace_rows.append({
+                "sourceType": "FRS",
+                "sourceId": f.get("frsId", ""),
+                "sourceTitle": f.get("title", ""),
+                "targetProtocol": "OQ",
+                "targetTest": f"{t.get('trsId', '')}: {t.get('title', '')}",
+            })
+    for u in selected_urs:
+        related_frs = [f for f in selected_frs if u.get("ursId") in (f.get("derivedFromURS") or [])]
+        related_pq = []
+        for f in related_frs:
+            related_pq.extend(frs_to_pq.get(f.get("frsId", ""), []))
+        related_pq = list({t.get("trsId", ""): t for t in related_pq if t.get("trsId")}.values())
+        if not related_pq:
+            trace_rows.append({
+                "sourceType": "URS",
+                "sourceId": u.get("ursId", ""),
+                "sourceTitle": u.get("title", ""),
+                "targetProtocol": "PQ",
+                "targetTest": "No mapped PQ test",
+            })
+            continue
+        for t in related_pq:
+            trace_rows.append({
+                "sourceType": "URS",
+                "sourceId": u.get("ursId", ""),
+                "sourceTitle": u.get("title", ""),
+                "targetProtocol": "PQ",
+                "targetTest": f"{t.get('trsId', '')}: {t.get('title', '')}",
+            })
     pkg["traceabilityMatrix"] = trace_rows
     pkg["traceability"] = {"hazardRules": []}
 
