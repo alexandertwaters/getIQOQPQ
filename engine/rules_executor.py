@@ -295,6 +295,17 @@ def apply_vmodel_mapping(pkg):
     selected_frs = [frs_map[f] for f in frs_ids if f in frs_map]
     selected_trs = [trs_map[t] for t in trs_ids if t in trs_map]
 
+    # If caller supplied stale/unknown TRS IDs (e.g., legacy IDs from older UI),
+    # recover by deriving TRS from selected FRS so IQ/OQ/PQ protocols are populated.
+    if not selected_trs and selected_frs:
+        derived_trs_ids = [
+            t.get("trsId")
+            for t in trs_rows
+            if any(f.get("frsId") in (t.get("verifiesFRS") or []) for f in selected_frs)
+        ]
+        trs_ids = list(dict.fromkeys(derived_trs_ids))
+        selected_trs = [trs_map[t] for t in trs_ids if t in trs_map]
+
     def _trs_phase(phase):
         return [t for t in selected_trs if (t.get("verificationPhase") or "").upper() == phase]
 

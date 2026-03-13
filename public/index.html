@@ -65,6 +65,100 @@
       return r.json();
     }
 
+    function markdownFallback(md) {
+      const lines = String(md || '').split('\n');
+      let i = 0;
+      let html = '';
+      const escHtml = (s) => String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      const inline = (s) => {
+        let out = escHtml(s);
+        out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+        return out;
+      };
+
+      while (i < lines.length) {
+        const raw = lines[i] || '';
+        const line = raw.trim();
+        if (!line) {
+          i++;
+          continue;
+        }
+
+        if (line.startsWith('|')) {
+          const rows = [];
+          while (i < lines.length && (lines[i] || '').trim().startsWith('|')) {
+            rows.push((lines[i] || '').trim());
+            i++;
+          }
+          const parsed = rows
+            .filter(r => !/^\|[\s:\-|]+\|$/.test(r))
+            .map(r => r.split('|').slice(1, -1).map(c => inline(c.trim())));
+          if (parsed.length) {
+            html += '<table><thead><tr>';
+            (parsed[0] || []).forEach(c => { html += '<th>' + c + '</th>'; });
+            html += '</tr></thead><tbody>';
+            parsed.slice(1).forEach(r => {
+              html += '<tr>';
+              r.forEach(c => { html += '<td>' + c + '</td>'; });
+              html += '</tr>';
+            });
+            html += '</tbody></table>';
+          }
+          continue;
+        }
+
+        if (line.startsWith('### ')) {
+          html += '<h3>' + inline(line.slice(4)) + '</h3>';
+          i++;
+          continue;
+        }
+        if (line.startsWith('## ')) {
+          html += '<h2>' + inline(line.slice(3)) + '</h2>';
+          i++;
+          continue;
+        }
+        if (line.startsWith('# ')) {
+          html += '<h1>' + inline(line.slice(2)) + '</h1>';
+          i++;
+          continue;
+        }
+        if (/^---+$/.test(line)) {
+          html += '<hr />';
+          i++;
+          continue;
+        }
+        if (line.startsWith('- ')) {
+          html += '<ul>';
+          while (i < lines.length && (lines[i] || '').trim().startsWith('- ')) {
+            html += '<li>' + inline((lines[i] || '').trim().slice(2)) + '</li>';
+            i++;
+          }
+          html += '</ul>';
+          continue;
+        }
+        html += '<p>' + inline(line) + '</p>';
+        i++;
+      }
+      return html || '<p><em>No draft content available.</em></p>';
+    }
+
+    function renderMarkdown(md) {
+      try {
+        if (typeof marked !== 'undefined' && marked && typeof marked.parse === 'function') {
+          marked.setOptions({ gfm: true, breaks: false });
+          return marked.parse(md || '_No draft content available._');
+        }
+      } catch (e) {
+        // fall through to deterministic local fallback renderer
+      }
+      return markdownFallback(md);
+    }
+
     async function loadBootstrap() {
       try {
         const [equip, cat] = await Promise.all([
@@ -297,7 +391,7 @@
       if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">' + state.error + '</div>';
       if (state.result) {
         const md = state.result.markdownContent || '';
-        const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g, '<br>');
+        const draftHtml = renderMarkdown(md);
         html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
         html += '<h2 class="text-lg font-semibold text-emerald-800 no-print">Draft generated</h2>';
         html += '<div class="flex flex-wrap gap-2 no-print"><button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button></div>';
