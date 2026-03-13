@@ -1,42 +1,112 @@
 {
   "version": "requirements_traceability_map_v1",
   "generatedAt": "2026-03-09T00:00:00Z",
-  "description": "End-to-end traceability map for URS->FRS->TRS and verification phase output.",
+  "description": "Expanded end-to-end traceability map for URS->FRS->TRS and verification phase output.",
   "mappings": [
     {
       "mappingId": "MAP_STER_PV_001",
       "equipmentTypeId": "STER_PV_AUT",
       "ursId": "URS_STER_PV_001",
-      "frsIds": ["FRS_STER_PV_001"],
-      "trsIds": ["TRS_STER_PV_OQ_001", "TRS_STER_PV_PQ_001"]
+      "frsIds": ["FRS_STER_PV_001", "FRS_STER_PV_009"],
+      "trsIds": ["OQ_CTRL_01", "OQ_MAP_01", "PQ_STER_01"]
     },
     {
       "mappingId": "MAP_STER_PV_002",
       "equipmentTypeId": "STER_PV_AUT",
       "ursId": "URS_STER_PV_002",
       "frsIds": ["FRS_STER_PV_001", "FRS_STER_PV_002"],
-      "trsIds": ["TRS_STER_PV_IQ_002", "TRS_STER_PV_OQ_001", "TRS_STER_PV_OQ_002"]
+      "trsIds": ["OQ_CTRL_01", "OQ_MAP_01", "OQ_SENS_01"]
     },
     {
       "mappingId": "MAP_STER_PV_003",
       "equipmentTypeId": "STER_PV_AUT",
       "ursId": "URS_STER_PV_003",
-      "frsIds": ["FRS_STER_PV_003"],
-      "trsIds": ["TRS_STER_PV_IQ_001"]
+      "frsIds": ["FRS_STER_PV_009"],
+      "trsIds": ["PQ_STER_01", "PQ_STER_02"]
     },
     {
       "mappingId": "MAP_STER_PV_004",
       "equipmentTypeId": "STER_PV_AUT",
       "ursId": "URS_STER_PV_004",
-      "frsIds": ["FRS_STER_PV_004"],
-      "trsIds": ["TRS_STER_PV_OQ_003"]
+      "frsIds": ["FRS_STER_PV_004", "FRS_STER_PV_005"],
+      "trsIds": ["IQ_UTIL_01", "OQ_STEAM_01"]
     },
     {
       "mappingId": "MAP_STER_PV_005",
       "equipmentTypeId": "STER_PV_AUT",
       "ursId": "URS_STER_PV_005",
-      "frsIds": ["FRS_STER_PV_005"],
-      "trsIds": ["TRS_STER_PV_PQ_001", "TRS_STER_PV_PQ_002"]
+      "frsIds": ["FRS_STER_PV_003"],
+      "trsIds": ["IQ_SAF_01", "OQ_CTRL_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_006",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_006",
+      "frsIds": ["FRS_STER_PV_006"],
+      "trsIds": ["IQ_SENS_01", "OQ_SENS_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_007",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_007",
+      "frsIds": ["FRS_STER_PV_007"],
+      "trsIds": ["IQ_HMI_01", "CSV_OQ_03"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_008",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_008",
+      "frsIds": ["FRS_STER_PV_008"],
+      "trsIds": ["OQ_HMI_01", "CSV_OQ_01", "CSV_OQ_02"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_009",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_009",
+      "frsIds": ["FRS_STER_PV_008"],
+      "trsIds": ["CSV_OQ_04", "CSV_PQ_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_010",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_010",
+      "frsIds": ["FRS_STER_PV_010"],
+      "trsIds": ["OQ_BI_01", "PQ_STER_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_011",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_011",
+      "frsIds": ["FRS_STER_PV_011"],
+      "trsIds": ["OQ_BD_01", "OQ_VAC_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_012",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_012",
+      "frsIds": ["FRS_STER_PV_012"],
+      "trsIds": ["OQ_MAP_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_013",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_013",
+      "frsIds": ["FRS_STER_PV_013"],
+      "trsIds": ["IQ_DOC_01", "IQ_MECH_01"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_014",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_014",
+      "frsIds": ["FRS_STER_PV_013"],
+      "trsIds": ["IQ_DOC_01", "PQ_STER_03"]
+    },
+    {
+      "mappingId": "MAP_STER_PV_015",
+      "equipmentTypeId": "STER_PV_AUT",
+      "ursId": "URS_STER_PV_015",
+      "frsIds": ["FRS_STER_PV_009"],
+      "trsIds": ["PQ_STER_03", "PQ_STER_02"]
     }
   ]
 }

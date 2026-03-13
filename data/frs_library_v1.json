@@ -1,47 +1,137 @@
 {
   "version": "frs_library_v1",
   "generatedAt": "2026-03-09T00:00:00Z",
-  "description": "Functional Requirement Specification library derived from URS requirements.",
+  "description": "Expanded FRS library for Pre-vacuum Steam Sterilizer mapped to URS chain and testability.",
   "functions": [
     {
       "frsId": "FRS_STER_PV_001",
       "equipmentTypeId": "STER_PV_AUT",
-      "title": "Cycle recipe management",
-      "functionalRequirement": "System provides controlled cycle recipes with approved setpoints.",
+      "category": "Cycle Control",
+      "title": "Recipe and setpoint governance",
+      "functionalRequirement": "System provides controlled cycle recipes with approved setpoints and protected change control.",
       "derivedFromURS": ["URS_STER_PV_001", "URS_STER_PV_002"],
+      "defaultSelected": true,
       "regulatoryTags": ["ISO 17665", "FDA QMSR"]
     },
     {
       "frsId": "FRS_STER_PV_002",
       "equipmentTypeId": "STER_PV_AUT",
-      "title": "Alarm and interlock handling",
-      "functionalRequirement": "System shall detect out-of-limit conditions and enforce alarms/interlocks.",
+      "category": "Cycle Control",
+      "title": "Real-time CPP monitoring",
+      "functionalRequirement": "System continuously measures and records CPP data for each cycle stage.",
       "derivedFromURS": ["URS_STER_PV_002"],
-      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 17665"]
     },
     {
       "frsId": "FRS_STER_PV_003",
       "equipmentTypeId": "STER_PV_AUT",
-      "title": "Utility condition monitoring",
-      "functionalRequirement": "System shall verify required utility conditions before and during cycle execution.",
-      "derivedFromURS": ["URS_STER_PV_003"],
+      "category": "Safety",
+      "title": "Alarm and interlock logic",
+      "functionalRequirement": "System detects out-of-limit conditions, annunciates alarms, and enforces interlocks.",
+      "derivedFromURS": ["URS_STER_PV_005"],
+      "defaultSelected": true,
       "regulatoryTags": ["FDA QMSR"]
     },
     {
       "frsId": "FRS_STER_PV_004",
       "equipmentTypeId": "STER_PV_AUT",
-      "title": "Electronic records and audit trail",
-      "functionalRequirement": "System shall maintain attributable, legible, contemporaneous, original, and accurate records with audit trail.",
+      "category": "Utilities",
+      "title": "Utility verification before cycle start",
+      "functionalRequirement": "System verifies steam, power, and utility preconditions before cycle execution.",
       "derivedFromURS": ["URS_STER_PV_004"],
-      "regulatoryTags": ["21 CFR Part 11"]
+      "defaultSelected": true,
+      "regulatoryTags": ["FDA QMSR"]
     },
     {
       "frsId": "FRS_STER_PV_005",
       "equipmentTypeId": "STER_PV_AUT",
-      "title": "Load throughput execution",
-      "functionalRequirement": "System shall process load schedule at selected throughput with no loss of control.",
-      "derivedFromURS": ["URS_STER_PV_005"],
-      "regulatoryTags": ["FDA QMSR"]
+      "category": "Utilities",
+      "title": "Steam quality condition checks",
+      "functionalRequirement": "System supports steam quality and condensate assessment workflow.",
+      "derivedFromURS": ["URS_STER_PV_004"],
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 17665"]
+    },
+    {
+      "frsId": "FRS_STER_PV_006",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Instrumentation",
+      "title": "Sensor calibration status management",
+      "functionalRequirement": "System and procedures identify active sensor calibration status and expiry.",
+      "derivedFromURS": ["URS_STER_PV_006"],
+      "defaultSelected": true,
+      "regulatoryTags": ["21 CFR 820.72", "FDA QMSR"]
+    },
+    {
+      "frsId": "FRS_STER_PV_007",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Data Integrity",
+      "title": "Electronic records and audit trail",
+      "functionalRequirement": "System maintains attributable and tamper-evident records with complete audit trail.",
+      "derivedFromURS": ["URS_STER_PV_007"],
+      "defaultSelected": true,
+      "regulatoryTags": ["21 CFR Part 11"]
+    },
+    {
+      "frsId": "FRS_STER_PV_008",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Data Integrity",
+      "title": "Export, print, and archive integrity",
+      "functionalRequirement": "System exports structured cycle data and ensures report parity and archive integrity.",
+      "derivedFromURS": ["URS_STER_PV_008", "URS_STER_PV_009"],
+      "defaultSelected": true,
+      "regulatoryTags": ["21 CFR Part 11", "FDA QMSR"]
+    },
+    {
+      "frsId": "FRS_STER_PV_009",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Performance",
+      "title": "Load performance execution",
+      "functionalRequirement": "System executes representative and worst-case loads while maintaining CPP control.",
+      "derivedFromURS": ["URS_STER_PV_003", "URS_STER_PV_015"],
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 17665"]
+    },
+    {
+      "frsId": "FRS_STER_PV_010",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Microbiological Control",
+      "title": "BI workflow support",
+      "functionalRequirement": "Process supports BI placement, incubation, chain-of-custody, and result capture templates.",
+      "derivedFromURS": ["URS_STER_PV_010"],
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 11138"]
+    },
+    {
+      "frsId": "FRS_STER_PV_011",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Process Verification",
+      "title": "Bowie-Dick and vacuum/leak verification support",
+      "functionalRequirement": "Process supports routine and qualification-level air removal and vacuum/leak verification.",
+      "derivedFromURS": ["URS_STER_PV_011"],
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 11140-4", "ISO 17665"]
+    },
+    {
+      "frsId": "FRS_STER_PV_012",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Process Verification",
+      "title": "Temperature mapping workflow support",
+      "functionalRequirement": "Process provides structured mapping planning, data capture, and report traceability.",
+      "derivedFromURS": ["URS_STER_PV_012"],
+      "defaultSelected": true,
+      "regulatoryTags": ["ISO 17665"]
+    },
+    {
+      "frsId": "FRS_STER_PV_013",
+      "equipmentTypeId": "STER_PV_AUT",
+      "category": "Documentation",
+      "title": "Lifecycle documentation traceability",
+      "functionalRequirement": "System supports FAT/SAT, spares, SOP, and qualification evidence traceability.",
+      "derivedFromURS": ["URS_STER_PV_013", "URS_STER_PV_014"],
+      "defaultSelected": true,
+      "regulatoryTags": ["FDA QMSR", "ISO 13485:2016"]
     }
   ]
 }

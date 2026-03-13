@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IQ/OQ/PQ Generator</title>
+  <title>V-Model Qualification Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
@@ -14,122 +14,50 @@
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-  <div id="app" class="mx-auto max-w-2xl px-4 py-12">
+  <div id="app" class="mx-auto max-w-3xl px-4 py-12">
     <div class="mb-10 no-print">
-      <h1 class="text-2xl font-bold text-slate-800">IQ/OQ/PQ Generator</h1>
-      <p class="mt-1 text-slate-500">Create advisory qualification packages</p>
+      <h1 class="text-2xl font-bold text-slate-800">V-Model Qualification Generator</h1>
+      <p class="mt-1 text-slate-500">Select cohort, equipment type, URS, FRS, and TRS</p>
     </div>
     <div id="content">Loading...</div>
   </div>
   <script>
     const API = '/api/v1';
-    const NAR_CLEANROOM = 'Not in a Cleanroom';
+    const STEPS = [
+      { id: 'cohort', label: 'Equipment cohort' },
+      { id: 'equipmentType', label: 'Equipment type' },
+      { id: 'urs', label: 'URS selection' },
+      { id: 'frs', label: 'FRS selection' },
+      { id: 'trs', label: 'TRS selection' },
+      { id: 'review', label: 'Review & Generate Draft' }
+    ];
     let state = {
       flowStep: 0,
-      cohorts: [],
-      hazards: [],
       loading: true,
       error: null,
-      expandedHelp: null,
-      selectedCohort: '',
-      selectedEquipment: null,
-      equipmentId: '',
-      siteContext: { cleanroomClass: 'ISO 7', utilities: [], productContact: true, productionThroughput: 'Medium' },
-      cleanroomNotApplicable: false,
-      equipmentControls: {},
-      equipmentControlsCatalog: null,
-      hazardContextOptions: null,
-      hazardRatings: {},
-      vmodelCatalog: { urs: [], frs: [], trs: [] },
-      vmodelSelection: { ursIds: [], frsIds: [], trsIds: [] },
-      catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
-      siteContextMetadata: { cleanroomClasses: [], productContact: {}, productionThroughput: [] },
-      equipmentMetadata: null,
       generating: false,
       result: null,
       artifactUrls: null,
-      lifecycle: {
-        vmp: {
-          scope: '',
-          roles: '',
-          timeline: '',
-          deliverables: '',
-          trainingPlan: '',
-          supplierEvidencePlan: '',
-        },
-        urs: {
-          intendedUse: '',
-          criticalProcessParameters: '',
-          environmentNeeds: '',
-          throughputRationale: '',
-          acceptanceCriteria: '',
-        },
-        computerizedValidation: {
-          computerized: false,
-          softwareClassification: '',
-          part11Controls: '',
-          dataIntegrityControls: '',
-          patchConfigHistory: '',
-        },
-        requalificationPlan: {
-          baseFrequency: 'annual',
-          triggers: [],
-          rationale: '',
-        },
-        protocolPreferences: {
-          pqRunCount: 3,
-          sampleSize: 30,
-          evidencePlaceholders: '',
-        },
-      },
+      cohorts: [],
+      selectedCohort: '',
+      selectedEquipment: null,
+      equipmentId: '',
+      catalog: { hazcatVersion: 'hazcat_v1.1', rulesetId: 'ruleset_v1.1' },
+      vmodelCatalog: { urs: [], frs: [], trs: [] },
+      vmodelSelection: { ursIds: [], frsIds: [], trsIds: [] },
+      ui: {
+        ursQuery: '',
+        frsQuery: '',
+        trsQuery: '',
+        showAdvancedURS: false,
+        showAdvancedFRS: false,
+        showAdvancedTRS: false
+      }
     };
 
-    function getStepList() {
-      const steps = [
-        { id: 'cohort', label: 'Equipment cohort' },
-        { id: 'equipmentType', label: 'Equipment type' },
-      ];
-      if (!state.selectedEquipment) return steps;
-      steps.push({ id: 'utilities', label: 'Utilities' });
-      const catalog = state.equipmentControlsCatalog;
-      (catalog?.controlCategories || []).forEach((cat, i) => {
-        steps.push({ id: 'equipmentControl', idx: i, label: cat.label });
-      });
-      steps.push({ id: 'vmp', label: 'Validation master plan' });
-      steps.push({ id: 'urs', label: 'URS selection' });
-      steps.push({ id: 'frs', label: 'FRS selection' });
-      steps.push({ id: 'trs', label: 'TRS selection' });
-      steps.push({ id: 'protocolPreferences', label: 'Protocol preferences' });
-      steps.push({ id: 'computerizedValidation', label: 'Computerized/GxP' });
-      steps.push({ id: 'requalification', label: 'Requalification' });
-      steps.push({ id: 'throughput', label: 'Production throughput' });
-      steps.push({ id: 'productContact', label: 'Product contact' });
-      steps.push({ id: 'cleanroom', label: 'Cleanroom class' });
-      steps.push({ id: 'review', label: 'Review & Generate Draft' });
-      return steps;
-    }
-
-    function getCurrentStep() {
-      const steps = getStepList();
-      const idx = Math.min(state.flowStep, steps.length - 1);
-      return steps[idx] || steps[0];
-    }
-
-    function nextStep() {
-      const steps = getStepList();
-      if (state.flowStep < steps.length - 1) state.flowStep++;
-      render();
-    }
-
-    function prevStep() {
-      if (state.flowStep > 0) state.flowStep--;
-      render();
-    }
-
-    function goToStep(idx) {
-      state.flowStep = Math.max(0, Math.min(idx, getStepList().length - 1));
-      render();
-    }
+    const esc = (s) => String(s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const currentStep = () => STEPS[Math.max(0, Math.min(state.flowStep, STEPS.length - 1))];
+    const hasId = (arr, id) => (arr || []).includes(id);
 
     async function fetchJson(url) {
       const r = await fetch(url);
@@ -137,18 +65,14 @@
       return r.json();
     }
 
-    async function load() {
+    async function loadBootstrap() {
       try {
-        const [equip, cat, siteCtx] = await Promise.all([
+        const [equip, cat] = await Promise.all([
           fetchJson(API + '/equipment-types'),
-          fetchJson(API + '/catalog/version').catch(() => state.catalog),
-          fetchJson(API + '/site-context').catch(() => ({ cleanroomClasses: [], productContact: {}, productionThroughput: [] })),
+          fetchJson(API + '/catalog/version').catch(() => state.catalog)
         ]);
         state.cohorts = equip.cohorts || [];
         state.catalog = { ...state.catalog, ...cat };
-        state.siteContextMetadata = { cleanroomClasses: siteCtx.cleanroomClasses || [], productContact: siteCtx.productContact || {}, productionThroughput: siteCtx.productionThroughput || [] };
-        if (state.siteContextMetadata.cleanroomClasses.length) state.siteContext.cleanroomClass = state.siteContextMetadata.cleanroomClasses.find(c => c.value === 'ISO 7') ? 'ISO 7' : state.siteContextMetadata.cleanroomClasses[0]?.value || 'ISO 7';
-        if (state.siteContextMetadata.productionThroughput.length) state.siteContext.productionThroughput = state.siteContextMetadata.productionThroughput.find(t => t.value === 'Medium') ? 'Medium' : state.siteContextMetadata.productionThroughput[0]?.value || 'Medium';
       } catch (e) {
         state.error = e.message;
       }
@@ -156,200 +80,53 @@
       render();
     }
 
-    async function loadEquipmentMetadata(equipmentTypeId) {
-      try {
-        const [metaRes, ctrlRes, ursRes, frsRes, trsRes] = await Promise.all([
-          fetchJson(API + '/equipment-metadata?equipmentTypeId=' + equipmentTypeId),
-          fetchJson(API + '/equipment-controls?equipmentTypeId=' + equipmentTypeId).catch(() => null),
-          fetchJson(API + '/requirements-library?kind=urs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ requirements: [] })),
-          fetchJson(API + '/requirements-library?kind=frs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ functions: [] })),
-          fetchJson(API + '/requirements-library?kind=trs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ tests: [] })),
-        ]);
-        state.equipmentMetadata = metaRes;
-        const em = metaRes.equipmentMetadata;
-        if (em?.defaultUtilities?.length) state.siteContext.utilities = [...em.defaultUtilities];
-        else state.siteContext.utilities = state.siteContext.utilities.length ? state.siteContext.utilities : ['Electricity'];
-        state.equipmentControlsCatalog = ctrlRes;
-        state.vmodelCatalog = {
-          urs: ursRes.requirements || [],
-          frs: frsRes.functions || [],
-          trs: trsRes.tests || [],
-        };
-        state.vmodelSelection = {
-          ursIds: (ursRes.requirements || []).filter(r => r.criticality === 'critical').map(r => r.ursId),
-          frsIds: [],
-          trsIds: [],
-        };
-        state.equipmentControls = {};
-        (ctrlRes?.controlCategories || []).forEach(cat => {
-          (cat.controls || []).forEach(ctrl => {
-            if (ctrl.valueType === 'boolean') state.equipmentControls[ctrl.controlId] = false;
-            else if (ctrl.valueType === 'choice' && ctrl.options?.length) state.equipmentControls[ctrl.controlId] = '';
-          });
-        });
-      } catch (e) {
-        state.equipmentMetadata = null;
-        state.equipmentControlsCatalog = null;
-        state.vmodelCatalog = { urs: [], frs: [], trs: [] };
-        state.vmodelSelection = { ursIds: [], frsIds: [], trsIds: [] };
-        state.equipmentControls = {};
-        if (!state.siteContext.utilities.length) state.siteContext.utilities = ['Electricity'];
-      }
-      render();
-    }
-
-    function setEquipmentControl(controlId, value) {
-      state.equipmentControls[controlId] = value;
-      render();
-    }
-
-    async function loadHazards() {
-      if (!state.selectedEquipment) return;
-      state.equipmentMetadata = null;
-      await loadEquipmentMetadata(state.selectedEquipment.id);
-      const [hazRes, ctxRes] = await Promise.all([
-        fetchJson(API + '/hazards?equipmentTypeId=' + state.selectedEquipment.id),
-        fetchJson(API + '/hazard-context-options?equipmentTypeId=' + state.selectedEquipment.id).catch(() => ({ hazardContextOptions: [] })),
+    async function loadVModelCatalog(equipmentTypeId) {
+      const [ursRes, frsRes, trsRes] = await Promise.all([
+        fetchJson(API + '/requirements-library?kind=urs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ requirements: [] })),
+        fetchJson(API + '/requirements-library?kind=frs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ functions: [] })),
+        fetchJson(API + '/requirements-library?kind=trs&equipmentTypeId=' + equipmentTypeId).catch(() => ({ tests: [] }))
       ]);
-      state.hazards = hazRes.hazards || [];
-      state.hazardContextOptions = ctxRes.hazardContextOptions || [];
-      state.hazardRatings = {};
-      state.hazards.forEach(h => {
-        const q = h.quickDefaults || {};
-        const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
-        const hazardContext = {};
-        (ctxForHazard?.contextOptions || []).forEach(opt => {
-          if (opt.valueType === 'boolean') hazardContext[opt.contextId] = false;
-          else if (opt.valueType === 'choice') hazardContext[opt.contextId] = '';
-          else if (opt.valueType === 'multiSelect') hazardContext[opt.contextId] = [];
-        });
-        state.hazardRatings[h.hazardId] = {
-          Severity_label: q.defaultSeverity || '',
-          ProbabilityOfOccurrence_label: q.defaultProbability || '',
-          Exposure_label: q.defaultExposure || '',
-          Detectability_label: q.defaultDetectability || '',
-          ControlEffectiveness_label: q.defaultControlEffectiveness || '',
-          hazardContext,
-        };
-      });
-      render();
+      state.vmodelCatalog = {
+        urs: ursRes.requirements || [],
+        frs: frsRes.functions || [],
+        trs: trsRes.tests || []
+      };
+      const defaultUrs = (state.vmodelCatalog.urs || [])
+        .filter(r => r.defaultSelected || r.required || r.criticality === 'critical')
+        .map(r => r.ursId);
+      state.vmodelSelection = { ursIds: defaultUrs, frsIds: [], trsIds: [] };
+      autoDerive();
     }
 
-    async function selectEquipmentTypeAndNext() {
-      if (!state.selectedEquipment) return;
-      state.loading = true;
-      render();
-      await loadEquipmentMetadata(state.selectedEquipment.id);
-      state.loading = false;
-      state.flowStep = 2;
-      render();
-    }
+    function autoDerive() {
+      const ursIds = state.vmodelSelection.ursIds || [];
+      const frsIds = state.vmodelCatalog.frs
+        .filter(f => (f.derivedFromURS || []).some(u => ursIds.includes(u)))
+        .map(f => f.frsId);
+      state.vmodelSelection.frsIds = Array.from(new Set([...(state.vmodelSelection.frsIds || []), ...frsIds]));
 
-    function setHazardContext(hazardId, contextId, value) {
-      const r = state.hazardRatings[hazardId] || {};
-      if (!r.hazardContext) r.hazardContext = {};
-      r.hazardContext[contextId] = value;
-      state.hazardRatings[hazardId] = { ...r };
-      render();
-    }
-
-    function toggleHazardContextMulti(hazardId, contextId, value) {
-      const r = state.hazardRatings[hazardId] || {};
-      if (!r.hazardContext) r.hazardContext = {};
-      const arr = r.hazardContext[contextId] || [];
-      const i = arr.indexOf(value);
-      if (i >= 0) arr.splice(i, 1);
-      else arr.push(value);
-      r.hazardContext[contextId] = arr;
-      state.hazardRatings[hazardId] = { ...r };
-      render();
-    }
-
-    function toggleUtility(u) {
-      const i = state.siteContext.utilities.indexOf(u);
-      if (i >= 0) state.siteContext.utilities = state.siteContext.utilities.filter(x => x !== u);
-      else state.siteContext.utilities = [...state.siteContext.utilities, u];
-      render();
-    }
-
-    function setHazardRating(hazardId, field, value) {
-      state.hazardRatings[hazardId] = state.hazardRatings[hazardId] || {};
-      state.hazardRatings[hazardId][field] = value;
-      render();
-    }
-
-    function setRequalTrigger(trigger, checked) {
-      const arr = state.lifecycle.requalificationPlan.triggers || [];
-      const idx = arr.indexOf(trigger);
-      if (checked && idx < 0) arr.push(trigger);
-      if (!checked && idx >= 0) arr.splice(idx, 1);
-      state.lifecycle.requalificationPlan.triggers = arr;
-      render();
+      const selectedFrs = state.vmodelSelection.frsIds || [];
+      const trsIds = state.vmodelCatalog.trs
+        .filter(t => (t.verifiesFRS || []).some(f => selectedFrs.includes(f)))
+        .map(t => t.trsId);
+      state.vmodelSelection.trsIds = Array.from(new Set([...(state.vmodelSelection.trsIds || []), ...trsIds]));
     }
 
     function toggleReq(kind, id, checked) {
-      const sel = state.vmodelSelection[kind] || [];
-      const idx = sel.indexOf(id);
-      if (checked && idx < 0) sel.push(id);
-      if (!checked && idx >= 0) sel.splice(idx, 1);
-      state.vmodelSelection[kind] = sel;
-      if (kind === 'ursIds') {
-        const derivedFrs = state.vmodelCatalog.frs
-          .filter(f => (f.derivedFromURS || []).some(u => sel.includes(u)))
-          .map(f => f.frsId);
-        state.vmodelSelection.frsIds = Array.from(new Set([...(state.vmodelSelection.frsIds || []), ...derivedFrs]));
-      }
-      if (kind === 'frsIds') {
-        const derivedTrs = state.vmodelCatalog.trs
-          .filter(t => (t.verifiesFRS || []).some(f => (state.vmodelSelection.frsIds || []).includes(f)))
-          .map(t => t.trsId);
-        state.vmodelSelection.trsIds = Array.from(new Set([...(state.vmodelSelection.trsIds || []), ...derivedTrs]));
-      }
+      const current = state.vmodelSelection[kind] || [];
+      const idx = current.indexOf(id);
+      if (checked && idx < 0) current.push(id);
+      if (!checked && idx >= 0) current.splice(idx, 1);
+      state.vmodelSelection[kind] = [...current];
+      if (kind === 'ursIds' || kind === 'frsIds') autoDerive();
       render();
-    }
-
-    function toggleHelp(hazardId, field) {
-      const key = hazardId + '.' + field;
-      state.expandedHelp = state.expandedHelp === key ? null : key;
-      render();
-    }
-
-    function setCleanroomNotApplicable(checked) {
-      state.cleanroomNotApplicable = checked;
-      if (checked) state.siteContext.cleanroomClass = NAR_CLEANROOM;
-      else state.siteContext.cleanroomClass = state.siteContextMetadata.cleanroomClasses?.find(c => c.value === 'ISO 7')?.value || 'ISO 7';
-      render();
-    }
-
-    async function downloadDocx() {
-      const md = state.result?.markdownContent;
-      if (!md) return;
-      try {
-        const r = await fetch(API + '/draft-docx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markdownContent: md }) });
-        if (!r.ok) throw new Error('Failed to generate DOCX');
-        const blob = await r.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'qualification-draft.docx';
-        a.click();
-        URL.revokeObjectURL(a.href);
-      } catch (e) {
-        state.error = e.message;
-        render();
-      }
     }
 
     function canGenerate() {
-      if (!state.selectedEquipment || !state.catalog.rulesetId || !state.catalog.hazcatVersion) return false;
-      const l = state.lifecycle;
-      if (!l.vmp.scope || !l.vmp.roles || !l.vmp.deliverables) return false;
-      if (!l.urs.intendedUse || !l.urs.criticalProcessParameters || !l.urs.acceptanceCriteria) return false;
-      if (!l.requalificationPlan.rationale || !(l.requalificationPlan.triggers || []).length) return false;
-      if (l.computerizedValidation.computerized && !l.computerizedValidation.softwareClassification) return false;
-      if (!(state.vmodelSelection.ursIds || []).length) return false;
-      if (!(state.vmodelSelection.frsIds || []).length) return false;
-      if (!(state.vmodelSelection.trsIds || []).length) return false;
-      return true;
+      if (!state.selectedEquipment || !state.selectedCohort) return false;
+      return (state.vmodelSelection.ursIds || []).length > 0
+        && (state.vmodelSelection.frsIds || []).length > 0
+        && (state.vmodelSelection.trsIds || []).length > 0;
     }
 
     async function handleGenerate() {
@@ -358,42 +135,35 @@
       state.error = null;
       render();
       try {
-        const sc = state.siteContext;
         const payload = {
           equipmentId: state.equipmentId || 'E-' + state.selectedEquipment.id + '-001',
           equipmentTypeId: state.selectedEquipment.id,
           cohort: state.selectedCohort,
           type: state.selectedEquipment.name,
-          siteContext: {
-            ...sc,
-            cleanroomClass: state.cleanroomNotApplicable ? NAR_CLEANROOM : sc.cleanroomClass,
-          },
+          siteContext: { cleanroomClass: 'N/A', utilities: [], productContact: true, productionThroughput: 'Medium' },
           controlArchitecture: 'PLC or SCADA',
           hazards: [],
           rulesetId: state.catalog.rulesetId,
           hazcatVersion: state.catalog.hazcatVersion,
-          vmp: state.lifecycle.vmp,
-          urs: state.lifecycle.urs,
-          computerizedValidation: state.lifecycle.computerizedValidation,
-          requalificationPlan: state.lifecycle.requalificationPlan,
+          vmp: {},
+          urs: {},
+          computerizedValidation: {},
+          requalificationPlan: {},
           vmodel: {
             ursIds: state.vmodelSelection.ursIds || [],
             frsIds: state.vmodelSelection.frsIds || [],
             trsIds: state.vmodelSelection.trsIds || [],
-            protocolPreferences: state.lifecycle.protocolPreferences,
-          },
+            protocolPreferences: {}
+          }
         };
-        const ec = state.equipmentControls || {};
-        const ecFiltered = Object.keys(ec).reduce((o, k) => {
-          const v = ec[k];
-          if (v !== '' && v !== false) o[k] = v;
-          return o;
-        }, {});
-        if (Object.keys(ecFiltered).length) payload.equipmentControls = ecFiltered;
-        const res = await fetch(API + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(API + '/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || 'HTTP ' + res.status);
+          throw new Error(err.error || ('HTTP ' + res.status));
         }
         const data = await res.json();
         state.result = data;
@@ -407,352 +177,151 @@
       render();
     }
 
+    async function downloadDocx() {
+      const md = state.result?.markdownContent;
+      if (!md) return;
+      try {
+        const r = await fetch(API + '/draft-docx', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ markdownContent: md })
+        });
+        if (!r.ok) throw new Error('Failed to generate DOCX');
+        const blob = await r.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'qualification-draft.docx';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (e) {
+        state.error = e.message;
+        render();
+      }
+    }
+
+    function filterItems(items, query, showAdvanced) {
+      const q = (query || '').toLowerCase().trim();
+      let out = items || [];
+      if (!showAdvanced) out = out.filter(i => i.required || i.defaultSelected || i.criticality === 'critical' || i.criticality === 'major');
+      if (!q) return out;
+      return out.filter(i =>
+        (i.title || '').toLowerCase().includes(q)
+        || (i.statement || i.functionalRequirement || i.objective || '').toLowerCase().includes(q)
+        || (i.category || '').toLowerCase().includes(q)
+      );
+    }
+
     function renderProgressBar() {
       if (state.result) return '';
-      const steps = getStepList();
-      const total = steps.length;
-      const current = Math.min(state.flowStep + 1, total);
-      const pct = total > 0 ? (current / total) * 100 : 0;
-      return '<div class="mb-8 no-print"><div class="flex justify-between text-xs text-slate-500 mb-1"><span>Step ' + current + ' of ' + total + '</span><span>' + (getCurrentStep().label || '') + '</span></div><div class="h-2 w-full rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-slate-700 transition-all duration-300 rounded-full" style="width:' + pct + '%"></div></div></div>';
+      const current = Math.min(state.flowStep + 1, STEPS.length);
+      const pct = (current / STEPS.length) * 100;
+      return '<div class="mb-8 no-print"><div class="flex justify-between text-xs text-slate-500 mb-1"><span>Step ' + current + ' of ' + STEPS.length + '</span><span>' + currentStep().label + '</span></div><div class="h-2 w-full rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-slate-700 transition-all duration-300 rounded-full" style="width:' + pct + '%"></div></div></div>';
+    }
+
+    function renderRequirementStep(kind, title, description) {
+      const cfg = kind === 'urs' ? { key: 'ursIds', id: 'ursId', body: 'statement', query: 'ursQuery', adv: 'showAdvancedURS' }
+        : kind === 'frs' ? { key: 'frsIds', id: 'frsId', body: 'functionalRequirement', query: 'frsQuery', adv: 'showAdvancedFRS' }
+        : { key: 'trsIds', id: 'trsId', body: 'objective', query: 'trsQuery', adv: 'showAdvancedTRS' };
+      const source = state.vmodelCatalog[kind] || [];
+      const items = filterItems(source, state.ui[cfg.query], state.ui[cfg.adv]);
+      let html = '<div class="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
+      html += '<h2 class="text-lg font-semibold">' + title + '</h2>';
+      html += '<p class="text-sm text-slate-500">' + description + '</p>';
+      html += '<div class="flex gap-2">';
+      html += '<input type="text" value="' + esc(state.ui[cfg.query]) + '" oninput="state.ui.' + cfg.query + '=this.value;render()" placeholder="Search requirements..." class="w-full max-w-md rounded border border-slate-200 px-3 py-2 text-sm">';
+      html += '<label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" ' + (state.ui[cfg.adv] ? 'checked' : '') + ' onchange="state.ui.' + cfg.adv + '=this.checked;render()"> Show advanced</label>';
+      html += '</div>';
+      html += '<div class="max-h-[45vh] overflow-y-auto rounded border border-slate-200 p-2">';
+      if (!items.length) {
+        html += '<div class="text-sm text-slate-500">No items match current filters.</div>';
+      } else {
+        items.forEach(req => {
+          const id = req[cfg.id];
+          const checked = hasId(state.vmodelSelection[cfg.key], id);
+          const tags = (req.regulatoryTags || []).join(', ');
+          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-2 ' + (checked ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200') + '">';
+          html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleReq(\'' + cfg.key + '\',\'' + esc(id) + '\',this.checked)">';
+          html += '<span class="text-sm"><strong>' + req.title + '</strong>';
+          if (req.category) html += ' <span class="text-xs text-slate-500">(' + req.category + ')</span>';
+          html += '<br><span class="text-slate-600">' + (req[cfg.body] || '') + '</span>';
+          if (tags) html += '<br><span class="text-xs text-slate-500">Regulatory: ' + tags + '</span>';
+          html += '</span></label>';
+        });
+      }
+      html += '</div>';
+      html += '<div class="text-xs text-slate-500">Selected: ' + (state.vmodelSelection[cfg.key] || []).length + '</div>';
+      html += '<div class="flex gap-2"><button onclick="state.flowStep=Math.max(0,state.flowStep-1);render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="state.flowStep=Math.min(' + (STEPS.length - 1) + ',state.flowStep+1);render()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div>';
+      html += '</div>';
+      return html;
     }
 
     function renderStepContent() {
-      const steps = getStepList();
-      if (state.flowStep >= steps.length && !state.result) return '<div class="rounded-xl border border-slate-200 bg-white p-6">Invalid step.</div>';
-      const step = getCurrentStep();
-      const esc = (s) => String(s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
+      const step = currentStep();
       if (step.id === 'cohort') {
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment cohort</h2><p class="text-sm text-slate-500">Select the equipment category.</p>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Cohort</label><select onchange="state.selectedCohort=this.value;state.selectedEquipment=null;render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2">';
-        html += '<option value="">Select cohort...</option>';
-        state.cohorts.forEach(co => {
-          html += '<option value="'+esc(co.cohortId)+'"'+(state.selectedCohort===co.cohortId?' selected':'')+'>'+co.cohortId+'</option>';
-        });
-        html += '</select></div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300" disabled>Back</button>';
-        html += '<button onclick="nextStep()" '+(state.selectedCohort?'':'disabled')+' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">Next</button></div></div>';
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment cohort</h2><p class="text-sm text-slate-500">Select equipment category.</p>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Cohort</label><select onchange="state.selectedCohort=this.value;state.selectedEquipment=null;render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="">Select cohort...</option>';
+        state.cohorts.forEach(co => html += '<option value="' + esc(co.cohortId) + '"' + (state.selectedCohort === co.cohortId ? ' selected' : '') + '>' + co.cohortId + '</option>');
+        html += '</select></div><div class="flex gap-2"><button disabled class="rounded bg-slate-200 px-4 py-2 text-sm font-medium opacity-50">Back</button><button onclick="state.flowStep=1;render()" ' + (state.selectedCohort ? '' : 'disabled') + ' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">Next</button></div></div>';
         return html;
       }
-
       if (step.id === 'equipmentType') {
         const cohortData = state.cohorts.find(c => c.cohortId === state.selectedCohort);
         const types = cohortData?.equipmentTypes || [];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment type</h2><p class="text-sm text-slate-500">Select the equipment type.</p>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Equipment type</label><select onchange="state.selectedEquipment={id:this.value,name:this.options[this.selectedIndex].text};render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2">';
-        html += '<option value="">Select equipment...</option>';
-        types.forEach(et => {
-          html += '<option value="'+esc(et.equipmentTypeId)+'"'+(state.selectedEquipment?.id===et.equipmentTypeId?' selected':'')+'>'+et.equipmentType+'</option>';
-        });
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment type</h2><p class="text-sm text-slate-500">Select equipment type.</p>';
+        html += '<div><label class="block text-sm font-medium text-slate-600">Equipment type</label><select onchange="state.selectedEquipment={id:this.value,name:this.options[this.selectedIndex].text};render()" class="mt-2 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="">Select equipment...</option>';
+        types.forEach(et => html += '<option value="' + esc(et.equipmentTypeId) + '"' + (state.selectedEquipment?.id === et.equipmentTypeId ? ' selected' : '') + '>' + et.equipmentType + '</option>');
         html += '</select></div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="selectEquipmentTypeAndNext()" '+(state.selectedEquipment?'':'disabled')+' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">'+(state.loading?'Loading...':'Next')+'</button></div></div>';
+        html += '<div class="flex gap-2"><button onclick="state.flowStep=0;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="(async()=>{if(!state.selectedEquipment)return;state.loading=true;render();await loadVModelCatalog(state.selectedEquipment.id);state.loading=false;state.flowStep=2;render();})()" ' + (state.selectedEquipment ? '' : 'disabled') + ' class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50">' + (state.loading ? 'Loading...' : 'Next') + '</button></div></div>';
         return html;
       }
-
-      if (step.id === 'utilities') {
-        const em = state.equipmentMetadata?.equipmentMetadata || state.equipmentMetadata;
-        const utilList = em?.defaultUtilities?.length ? em.defaultUtilities : ['Steam','Electricity','Compressed Air','WFI','Nitrogen'];
-        const utilDesc = em?.utilityDescriptors || {};
-        const utilMaster = state.equipmentMetadata?.utilitiesMasterList || {};
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Utilities</h2><p class="text-sm text-slate-500">Select all utilities that supply this equipment.</p>';
-        html += '<div class="flex flex-wrap gap-2">';
-        utilList.forEach(u => {
-          const checked = state.siteContext.utilities.includes(u);
-          const desc = utilDesc[u] || utilMaster[u] || '';
-          html += '<label class="flex cursor-pointer items-center gap-2 rounded border px-4 py-2 hover:bg-slate-50 '+(checked?'border-emerald-500 bg-emerald-50/50':'border-slate-200')+'" title="'+desc.replace(/"/g,'&quot;')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleUtility(\''+esc(u)+'\')"><span class="text-sm">'+u+'</span>';
-          if (desc) html += '<span class="text-slate-400 cursor-help">ⓘ</span>';
-          html += '</label>';
-        });
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'equipmentControl' && step.idx !== undefined) {
-        const catalog = state.equipmentControlsCatalog;
-        const cats = catalog?.controlCategories || [];
-        const cat = cats[step.idx];
-        if (!cat) return '';
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Equipment controls: '+cat.label+'</h2><p class="text-sm text-slate-500">Select controls that apply to this equipment.</p>';
-        (cat.controls || []).forEach(ctrl => {
-          const cid = ctrl.controlId; const val = state.equipmentControls[cid];
-          if (ctrl.valueType === 'boolean') {
-            html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-3 py-2 hover:bg-slate-50 mb-2"><input type="checkbox" '+(val?'checked':'')+' onchange="setEquipmentControl(\''+esc(cid)+'\',this.checked)"> <span class="text-sm font-medium">'+ctrl.label+'</span></label>';
-            if (ctrl.help) html += '<p class="ml-6 mb-3 text-xs text-slate-500">'+esc(ctrl.help).replace(/</g,'&lt;')+'</p>';
-          } else if (ctrl.valueType === 'choice' && ctrl.options?.length) {
-            html += '<div class="mb-4"><label class="block text-sm font-medium text-slate-600 mb-1">'+ctrl.label+'</label>';
-            html += '<select onchange="setEquipmentControl(\''+esc(cid)+'\',this.value)" class="w-full max-w-md rounded border border-slate-200 px-3 py-2">';
-            html += '<option value="">Select...</option>';
-            ctrl.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
-            html += '</select></div>';
-          }
-        });
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'throughput') {
-        const opts = state.siteContextMetadata.productionThroughput?.length ? state.siteContextMetadata.productionThroughput : [{value:'Low',label:'Low'},{value:'Medium',label:'Medium'},{value:'High',label:'High'}];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Production throughput</h2><p class="text-sm text-slate-500">Select the production throughput level.</p>';
-        html += '<select onchange="state.siteContext.productionThroughput=this.value;render()" class="w-full max-w-md rounded border border-slate-200 px-3 py-2">';
-        opts.forEach(o => { const v = o.value||o; html += '<option value="'+esc(v)+'"'+(state.siteContext.productionThroughput===v?' selected':'')+'>'+(o.label||o)+'</option>'; });
-        html += '</select>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'vmp') {
-        const v = state.lifecycle.vmp;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Validation Master Plan (VMP)</h2><p class="text-sm text-slate-500">Define validation scope, roles, timeline, deliverables, and evidence strategy.</p>';
-        html += '<div class="grid gap-3">';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Scope</label><textarea onchange="state.lifecycle.vmp.scope=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.scope)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Roles and responsibilities</label><textarea onchange="state.lifecycle.vmp.roles=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.roles)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Timeline and milestones</label><textarea onchange="state.lifecycle.vmp.timeline=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.timeline)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Deliverables</label><textarea onchange="state.lifecycle.vmp.deliverables=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.deliverables)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Training plan placeholder</label><textarea onchange="state.lifecycle.vmp.trainingPlan=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.trainingPlan)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Supplier evidence placeholder</label><textarea onchange="state.lifecycle.vmp.supplierEvidencePlan=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(v.supplierEvidencePlan)+'</textarea></div>';
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'urs') {
-        const u = state.lifecycle.urs;
-        const selected = state.vmodelSelection.ursIds || [];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">User Requirements Specification (URS)</h2><p class="text-sm text-slate-500">Capture intended use and select applicable URS requirements.</p>';
-        html += '<div class="grid gap-3">';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Intended use</label><textarea onchange="state.lifecycle.urs.intendedUse=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.intendedUse)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Critical process parameters (CPPs)</label><textarea onchange="state.lifecycle.urs.criticalProcessParameters=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.criticalProcessParameters)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Environmental needs</label><textarea onchange="state.lifecycle.urs.environmentNeeds=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.environmentNeeds)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Throughput rationale</label><textarea onchange="state.lifecycle.urs.throughputRationale=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.throughputRationale)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Acceptance criteria</label><textarea onchange="state.lifecycle.urs.acceptanceCriteria=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(u.acceptanceCriteria)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600 mb-2">Select applicable URS requirements</label>';
-        (state.vmodelCatalog.urs || []).forEach(req => {
-          const ch = selected.includes(req.ursId);
-          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'ursIds\',\''+esc(req.ursId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong><br><span class="text-slate-600">'+req.statement+'</span></span></label>';
-        });
-        html += '</div>';
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'frs') {
-        const selected = state.vmodelSelection.frsIds || [];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Functional Requirement Specification (FRS)</h2><p class="text-sm text-slate-500">Review auto-derived FRS and adjust selections as needed.</p>';
-        html += '<div>';
-        (state.vmodelCatalog.frs || []).forEach(req => {
-          const ch = selected.includes(req.frsId);
-          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'frsIds\',\''+esc(req.frsId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong><br><span class="text-slate-600">'+req.functionalRequirement+'</span></span></label>';
-        });
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'trs') {
-        const selected = state.vmodelSelection.trsIds || [];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Technical Requirement Specification (TRS)</h2><p class="text-sm text-slate-500">Select TRS checks to build IQ/OQ/PQ protocol drafts.</p>';
-        html += '<div>';
-        (state.vmodelCatalog.trs || []).forEach(req => {
-          const ch = selected.includes(req.trsId);
-          html += '<label class="mb-1 flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleReq(\'trsIds\',\''+esc(req.trsId)+'\',this.checked)"> <span class="text-sm"><strong>'+req.title+'</strong> <span class="text-xs text-slate-500">('+req.verificationPhase+')</span><br><span class="text-slate-600">'+req.objective+'</span></span></label>';
-        });
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'protocolPreferences') {
-        const p = state.lifecycle.protocolPreferences;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Protocol preferences</h2><p class="text-sm text-slate-500">Set default PQ run count, sample size, and evidence placeholders.</p>';
-        html += '<div class="grid gap-3">';
-        html += '<div><label class="block text-sm font-medium text-slate-600">PQ run count</label><input type="number" min="1" max="10" value="'+(p.pqRunCount||3)+'" onchange="state.lifecycle.protocolPreferences.pqRunCount=parseInt(this.value||3,10);render()" class="mt-1 w-full max-w-xs rounded border border-slate-200 px-3 py-2"></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Default sample size</label><input type="number" min="1" max="500" value="'+(p.sampleSize||30)+'" onchange="state.lifecycle.protocolPreferences.sampleSize=parseInt(this.value||30,10);render()" class="mt-1 w-full max-w-xs rounded border border-slate-200 px-3 py-2"></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Evidence placeholders</label><textarea onchange="state.lifecycle.protocolPreferences.evidencePlaceholders=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(p.evidencePlaceholders||'')+'</textarea></div>';
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'computerizedValidation') {
-        const cv = state.lifecycle.computerizedValidation;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Computerized System / GxP</h2><p class="text-sm text-slate-500">Apply risk-based software validation (GAMP5 / 21 CFR Part 11 mindset) where applicable.</p>';
-        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 hover:bg-slate-50"><input type="checkbox" '+(cv.computerized?'checked':'')+' onchange="state.lifecycle.computerizedValidation.computerized=this.checked;render()"> <span class="font-medium">Equipment is computerized / has software that can impact quality</span></label>';
-        html += '<div class="grid gap-3">';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Software classification</label><select onchange="state.lifecycle.computerizedValidation.softwareClassification=this.value;render()" class="mt-1 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="">Select...</option><option value="Category 3"'+(cv.softwareClassification==='Category 3'?' selected':'')+'>Category 3 (non-configurable)</option><option value="Category 4"'+(cv.softwareClassification==='Category 4'?' selected':'')+'>Category 4 (configured)</option><option value="Category 5"'+(cv.softwareClassification==='Category 5'?' selected':'')+'>Category 5 (custom)</option></select></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Part 11 controls</label><textarea onchange="state.lifecycle.computerizedValidation.part11Controls=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.part11Controls)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Data integrity controls</label><textarea onchange="state.lifecycle.computerizedValidation.dataIntegrityControls=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.dataIntegrityControls)+'</textarea></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Configuration / patch history approach</label><textarea onchange="state.lifecycle.computerizedValidation.patchConfigHistory=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(cv.patchConfigHistory)+'</textarea></div>';
-        html += '</div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'requalification') {
-        const rq = state.lifecycle.requalificationPlan;
-        const has = (t) => (rq.triggers || []).includes(t);
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Requalification strategy</h2><p class="text-sm text-slate-500">Define risk-based cadence and triggers (annual / event-driven).</p>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Base frequency</label><select onchange="state.lifecycle.requalificationPlan.baseFrequency=this.value;render()" class="mt-1 w-full max-w-md rounded border border-slate-200 px-3 py-2"><option value="annual"'+(rq.baseFrequency==='annual'?' selected':'')+'>Annual</option><option value="biennial"'+(rq.baseFrequency==='biennial'?' selected':'')+'>Every 2 years (risk justified)</option><option value="risk_based"'+(rq.baseFrequency==='risk_based'?' selected':'')+'>Risk-based interval</option></select></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600 mb-2">Requalification triggers</label><div class="flex flex-wrap gap-2">';
-        [
-          ['move', 'Equipment relocation'],
-          ['major_repair', 'Major repair/maintenance'],
-          ['process_change', 'Process parameter change'],
-          ['oot', 'Out-of-tolerance or deviation event'],
-          ['software_change', 'Software/configuration change'],
-        ].forEach(([id, label]) => {
-          html += '<label class="inline-flex cursor-pointer items-center gap-2 rounded border px-3 py-1.5 text-sm '+(has(id)?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(has(id)?'checked':'')+' onchange="setRequalTrigger(\''+id+'\',this.checked)"> '+label+'</label>';
-        });
-        html += '</div></div>';
-        html += '<div><label class="block text-sm font-medium text-slate-600">Risk rationale</label><textarea onchange="state.lifecycle.requalificationPlan.rationale=this.value;render()" class="mt-1 w-full rounded border border-slate-200 px-3 py-2" rows="2">'+esc(rq.rationale)+'</textarea></div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'productContact') {
-        const pcHelp = state.siteContextMetadata.productContact?.help || '';
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Product contact</h2>';
-        if (pcHelp) html += '<p class="text-sm text-slate-500">'+pcHelp.slice(0,280).replace(/</g,'&lt;')+(pcHelp.length>280?'...':'')+'</p>';
-        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 hover:bg-slate-50"><input type="checkbox" '+(state.siteContext.productContact?'checked':'')+' onchange="state.siteContext.productContact=this.checked;render()"> <span class="font-medium">Product contact</span></label>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'cleanroom') {
-        const opts = state.siteContextMetadata.cleanroomClasses?.length ? state.siteContextMetadata.cleanroomClasses.filter(c => (c.value||c) !== NAR_CLEANROOM) : [{value:'ISO 5',label:'ISO 5'},{value:'ISO 6',label:'ISO 6'},{value:'ISO 7',label:'ISO 7'},{value:'ISO 8',label:'ISO 8'}];
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Cleanroom class</h2><p class="text-sm text-slate-500">ISO 14644-1 classification for the area where this equipment operates.</p>';
-        html += '<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-200 px-4 py-3 mb-4 hover:bg-slate-50"><input type="checkbox" '+(state.cleanroomNotApplicable?'checked':'')+' onchange="setCleanroomNotApplicable(this.checked)"> <span class="font-medium">Not in a cleanroom</span> <span class="text-slate-500">(N/A)</span></label>';
-        html += '<div><label class="block text-sm font-medium text-slate-600 mb-1">Cleanroom class</label><select onchange="state.siteContext.cleanroomClass=this.value;render()" '+(state.cleanroomNotApplicable?'disabled':'')+' class="w-full max-w-md rounded border border-slate-200 px-3 py-2 '+(state.cleanroomNotApplicable?'opacity-50 cursor-not-allowed':'')+'">';
-        opts.forEach(o => { const v = o.value||o; const lab = o.label||o; html += '<option value="'+esc(v)+'"'+(state.siteContext.cleanroomClass===v?' selected':'')+'>'+lab+'</option>'; });
-        html += '</select></div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
-      if (step.id === 'hazard' && step.idx !== undefined) {
-        const h = state.hazards[step.idx];
-        if (!h) return '';
-        const r = state.hazardRatings[h.hazardId] || {};
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Configure hazard: '+h.title+'</h2><p class="text-sm text-slate-600">'+h.definition.replace(/</g,'&lt;')+'</p>';
-        const fields = [
-          {key:'Severity_label',l:'Severity',opts:h.severityOptions||[]},
-          {key:'ProbabilityOfOccurrence_label',l:'Probability',opts:h.probabilityOptions||[]},
-          {key:'Exposure_label',l:'Exposure',opts:h.exposureOptions||[]},
-          {key:'Detectability_label',l:'Detectability',opts:h.detectabilityOptions||[]},
-          {key:'ControlEffectiveness_label',l:'Control effectiveness',opts:h.controlEffectivenessOptions||[]},
-        ];
-        fields.forEach(({key,l,opts}) => {
-          const sel = r[key]||'';
-          const selOpt = opts.find(o=>(o.label||o)===sel);
-          html += '<div class="mt-3"><label class="block text-sm font-medium text-slate-600">'+l+'</label>';
-          html += '<select onchange="setHazardRating(\''+esc(h.hazardId)+'\',\''+key+'\',this.value)" class="mt-1 w-full rounded border border-slate-200 px-3 py-2">';
-          html += '<option value="">Select...</option>';
-          (opts||[]).forEach(o => { const lab = o.label||o; html += '<option value="'+esc(lab)+'"'+(sel===lab?' selected':'')+'>'+lab+'</option>'; });
-          html += '</select>';
-          if (selOpt?.help) html += '<p class="mt-0.5 text-xs text-slate-500">'+esc(selOpt.help).replace(/</g,'&lt;')+'</p>';
-          html += '</div>';
-        });
-        const ctxForHazard = (state.hazardContextOptions || []).find(ho => ho.hazardId === h.hazardId);
-        if (ctxForHazard?.contextOptions?.length) {
-          html += '<div class="mt-4 rounded border border-slate-200 p-3"><label class="block text-sm font-medium text-slate-600 mb-2">Hazard context</label>';
-          ctxForHazard.contextOptions.forEach(opt => {
-            const cid = opt.contextId; const val = (r.hazardContext || {})[cid];
-            if (opt.valueType === 'boolean') {
-              html += '<label class="flex cursor-pointer items-center gap-2 mb-2"><input type="checkbox" '+(val?'checked':'')+' onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.checked)"> '+opt.label+'</label>';
-            } else if (opt.valueType === 'choice' && opt.options?.length) {
-              html += '<div class="mb-2"><label class="text-xs text-slate-500">'+opt.label+'</label>';
-              html += '<select onchange="setHazardContext(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',this.value)" class="mt-0.5 block w-full max-w-xs rounded border border-slate-200 px-2 py-1.5">';
-              html += '<option value="">Select...</option>';
-              opt.options.forEach(o => { html += '<option value="'+esc(o.value)+'"'+(val===o.value?' selected':'')+'>'+(o.label||o.value)+'</option>'; });
-              html += '</select></div>';
-            } else if (opt.valueType === 'multiSelect' && opt.options?.length) {
-              html += '<div class="mb-2"><label class="text-xs text-slate-500">'+opt.label+'</label><div class="mt-1 flex flex-wrap gap-1">';
-              const selArr = Array.isArray(val) ? val : [];
-              opt.options.forEach(o => {
-                const ch = selArr.includes(o.value);
-                html += '<label class="inline-flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-xs '+(ch?'border-emerald-500 bg-emerald-50':'border-slate-200')+'"><input type="checkbox" '+(ch?'checked':'')+' onchange="toggleHazardContextMulti(\''+esc(h.hazardId)+'\',\''+esc(cid)+'\',\''+esc(o.value)+'\')"> '+(o.label||o.value)+'</label>';
-              });
-              html += '</div></div>';
-            }
-          });
-          html += '</div>';
-        }
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="nextStep()" class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Next</button></div></div>';
-        return html;
-      }
-
+      if (step.id === 'urs') return renderRequirementStep('urs', 'User Requirements Specification (URS)', 'Select applicable URS items. Default/high-critical items are preselected.');
+      if (step.id === 'frs') return renderRequirementStep('frs', 'Functional Requirements Specification (FRS)', 'Review and adjust FRS items auto-derived from URS.');
+      if (step.id === 'trs') return renderRequirementStep('trs', 'Technical Requirements Specification (TRS)', 'Select TRS checks used to derive IQ/OQ/PQ protocol content.');
       if (step.id === 'review') {
-        const sc = state.siteContext;
-        const displayCleanroom = state.cleanroomNotApplicable ? 'N/A (Not in a cleanroom)' : sc.cleanroomClass;
-        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">';
-        html += '<h2 class="text-lg font-semibold">Review & Generate Draft</h2>';
-        html += '<div><label class="block text-sm font-medium text-slate-600 mb-1">Equipment ID (optional)</label><input type="text" value="'+esc(state.equipmentId)+'" onchange="state.equipmentId=this.value" placeholder="e.g. E-STER-PV-001" class="w-full max-w-md rounded border border-slate-200 px-3 py-2"></div>';
-        html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Equipment</dt><dd>'+state.selectedEquipment?.name+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Cohort</dt><dd>'+state.selectedCohort+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">Site</dt><dd>Cleanroom: '+displayCleanroom+', Utilities: '+sc.utilities.join(', ')+', Product contact: '+(sc.productContact?'Yes':'No')+', Throughput: '+sc.productionThroughput+'</dd>';
-        const ec = state.equipmentControls || {};
-        const ecSet = Object.entries(ec).filter(([,v]) => v !== '' && v !== false).length;
-        if (ecSet) html += '<dt class="mt-2 font-medium text-slate-500">Equipment controls</dt><dd>'+ecSet+' selected</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">URS selected</dt><dd>'+(state.vmodelSelection.ursIds||[]).length+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">FRS selected</dt><dd>'+(state.vmodelSelection.frsIds||[]).length+'</dd>';
-        html += '<dt class="mt-2 font-medium text-slate-500">TRS selected</dt><dd>'+(state.vmodelSelection.trsIds||[]).length+'</dd></dl>';
-        html += '<div class="rounded border border-slate-200 p-3 text-sm"><div class="font-medium text-slate-600 mb-1">V-model readiness</div><div>VMP/URS/FRS/TRS/Requalification captured: <strong>Yes</strong></div><div>Computerized system flagged: <strong>'+(state.lifecycle.computerizedValidation.computerized?'Yes':'No')+'</strong></div></div>';
-        html += '<div class="flex gap-2"><button onclick="prevStep()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button>';
-        html += '<button onclick="handleGenerate()" '+(canGenerate()&&!state.generating?'':'disabled')+' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">'+(state.generating?'Generating...':'Generate Draft')+'</button></div></div>';
+        let html = '<div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-semibold">Review & Generate Draft</h2>';
+        html += '<div><label class="block text-sm font-medium text-slate-600 mb-1">Equipment ID (optional)</label><input type="text" value="' + esc(state.equipmentId) + '" onchange="state.equipmentId=this.value" placeholder="e.g. E-STER-PV-001" class="w-full max-w-md rounded border border-slate-200 px-3 py-2"></div>';
+        html += '<dl class="space-y-1 text-sm"><dt class="font-medium text-slate-500">Cohort</dt><dd>' + state.selectedCohort + '</dd><dt class="mt-2 font-medium text-slate-500">Equipment</dt><dd>' + (state.selectedEquipment?.name || '') + '</dd><dt class="mt-2 font-medium text-slate-500">URS selected</dt><dd>' + state.vmodelSelection.ursIds.length + '</dd><dt class="mt-2 font-medium text-slate-500">FRS selected</dt><dd>' + state.vmodelSelection.frsIds.length + '</dd><dt class="mt-2 font-medium text-slate-500">TRS selected</dt><dd>' + state.vmodelSelection.trsIds.length + '</dd></dl>';
+        html += '<div class="flex gap-2"><button onclick="state.flowStep=4;render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300">Back</button><button onclick="handleGenerate()" ' + (canGenerate() && !state.generating ? '' : 'disabled') + ' class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">' + (state.generating ? 'Generating...' : 'Generate Draft') + '</button></div></div>';
         return html;
       }
-
       return '';
     }
 
     function render() {
       const c = document.getElementById('content');
-      if (state.loading && !state.equipmentMetadata) {
+      if (state.loading && !state.result) {
         c.innerHTML = '<div class="flex min-h-[200px] items-center justify-center text-slate-500">Loading...</div>';
         return;
       }
-
       let html = '';
-      if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">'+state.error+'</div>';
-
+      if (state.error) html += '<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">' + state.error + '</div>';
       if (state.result) {
         const md = state.result.markdownContent || '';
-        const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g,'<br>');
+        const draftHtml = typeof marked !== 'undefined' ? marked.parse(md || '_No draft content available._') : (md || '_No draft content available._').replace(/\n/g, '<br>');
         html += '<div class="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">';
         html += '<h2 class="text-lg font-semibold text-emerald-800 no-print">Draft generated</h2>';
-        html += '<div class="flex flex-wrap gap-2 no-print">';
-        html += '<button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button>';
-        html += '<button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button>';
-        html += '</div>';
+        html += '<div class="flex flex-wrap gap-2 no-print"><button type="button" onclick="window.print()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Save as PDF</button><button type="button" onclick="downloadDocx()" class="rounded bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-600">Download DOCX</button></div>';
         const files = state.artifactUrls || {};
-        const fileNames = Object.keys(files);
-        if (fileNames.length) {
+        const names = Object.keys(files);
+        if (names.length) {
           html += '<div class="rounded border border-slate-200 bg-white p-3 no-print"><div class="mb-2 text-sm font-medium text-slate-700">Generated documents</div><div class="flex flex-wrap gap-2">';
-          fileNames.filter(n => n.endsWith('.md') || n.endsWith('.csv') || n.endsWith('.json')).forEach(n => {
-            const u = files[n];
-            if (typeof u === 'string') html += '<a class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" target="_blank" href="'+u+'">'+n+'</a>';
+          names.filter(n => n.endsWith('.md') || n.endsWith('.csv') || n.endsWith('.json')).forEach(n => {
+            const url = files[n];
+            if (typeof url === 'string') html += '<a class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" target="_blank" href="' + url + '">' + n + '</a>';
           });
           html += '</div></div>';
         }
-        html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate max-w-none" id="draft-preview">'+draftHtml+'</div>';
-        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.hazards=[];state.vmodelCatalog={urs:[],frs:[],trs:[]};state.vmodelSelection={ursIds:[],frsIds:[],trsIds:[]};state.equipmentControlsCatalog=null;state.equipmentMetadata=null;state.lifecycle={vmp:{scope:\'\',roles:\'\',timeline:\'\',deliverables:\'\',trainingPlan:\'\',supplierEvidencePlan:\'\'},urs:{intendedUse:\'\',criticalProcessParameters:\'\',environmentNeeds:\'\',throughputRationale:\'\',acceptanceCriteria:\'\'},computerizedValidation:{computerized:false,softwareClassification:\'\',part11Controls:\'\',dataIntegrityControls:\'\',patchConfigHistory:\'\'},requalificationPlan:{baseFrequency:\'annual\',triggers:[],rationale:\'\'},protocolPreferences:{pqRunCount:3,sampleSize:30,evidencePlaceholders:\'\'}};load();render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button></div>';
+        html += '<div class="rounded-lg border border-slate-200 bg-slate-50 p-6 max-h-[60vh] overflow-y-auto prose prose-slate max-w-none" id="draft-preview">' + draftHtml + '</div>';
+        html += '<button onclick="state.flowStep=0;state.result=null;state.artifactUrls=null;state.selectedCohort=\'\';state.selectedEquipment=null;state.vmodelCatalog={urs:[],frs:[],trs:[]};state.vmodelSelection={ursIds:[],frsIds:[],trsIds:[]};state.ui={ursQuery:\'\',frsQuery:\'\',trsQuery:\'\',showAdvancedURS:false,showAdvancedFRS:false,showAdvancedTRS:false};render()" class="rounded bg-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-300 no-print">Create another</button>';
+        html += '</div>';
       } else {
         html += renderProgressBar();
         html += renderStepContent();
       }
-
       c.innerHTML = html;
     }
 
-    load();
+    loadBootstrap();
   </script>
 </body>
 </html>
